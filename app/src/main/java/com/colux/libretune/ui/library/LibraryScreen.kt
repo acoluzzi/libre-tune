@@ -1,6 +1,6 @@
 package com.colux.libretune.ui.library
 
-import SearchResultItem
+import SongSearchResultItem
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,7 +30,7 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
         }
         items(likedSongs) { song ->
             // You can reuse your SearchResultItem or create a new one
-            SearchResultItem(song = song, onClick = { playerViewModel.playSongById(song.id) })
+            SongSearchResultItem(song = song, onClick = { playerViewModel.playSongById(song.id) })
         }
     }
 }

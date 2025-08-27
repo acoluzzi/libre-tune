@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-07T09:56:16.154501983Z">
+        <DropdownSelection timestamp="2025-08-27T14:59:48.676647924Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/home/andrea/.android/avd/Pixel_7a_API_34.avd" />
@@ -14,6 +14,9 @@
         <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="Unnamed">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="beatles()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

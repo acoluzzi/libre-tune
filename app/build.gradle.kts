@@ -78,7 +78,18 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
+    // For fetching the web page
+    implementation(libs.okhttp)
+
+    // For parsing the HTML
+    implementation(libs.jsoup)
+
+    implementation(project(":libretune-extractor"))
+
+
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

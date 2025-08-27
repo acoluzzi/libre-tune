@@ -1,12 +1,23 @@
 package com.colux.libretune.data.repository.tube
 
 import android.util.Log
+import com.colux.libretune.data.model.Artist
+import com.colux.libretune.data.model.ArtistDetails
+import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.MusicRepository
+import com.coluzziandrea.libretune_extractor.ArtistScraper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
+import org.schabi.newpipe.extractor.channel.ChannelInfo
+import org.schabi.newpipe.extractor.channel.ChannelInfoItem
+import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.localization.Localization
 import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
@@ -15,7 +26,9 @@ import javax.inject.Singleton
 
 
 @Singleton
-class YouTubeExtractionRepository @Inject constructor() : MusicRepository {
+class YouTubeExtractionRepository @Inject constructor(
+    val artistScraper: ArtistScraper
+) : MusicRepository {
 
     init {
         NewPipe.init(DownloaderImpl.init(null), Localization("en", "US"))
@@ -72,43 +85,140 @@ class YouTubeExtractionRepository @Inject constructor() : MusicRepository {
         }
     }
 
-    override suspend fun searchSongs(query: String): List<Song> {
+    override suspend fun searchContent(query: String): List<SearchResult> {
+        // We use coroutineScope to run both searches concurrently for better performance.
+        return coroutineScope {
+            // Start the artist search in the background
+            val artistsDeferred = async(Dispatchers.IO) {
+                performSearch(query, listOf(YoutubeSearchQueryHandlerFactory.MUSIC_ARTISTS))
+            }
+
+            // Start the song search in the background
+            val songsDeferred = async(Dispatchers.IO) {
+                performSearch(query, listOf(YoutubeSearchQueryHandlerFactory.MUSIC_SONGS))
+            }
+
+            // Wait for both searches to complete
+            val artistResults = artistsDeferred.await()
+            val songResults = songsDeferred.await()
+
+            // Combine the lists: top 3 artists first, then all the songs
+            val combinedList = mutableListOf<SearchResult>()
+            combinedList.addAll(artistResults.take(2))
+            combinedList.addAll(songResults)
+
+            combinedList
+        }
+    }
+
+    override suspend fun getArtistDetails(channelId: String): ArtistDetails? {
         return withContext(Dispatchers.IO) {
-            Log.d("YouTubeExtractionRepository", "Searching for: $query")
             try {
-                // 1. Use the standard YouTube service.
                 val service = NewPipe.getService(ServiceList.YouTube.serviceId)
+                val channelUrl = "https://music.youtube.com/channel/$channelId"
 
-                val searchExtractor = service.getSearchExtractor(
-                    query,
-                    listOf(YoutubeSearchQueryHandlerFactory.MUSIC_SONGS),
-                    ""
-                )
-
-                searchExtractor.fetchPage()
-
-                searchExtractor.fetchPage()
-                val searchResults = searchExtractor.initialPage.items
-
-                Log.d(
-                    "YouTubeExtractionRepository",
-                    "Search results: ${searchResults.size}"
-                )
-
-                searchResults.mapNotNull { it as? StreamInfoItem }.map {
-                    Song(
-                        id = it.url.substringAfter("?v="),
-                        title = it.name,
-                        artist = it.uploaderName,
-                        imageUrl = it.thumbnails.first().url,
-                        mediaUrl = null
-                    )
+                artistScraper.scrapeArtistPage(channelId).let {
+                    if (it != null) {
+                        Log.d(
+                            "YouTubeExtractionRepository",
+                            "Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}"
+                        )
+                        return@withContext ArtistDetails(
+                            name = it.name,
+                            avatarUrl = null,
+                            description = it.description,
+                            bannerUrl = it.bannerUrl,
+                            topSongs = it.topSongs.map { song ->
+                                Song(
+                                    id = song.id,
+                                    title = song.title,
+                                    artist = it.name,
+                                    imageUrl = song.imageUrl ?: "",
+                                    mediaUrl = null
+                                )
+                            },
+                            albums = emptyList(),
+                            similarArtists = emptyList()
+                        )
+                    }
                 }
 
+                val info = ChannelInfo.getInfo(service, channelUrl)
+
+
+                info.tabs.map { tab ->
+                    Log.d("YouTubeExtractionRepository", "Tab.kt: ${tab.id}, URL: ${tab.url}")
+                    val tabInfo = ChannelTabInfo.getInfo(service, tab)
+
+                    tabInfo.relatedItems.map { tabInfo ->
+                        Log.d(
+                            "YouTubeExtractionRepository",
+                            "Related Item: ${tabInfo.name}, URL: ${tabInfo.url}"
+                        )
+                    }
+                }
+
+
+                // Note: Fetching similar artists correctly is also complex.
+                // For now, we will focus on getting the top songs right.
+                val similarArtists = emptyList<Artist>()
+                val albums = emptyList<Playlist>()
+                val topSongs = emptyList<Song>()
+
+                ArtistDetails(
+                    name = info.name,
+                    avatarUrl = info.avatars.firstOrNull()?.url,
+                    description = info.description,
+                    bannerUrl = info.banners.firstOrNull()?.url,
+                    topSongs = topSongs,
+                    albums = albums,
+                    similarArtists = similarArtists
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
-                emptyList()
+                null
             }
         }
     }
+
+    /**
+     * A helper function to perform a search with a specific filter.
+     */
+    private fun performSearch(query: String, contentFilter: List<String>): List<SearchResult> {
+        return try {
+            val service = NewPipe.getService(ServiceList.YouTube.serviceId)
+            val searchExtractor = service.getSearchExtractor(query, contentFilter, "")
+            searchExtractor.fetchPage()
+
+            val searchResults: List<InfoItem> = searchExtractor.initialPage.items
+
+            searchResults.mapNotNull { item ->
+                when (item) {
+                    is StreamInfoItem -> SearchResult.SongResult(
+                        Song(
+                            id = item.url.substringAfter("?v="),
+                            title = item.name,
+                            artist = item.uploaderName,
+                            imageUrl = item.thumbnails.first().url,
+                            mediaUrl = null
+                        )
+                    )
+
+                    is ChannelInfoItem -> SearchResult.ArtistResult(
+                        Artist(
+                            id = item.url.substringAfter("/channel/"),
+                            name = item.name,
+                            imageUrl = item.thumbnails.first().url
+                        )
+                    )
+
+                    else -> null
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
 }

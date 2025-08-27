@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,13 +27,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.colux.libretune.data.model.Artist
+import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
+import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.search.SearchViewModel
 
 @Composable
-fun SearchScreen(playerViewModel: PlayerViewModel) {
+fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostController) {
     val searchViewModel: SearchViewModel = hiltViewModel()
     val searchResults by searchViewModel.searchResults.collectAsState()
     val isLoading by searchViewModel.isLoading.collectAsState()
@@ -60,13 +65,25 @@ fun SearchScreen(playerViewModel: PlayerViewModel) {
         } else {
             // Results List
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(searchResults) { song ->
-                    SearchResultItem(
-                        song = song,
-                        onClick = {
-                            playerViewModel.playSongById(song.id)
+                items(searchResults) { result ->
+                    // Use a 'when' statement to render the correct UI for each type
+                    when (result) {
+                        is SearchResult.SongResult -> {
+                            SongSearchResultItem(
+                                song = result.song,
+                                onClick = {
+                                    playerViewModel.playSongById(result.song.id)
+                                }
+                            )
                         }
-                    )
+
+                        is SearchResult.ArtistResult -> {
+                            ArtistSearchResultItem(
+                                artist = result.artist,
+                                onClick = { navController.navigate(Screen.Artist.createRoute(result.artist.id)) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -74,7 +91,7 @@ fun SearchScreen(playerViewModel: PlayerViewModel) {
 }
 
 @Composable
-fun SearchResultItem(song: Song, onClick: () -> Unit) {
+fun SongSearchResultItem(song: Song, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,5 +111,26 @@ fun SearchResultItem(song: Song, onClick: () -> Unit) {
             Text(text = song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
             Text(text = song.artist ?: "", style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
+    }
+}
+
+@Composable
+fun ArtistSearchResultItem(artist: Artist, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = artist.imageUrl,
+            contentDescription = artist.name,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape) // Artists often have circular profile images
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = artist.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
     }
 }

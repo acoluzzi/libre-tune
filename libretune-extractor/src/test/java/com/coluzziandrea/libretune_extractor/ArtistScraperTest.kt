@@ -85,6 +85,18 @@ class ArtistScraperTest {
             artistDetails?.topSongs?.get(0)?.imageUrl
         )
 
+
+        assertEquals(10, artistDetails?.albums?.size)
+        assertEquals(
+            "Beatles '64 (Music from the Disney+ Documentary)",
+            artistDetails?.albums?.get(0)?.name
+        )
+        assertEquals("MPREb_OLtz6K1cjET", artistDetails?.albums?.get(0)?.id)
+        assertEquals(
+            "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+            artistDetails?.albums?.get(0)?.thumbnailUrl
+        )
+
     }
 
     @Test
@@ -135,6 +147,13 @@ class ArtistScraperTest {
             artistDetails?.topSongs?.get(0)?.imageUrl
         )
 
+        assertEquals(10, artistDetails?.albums?.size)
+        assertEquals("Shot Down In The Big Easy", artistDetails?.albums?.get(0)?.name)
+        assertEquals("MPREb_mInwWNWkfbx", artistDetails?.albums?.get(0)?.id)
+        assertEquals(
+            "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w226-h226-l90-rj",
+            artistDetails?.albums?.get(0)?.thumbnailUrl
+        )
     }
 
 
@@ -183,6 +202,14 @@ class ArtistScraperTest {
         assertEquals(
             "https://lh3.googleusercontent.com/2SJUS7YtuaGIBU8-0lFxMi_T6Ned9JjM3GvZJr3JJIPNQxwXSa8hIbSOSxl1tRaPHnrLDVfJBJBvuqg=w60-h60-l90-rj",
             artistDetails?.topSongs?.get(0)?.imageUrl
+        )
+
+        assertEquals(10, artistDetails?.albums?.size)
+        assertEquals("Under The Covers", artistDetails?.albums?.get(0)?.name)
+        assertEquals("MPREb_Sc6OpME3TWu", artistDetails?.albums?.get(0)?.id)
+        assertEquals(
+            "https://lh3.googleusercontent.com/vCwdAeNhB0HRSg0vzY3RwSAQwzmaiU_dA7xQ1Fq-31ffXF3FKbVMpgeFy8Ws5KqjSBADbUEDx4vNpLjL=w226-h226-l90-rj",
+            artistDetails?.albums?.get(0)?.thumbnailUrl
         )
 
     }

@@ -1,4 +1,4 @@
-package com.colux.libretune.ui.components.album
+package com.colux.libretune.ui.components.playlist
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,13 +10,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.colux.libretune.data.model.Song
 
 @Composable
-fun SongsCarousel(
+fun PlaylistCarousel(
     title: String,
-    songs: List<Song>,
-    onSongClick: (songIndex: Int) -> Unit
+    playlists: List<PlaylistItem>,
+    onItemClick: (itemIndex: Int) -> Unit
 ) {
     Column {
         Text(
@@ -27,9 +26,8 @@ fun SongsCarousel(
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            itemsIndexed(songs) { index, song ->
-                // Pass the 'index' of the song, which is an Int
-                SongCard(song = song, onSongClick = { onSongClick(index) })
+            itemsIndexed(playlists) { index, song ->
+                PlaylistCard(playlist = song, onSongClick = { onItemClick(index) })
             }
         }
     }

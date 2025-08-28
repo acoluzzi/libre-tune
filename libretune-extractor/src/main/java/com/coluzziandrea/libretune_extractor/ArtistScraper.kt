@@ -1,5 +1,6 @@
 package com.coluzziandrea.libretune_extractor
 
+import com.coluzziandrea.libretune_extractor.model.Album
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Song
 import com.coluzziandrea.libretune_extractor.response.BrowseData
@@ -42,7 +43,7 @@ class ArtistScraper @Inject constructor(
                     return@withContext null
                 }
 
-                val htmlBody = response.body?.string() ?: return@withContext null
+                val htmlBody = response.body.string()
 
                 // --- Part 2: Parse the HTML with Jsoup ---
                 val document = Jsoup.parse(htmlBody)
@@ -54,7 +55,7 @@ class ArtistScraper @Inject constructor(
                 val description = document.select("meta[property=og:description]").attr("content")
                 val bannerUrl = document.select("meta[property=og:image]").attr("content")
 
-                val topSongs = extractTopSongs(document)
+                val (topSongs, albums) = extractTopSongsAndAlbums(document)
 
 
                 // For this skeleton, we will return what we can easily get.
@@ -63,7 +64,7 @@ class ArtistScraper @Inject constructor(
                     description = description,
                     bannerUrl = bannerUrl,
                     topSongs = topSongs, // This would come from the complex JSON parsing
-                    albums = emptyList(),
+                    albums = albums,
                     similarArtists = emptyList()
                 )
 
@@ -75,20 +76,21 @@ class ArtistScraper @Inject constructor(
     }
 
 
-    private fun extractTopSongs(document: Document): List<Song> {
+    private fun extractTopSongsAndAlbums(document: Document): Pair<List<Song>, List<Album>> {
         val topSongs = mutableListOf<Song>()
+        val albums = mutableListOf<Album>()
         val scriptElements =
             document.select("script:containsData(try {const initialData = )")
         if (scriptElements.isEmpty()) {
             Logger.getLogger("ArtistScraper")
                 .warning("No script elements found containing initialData")
-            return topSongs
+            return Pair(topSongs, albums)
         }
         val scriptContent = scriptElements.firstOrNull()?.data()
         if (scriptContent == null) {
             Logger.getLogger("ArtistScraper")
                 .warning("Script content is null")
-            return topSongs
+            return Pair(topSongs, albums)
         }
 
         val doubleEscapesRemoved = scriptContent.replace("\\\"", "\"")
@@ -102,7 +104,7 @@ class ArtistScraper @Inject constructor(
         if (browseDataStart == -1 || browseDataEnd == -1 || browseDataEnd <= browseDataStart) {
             Logger.getLogger("ArtistScraper")
                 .warning("Could not find browse data in the script content")
-            return topSongs
+            return Pair(topSongs, albums)
         }
         val browseData = cleanText.substring(browseDataStart, browseDataEnd)
 
@@ -111,11 +113,10 @@ class ArtistScraper @Inject constructor(
         if (jsonStart == -1 || jsonEnd == -1 || jsonEnd <= jsonStart) {
             Logger.getLogger("ArtistScraper")
                 .warning("Could not find JSON data in the browse data")
-            return topSongs
+            return Pair(topSongs, albums)
         }
         val jsonData = browseData.substring(jsonStart, jsonEnd)
 
-        // Now parse this JSON to extract top songs
 
         val browseDataObject = jsonParser.decodeFromString<BrowseData>(jsonData)
 
@@ -154,7 +155,27 @@ class ArtistScraper @Inject constructor(
                         }
                     }
 
-                    is SectionContent.MusicCarouselContent -> {}
+                    is SectionContent.MusicCarouselContent -> {
+                        if (content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.title.runs.find {
+                                it.text == "Albums"
+                            } != null) {
+
+                            content.musicCarouselShelfRenderer.contents.forEach { carouselItem ->
+
+                                albums.add(
+                                    Album(
+                                        id = (carouselItem.musicTwoRowItemRenderer.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId,
+                                        name = carouselItem.musicTwoRowItemRenderer.title.runs[0].text,
+                                        thumbnailUrl = carouselItem.musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails.firstOrNull()?.url
+                                            ?: ""
+                                    )
+                                )
+
+                            }
+
+                        }
+                    }
+
                     is SectionContent.MusicResponsiveListItemContent, is SectionContent.EmptyContent -> {
                         // DO NOTHING
                     }
@@ -163,7 +184,7 @@ class ArtistScraper @Inject constructor(
         }
 
 
-        return topSongs
+        return Pair(topSongs, albums)
     }
 
     private val jsonParser = Json {

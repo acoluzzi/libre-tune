@@ -1,6 +1,5 @@
 package com.colux.libretune.ui.library
 
-import SongSearchResultItem
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.player.PlayerViewModel
 
 @Composable
@@ -30,7 +30,7 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
         }
         items(likedSongs) { song ->
             // You can reuse your SearchResultItem or create a new one
-            SongSearchResultItem(song = song, onClick = { playerViewModel.playSongById(song.id) })
+            SongItem(song = song, onClick = { playerViewModel.playSongById(song.id) })
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.colux.libretune.ui.components.album
+package com.colux.libretune.ui.components.playlist
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -18,10 +18,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.colux.libretune.data.model.Song
 
 @Composable
-fun SongCard(song: Song, onSongClick: () -> Unit) {
+fun PlaylistCard(playlist: PlaylistItem, onSongClick: () -> Unit) {
     Column(
         modifier = Modifier
             .width(160.dp) // Set a fixed width for the card
@@ -29,8 +28,8 @@ fun SongCard(song: Song, onSongClick: () -> Unit) {
             .clickable(onClick = onSongClick)
     ) {
         AsyncImage(
-            model = song.imageUrl,
-            contentDescription = "Album cover for ${song.title}",
+            model = playlist.imageUrl,
+            contentDescription = "Album cover for ${playlist.title}",
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f) // Makes the image square
@@ -39,7 +38,7 @@ fun SongCard(song: Song, onSongClick: () -> Unit) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = song.title,
+            text = playlist.title,
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

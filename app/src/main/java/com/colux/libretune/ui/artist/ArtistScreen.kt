@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,7 +19,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.colux.libretune.ui.components.album.SongsCarousel
+import com.colux.libretune.ui.components.playlist.PlaylistCarousel
+import com.colux.libretune.ui.components.playlist.PlaylistItem
+import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.player.PlayerViewModel
 
 @Composable
@@ -56,21 +59,40 @@ fun ArtistScreen(
                 }
             }
 
-            // Top Songs Carousel
+
             item {
-                SongsCarousel(
-                    title = "Top Songs",
-                    songs = artistDetails!!.topSongs,
-                    onSongClick = { index ->
-                        playerViewModel.playSongById(artistDetails!!.topSongs[index].id)
+                Text(
+                    text = "Top Songs",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                )
+            }
+
+            // The list of songs comes right after the title
+            items(artistDetails!!.topSongs) { song ->
+                SongItem(
+                    song = song,
+                    onClick = {
+                        playerViewModel.playSongById(song.id)
                     }
                 )
             }
 
             // Similar Artists Carousel
             item {
-                // You'll need to create an ArtistCarousel composable
-                // ArtistCarousel(title = "Similar Artists", artists = artistDetails!!.similarArtists)
+                PlaylistCarousel(
+                    title = "Albums",
+                    playlists = artistDetails!!.albums.map {
+                        PlaylistItem(
+                            id = it.id,
+                            title = it.name,
+                            imageUrl = it.thumbnailUrl
+                        )
+                    },
+                    onItemClick = { index ->
+                        playerViewModel.playSongById(artistDetails!!.topSongs[index].id)
+                    }
+                )
             }
         }
     } else {

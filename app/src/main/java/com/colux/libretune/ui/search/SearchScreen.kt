@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +30,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.SearchResult
-import com.colux.libretune.data.model.Song
+import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.search.SearchViewModel
@@ -69,7 +68,7 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                     // Use a 'when' statement to render the correct UI for each type
                     when (result) {
                         is SearchResult.SongResult -> {
-                            SongSearchResultItem(
+                            SongItem(
                                 song = result.song,
                                 onClick = {
                                     playerViewModel.playSongById(result.song.id)
@@ -90,29 +89,6 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
     }
 }
 
-@Composable
-fun SongSearchResultItem(song: Song, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = song.imageUrl,
-            contentDescription = song.title,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(4.dp))
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(text = song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text(text = song.artist ?: "", style = MaterialTheme.typography.bodySmall, maxLines = 1)
-        }
-    }
-}
 
 @Composable
 fun ArtistSearchResultItem(artist: Artist, onClick: () -> Unit) {

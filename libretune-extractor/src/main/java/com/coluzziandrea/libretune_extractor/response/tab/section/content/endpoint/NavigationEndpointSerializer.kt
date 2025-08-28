@@ -13,6 +13,7 @@ object NavigationEndpointSerializer :
 
             "browseEndpoint" in element.jsonObject -> NavigationEndpoint.BrowseNavigationEndpoint.serializer()
 
+            "watchPlaylistEndpoint" in element.jsonObject -> NavigationEndpoint.WatchPlaylistNavigationEndpoint.serializer()
 
             // Default case
             else -> NavigationEndpoint.EmptyNavigationEndpoint.serializer()

@@ -7,6 +7,6 @@ data class ArtistDetails(
     val avatarUrl: String?,
     val bannerUrl: String?,
     val topSongs: List<Song>,
-    val albums: List<Playlist>, // We'll represent albums as playlists
+    val albums: List<Album>,
     val similarArtists: List<Artist>
 )

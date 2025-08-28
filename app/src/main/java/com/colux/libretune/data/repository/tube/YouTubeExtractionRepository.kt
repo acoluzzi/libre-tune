@@ -1,9 +1,9 @@
 package com.colux.libretune.data.repository.tube
 
 import android.util.Log
+import com.colux.libretune.data.model.Album
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
-import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.MusicRepository
@@ -15,9 +15,7 @@ import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.channel.ChannelInfo
 import org.schabi.newpipe.extractor.channel.ChannelInfoItem
-import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.localization.Localization
 import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
@@ -111,13 +109,11 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
-    override suspend fun getArtistDetails(channelId: String): ArtistDetails? {
+    override suspend fun getArtistDetails(id: String): ArtistDetails? {
         return withContext(Dispatchers.IO) {
             try {
-                val service = NewPipe.getService(ServiceList.YouTube.serviceId)
-                val channelUrl = "https://music.youtube.com/channel/$channelId"
 
-                artistScraper.scrapeArtistPage(channelId).let {
+                artistScraper.scrapeArtistPage(id).let {
                     if (it != null) {
                         Log.d(
                             "YouTubeExtractionRepository",
@@ -137,43 +133,21 @@ class YouTubeExtractionRepository @Inject constructor(
                                     mediaUrl = null
                                 )
                             },
-                            albums = emptyList(),
+                            albums = it.albums.map {
+                                Album(
+                                    id = it.id,
+                                    name = it.name,
+                                    thumbnailUrl = it.thumbnailUrl
+                                )
+                            },
                             similarArtists = emptyList()
                         )
-                    }
-                }
-
-                val info = ChannelInfo.getInfo(service, channelUrl)
-
-
-                info.tabs.map { tab ->
-                    Log.d("YouTubeExtractionRepository", "Tab.kt: ${tab.id}, URL: ${tab.url}")
-                    val tabInfo = ChannelTabInfo.getInfo(service, tab)
-
-                    tabInfo.relatedItems.map { tabInfo ->
-                        Log.d(
-                            "YouTubeExtractionRepository",
-                            "Related Item: ${tabInfo.name}, URL: ${tabInfo.url}"
-                        )
+                    } else {
+                        null
                     }
                 }
 
 
-                // Note: Fetching similar artists correctly is also complex.
-                // For now, we will focus on getting the top songs right.
-                val similarArtists = emptyList<Artist>()
-                val albums = emptyList<Playlist>()
-                val topSongs = emptyList<Song>()
-
-                ArtistDetails(
-                    name = info.name,
-                    avatarUrl = info.avatars.firstOrNull()?.url,
-                    description = info.description,
-                    bannerUrl = info.banners.firstOrNull()?.url,
-                    topSongs = topSongs,
-                    albums = albums,
-                    similarArtists = similarArtists
-                )
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

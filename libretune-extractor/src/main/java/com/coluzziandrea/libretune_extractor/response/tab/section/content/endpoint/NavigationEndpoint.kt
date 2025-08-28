@@ -17,5 +17,11 @@ sealed interface NavigationEndpoint {
 
 
     @Serializable
+    data class WatchPlaylistNavigationEndpoint(
+        val watchPlaylistEndpoint: WatchPlaylistEndpoint
+    ) : NavigationEndpoint
+
+
+    @Serializable
     class EmptyNavigationEndpoint : NavigationEndpoint
 }

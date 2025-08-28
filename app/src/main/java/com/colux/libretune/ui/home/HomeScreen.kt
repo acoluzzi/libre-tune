@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.colux.libretune.data.model.Song
-import com.colux.libretune.ui.components.album.SongsCarousel
+import com.colux.libretune.ui.components.playlist.PlaylistCarousel
+import com.colux.libretune.ui.components.playlist.PlaylistItem
 
 @Composable
 fun HomeScreen(
@@ -38,22 +39,43 @@ fun HomeScreen(
         }
 
         item {
-            SongsCarousel(
+            PlaylistCarousel(
                 title = "Recently Played",
-                songs = recentlyPlayed,
-                onSongClick = { index ->
+                playlists = recentlyPlayed.map {
+                    PlaylistItem(
+                        id = it.id,
+                        title = it.title,
+                        imageUrl = it.imageUrl
+                    )
+                },
+                onItemClick = { index ->
                     onSongClick(recentlyPlayed, index)
                 })
         }
 
         item {
-            SongsCarousel(title = "Made for You", songs = madeForYou, onSongClick = { index ->
-                onSongClick(madeForYou, index)
-            })
+            PlaylistCarousel(
+                title = "Made for You",
+                playlists = madeForYou.map {
+                    PlaylistItem(
+                        id = it.id,
+                        title = it.title,
+                        imageUrl = it.imageUrl
+                    )
+                },
+                onItemClick = { index ->
+                    onSongClick(madeForYou, index)
+                })
         }
 
         item {
-            SongsCarousel(title = "YT", songs = ytSongs, onSongClick = { index ->
+            PlaylistCarousel(title = "YT", playlists = ytSongs.map {
+                PlaylistItem(
+                    id = it.id,
+                    title = it.title,
+                    imageUrl = it.imageUrl
+                )
+            }, onItemClick = { index ->
                 onSongClick(ytSongs, index)
             })
         }

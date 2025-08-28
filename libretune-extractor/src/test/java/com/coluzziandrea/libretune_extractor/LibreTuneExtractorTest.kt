@@ -1,0 +1,404 @@
+package com.coluzziandrea.libretune_extractor
+
+import kotlinx.coroutines.test.runTest
+import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody
+import org.junit.experimental.runners.Enclosed
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
+import java.io.InputStreamReader
+
+
+@RunWith(Enclosed::class)
+@DisplayName("LibreTuneExtractor Tests")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class LibreTuneExtractorTest {
+    @Mock
+    private lateinit var mockClient: OkHttpClient
+
+    @Mock
+    private lateinit var mockCall: Call
+
+    private lateinit var scraper: LibreTuneExtractor
+
+    @BeforeAll
+    fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        scraper = LibreTuneExtractor(mockClient)
+    }
+
+    // Helper function to read a file from the test/resources folder
+    private fun readFileFromResources(fileName: String): String {
+        val inputStream = javaClass.classLoader?.getResourceAsStream(fileName)
+        val reader = InputStreamReader(inputStream)
+        return reader.readText()
+    }
+
+    @Nested
+    @DisplayName("Artist Page Scraping")
+    inner class ArtistPageScrapingTests {
+        @Test
+        fun `scrapeArtistPage should correctly parse beatles HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("beatles.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val artistDetails = scraper.artist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(artistDetails)
+            assertEquals("The Beatles", artistDetails?.name)
+            assert(artistDetails?.description?.contains("It did all happen. The whole wonderful thing did happen, a long time ago, on the Mersey, on the") == true)
+            assertEquals(
+                "https://lh3.googleusercontent.com/z8KZsHNKS-O1qYVyKlSErT_RLMSMwVht89USvSdFAd0EoRlBOppi9DOdRkv609Ye_tfq_Wp8WwhVJbw=w544-h544-p-l90-rj",
+                artistDetails?.images?.first()?.url
+            )
+
+            assertNotNull(artistDetails?.topSongs)
+            assert(artistDetails?.topSongs?.isNotEmpty() == true)
+            assertEquals(5, artistDetails?.topSongs?.size)
+            assertEquals("Let It Be (Remastered 2009)", artistDetails?.topSongs?.get(0)?.title)
+            assertEquals("QDYfEBY9NM4", artistDetails?.topSongs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                artistDetails?.topSongs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                artistDetails?.topSongs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+
+            assertEquals(10, artistDetails?.albums?.size)
+            assertEquals(
+                "Beatles '64 (Music from the Disney+ Documentary)",
+                artistDetails?.albums?.get(0)?.name
+            )
+            assertEquals("MPREb_OLtz6K1cjET", artistDetails?.albums?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+                artistDetails?.albums?.get(0)?.thumbnailUrl
+            )
+
+        }
+
+        @Test
+        fun `scrapeArtistPage should correctly parse acdc HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("acdc.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val artistDetails = scraper.artist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(artistDetails)
+            assertEquals("AC/DC", artistDetails?.name)
+            assertEquals(
+                "AC/DC are an Australian rock band formed in Sydney in 1973. Their music has been variously described as hard rock, blues rock and heavy metal, although the band calls it simply \"rock and roll\". They are cited as a formative influence on the new wave of British heavy metal bands. The band was inducted into the Rock and Roll Hall of Fame in 2003 and have sold over 200 million records worldwide, making them one of the best-selling artists of all time.\n" +
+                        "AC/DC were founded by brothers Angus and Malcolm Young, with Colin Burgess, Larry Van Kriedt and Dave Evans. They underwent several line-up changes before releasing their debut Australasian-only album, High Voltage. Membership stabilised after the release of Let There Be Rock, with the Young brothers, Phil Rudd on drums, Cliff Williams on bass guitar and Bon Scott on lead vocals. Seven months after the release of Highway to Hell, Scott died of alcohol poisoning and English singer Brian Johnson was then recruited as their new frontman. Their first album with Johnson, Back in Black, dedicated to Scott's memory, became the second best-selling album of all time.",
+                artistDetails?.description
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/IlNp_o9GKakp7qtaDAKaDxpW29qtP8sjqQXPcBQ9uAdOUU3AnJdB85xLRiYIGT3FlCmobm6oiMQX4GU=w544-h544-p-l90-rj",
+                artistDetails?.images?.first()?.url
+            )
+
+            assertNotNull(artistDetails?.topSongs)
+            assert(artistDetails?.topSongs?.isNotEmpty() == true)
+            assertEquals(5, artistDetails?.topSongs?.size)
+            assertEquals("Thunderstruck", artistDetails?.topSongs?.get(0)?.title)
+            assertEquals("lhg9bYNLvOg", artistDetails?.topSongs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_lVoh11X5c3o6PR2nO88388e9jdmc7deac",
+                artistDetails?.topSongs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/DV_ebk0MH4HMLfn2CxeH6Thjf9OSs1Q6FhZulHE6KIyoPWYT6rh2FOZIERUFLRKg7yxpPqwIBE31D5ETkg=w60-h60-l90-rj",
+                artistDetails?.topSongs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+            assertEquals(10, artistDetails?.albums?.size)
+            assertEquals("Shot Down In The Big Easy", artistDetails?.albums?.get(0)?.name)
+            assertEquals("MPREb_mInwWNWkfbx", artistDetails?.albums?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w226-h226-l90-rj",
+                artistDetails?.albums?.get(0)?.thumbnailUrl
+            )
+        }
+
+
+        @Test
+        fun `scrapeArtistPage should correctly parse metallica HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("metallica.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val artistDetails = scraper.artist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(artistDetails)
+            assertEquals("Metallica", artistDetails?.name)
+            assertEquals(
+                "Metallica formed in 1981 by drummer Lars Ulrich and guitarist and vocalist James Hetfield and has become one of the most influential and commercially successful rock bands in history, having sold 110 million albums worldwide while playing to millions of fans on literally all seven continents. They have scored several multi-platinum albums, including 1991’s Metallica (commonly referred to as The Black Album), with sales of nearly 17 million copies in the United States alone, making it the best-selling album in the history of Soundscan. Metallica has also garnered numerous awards and accolades, including nine Grammy Awards, two American Music Awards, and multiple MTV Video Music Awards, and were inducted into the Rock and Roll Hall of Fame and Museum in 2009.  In December 2013, Metallica made history when they performed a rare concert in Antarctica, becoming the first act to ever play all seven continents all within a year, and earning themselves a spot in the Guinness Book of World Records.",
+                artistDetails?.description
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/a-/ALV-UjXGomQMrlDtBWEXl_Ugjti3oL8lSQEH_qc4MG3Kmzi-ppE25srs=w544-h544-l90-rj",
+                artistDetails?.images?.firstOrNull()?.url
+            )
+
+            assertNotNull(artistDetails?.topSongs)
+            assert(artistDetails?.topSongs?.isNotEmpty() == true)
+            assertEquals(5, artistDetails?.topSongs?.size)
+            assertEquals("Nothing Else Matters", artistDetails?.topSongs?.get(0)?.title)
+            assertEquals("pTYIf2pkxzQ", artistDetails?.topSongs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_miOHTfPNlwsbuoYYtAeefJHDm3Qcv-ebQ",
+                artistDetails?.topSongs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/2SJUS7YtuaGIBU8-0lFxMi_T6Ned9JjM3GvZJr3JJIPNQxwXSa8hIbSOSxl1tRaPHnrLDVfJBJBvuqg=w60-h60-l90-rj",
+                artistDetails?.topSongs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+            assertEquals(10, artistDetails?.albums?.size)
+            assertEquals("Under The Covers", artistDetails?.albums?.get(0)?.name)
+            assertEquals("MPREb_Sc6OpME3TWu", artistDetails?.albums?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/vCwdAeNhB0HRSg0vzY3RwSAQwzmaiU_dA7xQ1Fq-31ffXF3FKbVMpgeFy8Ws5KqjSBADbUEDx4vNpLjL=w226-h226-l90-rj",
+                artistDetails?.albums?.get(0)?.thumbnailUrl
+            )
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Playlist Page Scraping")
+    inner class PlaylistPageScrapingTests {
+        @Test
+        fun `scrapePlaylist should correctly parse abbeyRoad HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("abbeyRoad.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val playlistDetails = scraper.playlist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(playlistDetails)
+            assertEquals("Abbey Road (Super Deluxe Edition)", playlistDetails?.name)
+            assertEquals(
+                "https://lh3.googleusercontent.com/g8bzAg2zxvdnm7ismLMYLA9-9azb4y6VP2uOF56A2G2rpsqLHT6mrJWXRKq_VttXQZ-o-jmVgTFIVgdj=w60-h60-l90-rj",
+                playlistDetails?.images?.firstOrNull()?.url
+            )
+
+            assertNotNull(playlistDetails?.songs)
+            assertEquals(5, playlistDetails?.songs?.size)
+            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                playlistDetails?.songs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+
+            assertEquals(10, playlistDetails?.relatedPlaylists?.size)
+            assertEquals(
+                "Beatles '64 (Music from the Disney+ Documentary)",
+                playlistDetails?.relatedPlaylists?.get(0)?.name
+            )
+            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+            )
+
+        }
+
+        @Test
+        fun `scrapePlaylist should correctly parse deathMagnetic HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("deathMagnetic.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val playlistDetails = scraper.playlist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(playlistDetails)
+            assertEquals("Death Magnetic", playlistDetails?.name)
+            assertEquals(
+                "https://lh3.googleusercontent.com/jKSy3N15Nd2vF0OG4m10y4A-GgN94CJQIyseGZ0HjJIDUL9dqfY1SI4mqOuJkuUdmaOQ-HRI9q_9BXo=w60-h60-l90-rj",
+                playlistDetails?.images?.firstOrNull()?.url
+            )
+
+            assertNotNull(playlistDetails?.songs)
+            assertEquals(5, playlistDetails?.songs?.size)
+            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                playlistDetails?.songs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+
+            assertEquals(10, playlistDetails?.relatedPlaylists?.size)
+            assertEquals(
+                "Beatles '64 (Music from the Disney+ Documentary)",
+                playlistDetails?.relatedPlaylists?.get(0)?.name
+            )
+            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+            )
+
+        }
+
+
+        @Test
+        fun `scrapePlaylist should correctly parse shotDownInTheBigEasy HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("shotDownInTheBigEasy.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val playlistDetails = scraper.playlist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(playlistDetails)
+            assertEquals("Shot Down In The Big Easy", playlistDetails?.name)
+            assertEquals(
+                "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w60-h60-l90-rj",
+                playlistDetails?.images?.firstOrNull()?.url
+            )
+
+            assertNotNull(playlistDetails?.songs)
+            assertEquals(5, playlistDetails?.songs?.size)
+            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(
+                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                playlistDetails?.songs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+
+            assertEquals(10, playlistDetails?.relatedPlaylists?.size)
+            assertEquals(
+                "Beatles '64 (Music from the Disney+ Documentary)",
+                playlistDetails?.relatedPlaylists?.get(0)?.name
+            )
+            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+            )
+
+        }
+    }
+
+
+}

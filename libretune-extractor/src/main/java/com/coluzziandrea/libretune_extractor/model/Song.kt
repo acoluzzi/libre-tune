@@ -4,5 +4,5 @@ data class Song(
     val id: String,
     val playlistId: String?,
     val title: String,
-    val imageUrl: String?,
+    val images: List<Image>,
 )

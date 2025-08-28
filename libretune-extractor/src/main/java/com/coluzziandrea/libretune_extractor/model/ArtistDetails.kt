@@ -4,8 +4,8 @@ package com.coluzziandrea.libretune_extractor.model
 data class ArtistDetails(
     val name: String,
     val description: String?,
-    val bannerUrl: String?,
+    val images: List<Image>,
     val topSongs: List<Song>,
-    val albums: List<Album>,
+    val albums: List<Playlist>,
     val similarArtists: List<Artist>
 )

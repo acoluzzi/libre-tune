@@ -12,6 +12,7 @@ import com.colux.libretune.ui.artist.ArtistScreen
 import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
 import com.colux.libretune.ui.player.PlayerViewModel
+import com.colux.libretune.ui.playlist.PlaylistDetailScreen
 
 @Composable
 fun Navigation(
@@ -35,7 +36,21 @@ fun Navigation(
         })) { backStackEntry ->
             val artistId = backStackEntry.arguments?.getString("artistId")
             if (artistId != null) {
-                ArtistScreen(artistId = artistId, playerViewModel)
+                ArtistScreen(artistId = artistId, playerViewModel, navController)
+            }
+        }
+
+        composable(
+            route = Screen.PlaylistDetail.route,
+            arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getString("playlistId")
+            if (playlistId != null) {
+                PlaylistDetailScreen(
+                    playlistId = playlistId,
+                    playerViewModel = playerViewModel,
+                    navController = navController
+                )
             }
         }
     }

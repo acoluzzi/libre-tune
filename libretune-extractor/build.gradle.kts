@@ -32,6 +32,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform() // This tells Gradle to use the JUnit 5 runner
+        }
+    }
 }
 
 dependencies {
@@ -65,7 +71,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 
 
     testImplementation(kotlin("test"))

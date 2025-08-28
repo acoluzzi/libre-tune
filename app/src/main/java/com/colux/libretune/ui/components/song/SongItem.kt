@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.components.song
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import com.colux.libretune.data.model.Song
 fun SongItem(song: Song, onClick: () -> Unit) {
     Row(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(16.dp),

@@ -1,6 +1,7 @@
 package com.colux.libretune.ui.artist
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,16 +19,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.playlist.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
+import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 
 @Composable
 fun ArtistScreen(
     artistId: String,
     playerViewModel: PlayerViewModel,
+    navController: NavHostController,
     viewModel: ArtistDetailViewModel = hiltViewModel()
 ) {
     val artistDetails by viewModel.artistDetails.collectAsState()
@@ -90,9 +94,13 @@ fun ArtistScreen(
                         )
                     },
                     onItemClick = { index ->
-                        playerViewModel.playSongById(artistDetails!!.topSongs[index].id)
+                        navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.albums[index].id))
                     }
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     } else {

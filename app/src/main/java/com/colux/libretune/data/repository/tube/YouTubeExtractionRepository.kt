@@ -4,10 +4,12 @@ import android.util.Log
 import com.colux.libretune.data.model.Album
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
+import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.MusicRepository
-import com.coluzziandrea.libretune_extractor.ArtistScraper
+import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -25,7 +27,7 @@ import javax.inject.Singleton
 
 @Singleton
 class YouTubeExtractionRepository @Inject constructor(
-    val artistScraper: ArtistScraper
+    val libreTuneExtractor: LibreTuneExtractor
 ) : MusicRepository {
 
     init {
@@ -113,7 +115,7 @@ class YouTubeExtractionRepository @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
 
-                artistScraper.scrapeArtistPage(id).let {
+                libreTuneExtractor.artist(id).let {
                     if (it != null) {
                         Log.d(
                             "YouTubeExtractionRepository",
@@ -123,13 +125,13 @@ class YouTubeExtractionRepository @Inject constructor(
                             name = it.name,
                             avatarUrl = null,
                             description = it.description,
-                            bannerUrl = it.bannerUrl,
+                            bannerUrl = it.images.firstOrNull()?.url,
                             topSongs = it.topSongs.map { song ->
                                 Song(
                                     id = song.id,
                                     title = song.title,
                                     artist = it.name,
-                                    imageUrl = song.imageUrl ?: "",
+                                    imageUrl = song.images.firstOrNull()?.url ?: "",
                                     mediaUrl = null
                                 )
                             },
@@ -148,6 +150,50 @@ class YouTubeExtractionRepository @Inject constructor(
                 }
 
 
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    override suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
+
+        return withContext(Dispatchers.IO) {
+            try {
+                libreTuneExtractor.playlist(id).let {
+                    if (it != null) {
+                        Log.d(
+                            "YouTubeExtractionRepository",
+                            "Scraped playlist: ${it.name}"
+                        )
+                        return@withContext PlaylistDetails(
+                            name = it.name,
+                            artist = it.artist,
+                            bannerUrl = it.images.maxByOrNull { image ->
+                                image.width
+                            }?.url,
+                            songs = it.songs.map { song ->
+                                Song(
+                                    id = song.id,
+                                    title = song.title,
+                                    artist = it.name,
+                                    imageUrl = song.images.firstOrNull()?.url ?: "",
+                                    mediaUrl = null
+                                )
+                            },
+                            relatedPlaylists = it.relatedPlaylists.map {
+                                Playlist(
+                                    id = it.id,
+                                    name = it.name,
+                                    thumbnailUrl = it.thumbnailUrl
+                                )
+                            },
+                        )
+                    } else {
+                        null
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

@@ -12,7 +12,6 @@ import androidx.media3.session.SessionToken
 import com.colux.libretune.data.local.LikedSongDao
 import com.colux.libretune.data.local.LikedSongEntity
 import com.colux.libretune.data.model.Song
-import com.colux.libretune.data.repository.MusicRepository
 import com.colux.libretune.service.PlaybackService
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -30,7 +29,6 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    val musicRepository: MusicRepository,
     private val likedSongDao: LikedSongDao,
 ) : ViewModel() {
 
@@ -70,33 +68,47 @@ class PlayerViewModel @Inject constructor(
     }
 
     private val playerListener = object : Player.Listener {
-        override fun onIsPlayingChanged(isPlayingValue: Boolean) {
-            _isPlaying.value = isPlayingValue
-            if (isPlayingValue) {
+        // This single callback is fired for any and all player state changes.
+        override fun onEvents(player: Player, events: Player.Events) {
+            // We just refresh our entire state from the controller.
+            updateStateWithController()
+        }
+    }
+
+
+//    private val playerListener = object : Player.Listener {
+//        override fun onIsPlayingChanged(isPlayingValue: Boolean) {
+//            _isPlaying.value = isPlayingValue
+//            if (isPlayingValue) {
+//                startProgressTracking()
+//            } else {
+//                stopProgressTracking()
+//            }
+//        }
+//
+//        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+//            updateStateWithController()
+//        }
+//
+//
+//        override fun onRepeatModeChanged(repeatMode: Int) {
+//            _repeatMode.value = repeatMode
+//        }
+//    }
+
+    private fun updateStateWithController() {
+        mediaController?.let { controller ->
+            _isPlaying.value = controller.isPlaying
+            _currentSong.value = controller.currentMediaItem?.toSong()
+            _totalDuration.value = controller.duration.coerceAtLeast(0L)
+            _repeatMode.value = controller.repeatMode
+
+            // Manage the progress tracking based on the latest isPlaying state
+            if (controller.isPlaying) {
                 startProgressTracking()
             } else {
                 stopProgressTracking()
             }
-        }
-
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            updateStateWithController()
-        }
-
-
-        override fun onRepeatModeChanged(repeatMode: Int) {
-            _repeatMode.value = repeatMode
-        }
-    }
-
-    private fun updateStateWithController() {
-        mediaController?.let {
-            _currentSong.value = it.currentMediaItem?.toSong()
-            _totalDuration.value = it.duration.coerceAtLeast(0L)
-            _isPlaying.value = it.isPlaying
-            _repeatMode.value = it.repeatMode
-            // Ensure progress tracking is correct based on the latest state
-            if (it.isPlaying) startProgressTracking() else stopProgressTracking()
         }
     }
 
@@ -109,8 +121,8 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun startProgressTracking() {
-        stopProgressTracking()
-        // Start a new job
+        if (progressTrackingJob?.isActive == true) return
+
         progressTrackingJob = viewModelScope.launch {
             while (true) {
                 val currentPosition = mediaController?.currentPosition?.coerceAtLeast(0L) ?: 0L

@@ -43,7 +43,7 @@ data class Song(
                 } ?: emptyList()
 
             val playlistId =
-                shelfContent.musicResponsiveListItemRenderer.overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId
+                shelfContent.musicResponsiveListItemRenderer.overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint?.watchEndpoint?.playlistId
 
             if (songItem != null) {
                 val navigationEndpoint = songItem.navigationEndpoint

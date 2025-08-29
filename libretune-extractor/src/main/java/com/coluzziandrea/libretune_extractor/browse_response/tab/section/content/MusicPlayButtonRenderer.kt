@@ -11,5 +11,5 @@ data class PlayNavigationEndpoint(
 
 @Serializable
 data class MusicPlayButtonRenderer(
-    val playNavigationEndpoint: PlayNavigationEndpoint,
+    val playNavigationEndpoint: PlayNavigationEndpoint? = null,
 )

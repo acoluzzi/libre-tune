@@ -72,7 +72,12 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                             SongItem(
                                 song = result.song,
                                 onClick = {
-                                    playerViewModel.playSongById(result.song.id)
+                                    playerViewModel.playSongFromPlaylist(
+                                        searchResults.filterIsInstance<SearchResult.SongResult>()
+                                            .map { it.song },
+                                        searchResults.filterIsInstance<SearchResult.SongResult>()
+                                            .indexOf(result)
+                                    )
                                 }
                             )
                         }

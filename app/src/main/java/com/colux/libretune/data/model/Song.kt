@@ -7,7 +7,7 @@ data class Song(
     val title: String,
     val artist: String?,
     val imageUrl: String,
-    val mediaUrl: String?,
+    val mediaUrl: String? = null
 ) {
     companion object {
 
@@ -21,7 +21,6 @@ data class Song(
                     it
                 },
                 imageUrl = song.images.firstOrNull()?.url ?: "",
-                mediaUrl = null,
             )
         }
     }

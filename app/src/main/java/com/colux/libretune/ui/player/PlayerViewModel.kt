@@ -1,10 +1,10 @@
 package com.colux.libretune.ui.player
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.colux.libretune.data.local.LikedSongDao
@@ -29,68 +29,54 @@ class PlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var exoPlayer: ExoPlayer? = null
-
     private var currentPlaylist: List<Song> = emptyList()
 
+    private var backgroundFetchJob: Job? = null
 
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
-    // Placeholder for the currently playing song
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong
 
     private val _totalDuration = MutableStateFlow(0L)
     val totalDuration: StateFlow<Long> = _totalDuration
-
-    // New state for current progress
     private val _currentPosition = MutableStateFlow(0L)
     val currentPosition: StateFlow<Long> = _currentPosition
-
     private val _isShuffleEnabled = MutableStateFlow(false)
     val isShuffleEnabled: StateFlow<Boolean> = _isShuffleEnabled
-
     private val _repeatMode = MutableStateFlow(Player.REPEAT_MODE_OFF)
     val repeatMode: StateFlow<Int> = _repeatMode
+    private var progressTrackingJob: Job? = null
 
-    private var job: Job? = null
 
+    init {
+        initializePlayer()
+    }
 
     private fun initializePlayer() {
         exoPlayer = ExoPlayer.Builder(context).build().apply {
             addListener(object : Player.Listener {
                 override fun onIsPlayingChanged(isPlayingValue: Boolean) {
                     _isPlaying.value = isPlayingValue
-                    // Start or stop the progress tracking job
-                    if (isPlayingValue) {
-                        startProgressTracking()
-                    } else {
-                        stopProgressTracking()
-                    }
+                    if (isPlayingValue) startProgressTracking() else stopProgressTracking()
                 }
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                     super.onMediaItemTransition(mediaItem, reason)
-                    Log.d(
-                        "PlayerViewModel",
-                        "Media item transitioned: ${mediaItem?.mediaId}, reason: $reason"
-                    )
-                    // When a new song starts, update the duration
-                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
-                        // Update the UI with the new song's info
-                        _currentSong.value = currentPlaylist[exoPlayer?.currentMediaItemIndex ?: 0]
-                        _totalDuration.value = exoPlayer?.duration ?: 0L
+                    val newIndex = this@apply.currentMediaItemIndex
+                    if (newIndex >= 0 && newIndex < currentPlaylist.size) {
+                        _currentSong.value = currentPlaylist[newIndex]
+                        _totalDuration.value = this@apply.duration
                     }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_READY) {
-                        // The player is ready, update duration
-                        _totalDuration.value = exoPlayer?.duration ?: 0L
+                        _totalDuration.value = this@apply.duration
                     }
                 }
 
-                // Add new listeners for shuffle and repeat
                 override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
                     _isShuffleEnabled.value = shuffleModeEnabled
                 }
@@ -102,42 +88,67 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+
     fun playSongFromPlaylist(playlist: List<Song>, startingIndex: Int) {
-        if (exoPlayer == null) {
-            initializePlayer()
-        }
+        // Cancel any previous background fetching
+        backgroundFetchJob?.cancel()
+
+        // Immediately update the current song in the UI
+        _currentSong.value = playlist.getOrNull(startingIndex)
         currentPlaylist = playlist
-        _currentSong.value = currentPlaylist[startingIndex] // Update current song
 
-        val mediaItems =
-            playlist.filter { it.mediaUrl != null }.map { MediaItem.fromUri(it.mediaUrl!!) }
-        exoPlayer?.setMediaItems(mediaItems, startingIndex, 0L)
+        // Create placeholder MediaItems for the entire playlist.
+        // These only contain metadata and can't be played yet.
+        val placeholderMediaItems = playlist.map { song ->
+            MediaItem.Builder()
+                .setMediaId(song.id)
+                .setUri(song.id)
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(song.title)
+                        .setArtist(song.artist)
+                        .setArtworkUri(android.net.Uri.parse(song.imageUrl))
+                        .build()
+                )
+                .build()
+        }
+
+        // Set the full list of placeholders in ExoPlayer
+        exoPlayer?.setMediaItems(placeholderMediaItems, startingIndex, 0L)
         exoPlayer?.prepare()
-        exoPlayer?.play()
-    }
 
-    fun playSongById(id: String) {
-        viewModelScope.launch {
+        // Start the background job to fetch real URLs
+        backgroundFetchJob = viewModelScope.launch {
+            // 1. Fetch the selected song first to start playback ASAP
+            val startingSong = playlist[startingIndex]
+            val fullSong = musicRepository.getSongById(startingSong.id)
+            if (fullSong?.mediaUrl != null) {
+                val realMediaItem = placeholderMediaItems[startingIndex].buildUpon()
+                    .setUri(fullSong.mediaUrl)
+                    .build()
 
-
-            // This calls the repository to get the FULL song details, including mediaUrl
-            val song = musicRepository.getSongById(id)
-
-            Log.d("PlayerViewModel", "Song details: $song")
-
-            if (song?.mediaUrl != null) {
-                if (exoPlayer == null) {
-                    initializePlayer()
-                }
-                Log.d("PlayerViewModel", "Playing song with media URL: ${song.mediaUrl}")
-                // Now we have the URL and can play it
-                _currentSong.value = song
-                exoPlayer?.setMediaItem(MediaItem.fromUri(song.mediaUrl))
-                exoPlayer?.prepare()
+                // Replace the placeholder with the real item and play
+                exoPlayer?.replaceMediaItem(startingIndex, realMediaItem)
                 exoPlayer?.play()
+            }
+
+            // 2. Fetch the rest of the playlist in the background
+            playlist.forEachIndexed { index, song ->
+                // Skip the one we just fetched
+                if (index == startingIndex) return@forEachIndexed
+
+                val songWithUrl = musicRepository.getSongById(song.id)
+                if (songWithUrl?.mediaUrl != null) {
+                    val realItem = placeholderMediaItems[index].buildUpon()
+                        .setUri(songWithUrl.mediaUrl)
+                        .build()
+                    // Silently replace the placeholder in the queue
+                    exoPlayer?.replaceMediaItem(index, realItem)
+                }
             }
         }
     }
+
 
     fun onPlayPauseClick() {
         if (exoPlayer?.isPlaying == true) {
@@ -147,9 +158,6 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun toggleShuffle() {
-        exoPlayer?.shuffleModeEnabled = !exoPlayer!!.shuffleModeEnabled
-    }
 
     fun toggleRepeat() {
         val nextRepeatMode = when (exoPlayer?.repeatMode) {
@@ -160,8 +168,9 @@ class PlayerViewModel @Inject constructor(
         exoPlayer?.repeatMode = nextRepeatMode
     }
 
+
     private fun startProgressTracking() {
-        job = viewModelScope.launch {
+        progressTrackingJob = viewModelScope.launch {
             while (isPlaying.value) {
                 _currentPosition.value = exoPlayer?.currentPosition ?: 0L
                 delay(500) // Update every 500ms
@@ -195,25 +204,20 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun stopProgressTracking() {
-        job?.cancel()
+        progressTrackingJob?.cancel()
     }
 
     fun seekToPosition(position: Long) {
         exoPlayer?.seekTo(position)
     }
 
-    fun onLikeClick(song: Song) {
-        viewModelScope.launch {
-            likedSongDao.likeSong(
-                LikedSongEntity(song.id, song.title, song.artist ?: "", song.imageUrl)
-            )
-        }
-    }
 
     // Release the player when the ViewModel is cleared
     override fun onCleared() {
         super.onCleared()
         stopProgressTracking()
+        backgroundFetchJob?.cancel()
         exoPlayer?.release()
+        exoPlayer = null
     }
 }

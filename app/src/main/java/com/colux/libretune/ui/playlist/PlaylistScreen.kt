@@ -83,6 +83,7 @@ fun PlaylistDetailScreen(
                 item {
                     Column(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
                     ) {
@@ -135,7 +136,7 @@ fun PlaylistDetailScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(64.dp))
                 }
             }
         }

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.colux.libretune.ui.components.artist.ArtistCarousel
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.playlist.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
@@ -83,24 +84,77 @@ fun ArtistScreen(
             }
 
             // Similar Artists Carousel
-            item {
-                PlaylistCarousel(
-                    title = "Albums",
-                    playlists = artistDetails!!.albums.map {
-                        PlaylistItem(
-                            id = it.id,
-                            title = it.name,
-                            imageUrl = it.thumbnailUrl
-                        )
-                    },
-                    onItemClick = { index ->
-                        navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.albums[index].id))
-                    }
-                )
+            if (artistDetails!!.albums.isNotEmpty()) {
+                item {
+                    PlaylistCarousel(
+                        title = "Albums",
+                        playlists = artistDetails!!.albums.map {
+                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
+                        },
+                        onItemClick = { index ->
+                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.albums[index].id))
+                        }
+                    )
+                }
             }
 
+            if (artistDetails!!.singlesAndEPs.isNotEmpty()) {
+                item {
+                    PlaylistCarousel(
+                        title = "Singles & EPs",
+                        playlists = artistDetails!!.singlesAndEPs.map {
+                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
+                        },
+                        onItemClick = { index ->
+                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.singlesAndEPs[index].id))
+                        }
+                    )
+                }
+            }
+
+            if (artistDetails!!.playlists.isNotEmpty()) {
+                item {
+                    PlaylistCarousel(
+                        title = "Playlists by ${artistDetails!!.name}",
+                        playlists = artistDetails!!.playlists.map {
+                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
+                        },
+                        onItemClick = { index ->
+                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.playlists[index].id))
+                        }
+                    )
+                }
+            }
+
+            if (artistDetails!!.featuring.isNotEmpty()) {
+                item {
+                    PlaylistCarousel(
+                        title = "Featuring ${artistDetails!!.name}",
+                        playlists = artistDetails!!.featuring.map {
+                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
+                        },
+                        onItemClick = { index ->
+                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.featuring[index].id))
+                        }
+                    )
+                }
+            }
+
+            if (artistDetails!!.similarArtists.isNotEmpty()) {
+                item {
+                    ArtistCarousel(
+                        title = "Similar Artists",
+                        artists = artistDetails!!.similarArtists,
+                        onItemClick = { artistId ->
+                            navController.navigate(Screen.Artist.createRoute(artistId))
+                        }
+                    )
+                }
+            }
+
+
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(64.dp))
             }
         }
     } else {

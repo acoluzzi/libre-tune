@@ -1,10 +1,8 @@
 package com.colux.libretune.data.repository.tube
 
 import android.util.Log
-import com.colux.libretune.data.model.Album
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
-import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
@@ -121,29 +119,7 @@ class YouTubeExtractionRepository @Inject constructor(
                             "YouTubeExtractionRepository",
                             "Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}"
                         )
-                        return@withContext ArtistDetails(
-                            name = it.name,
-                            avatarUrl = null,
-                            description = it.description,
-                            bannerUrl = it.images.firstOrNull()?.url,
-                            topSongs = it.topSongs.map { song ->
-                                Song(
-                                    id = song.id,
-                                    title = song.title,
-                                    artist = it.name,
-                                    imageUrl = song.images.firstOrNull()?.url ?: "",
-                                    mediaUrl = null
-                                )
-                            },
-                            albums = it.albums.map {
-                                Album(
-                                    id = it.id,
-                                    name = it.name,
-                                    thumbnailUrl = it.thumbnailUrl
-                                )
-                            },
-                            similarArtists = emptyList()
-                        )
+                        return@withContext ArtistDetails.from(it)
                     } else {
                         null
                     }
@@ -167,29 +143,7 @@ class YouTubeExtractionRepository @Inject constructor(
                             "YouTubeExtractionRepository",
                             "Scraped playlist: ${it.name}"
                         )
-                        return@withContext PlaylistDetails(
-                            name = it.name,
-                            artist = it.artist,
-                            bannerUrl = it.images.maxByOrNull { image ->
-                                image.width
-                            }?.url,
-                            songs = it.songs.map { song ->
-                                Song(
-                                    id = song.id,
-                                    title = song.title,
-                                    artist = it.name,
-                                    imageUrl = song.images.firstOrNull()?.url ?: "",
-                                    mediaUrl = null
-                                )
-                            },
-                            relatedPlaylists = it.relatedPlaylists.map {
-                                Playlist(
-                                    id = it.id,
-                                    name = it.name,
-                                    thumbnailUrl = it.thumbnailUrl
-                                )
-                            },
-                        )
+                        return@withContext PlaylistDetails.from(it)
                     } else {
                         null
                     }

@@ -1,6 +1,8 @@
 package com.colux.libretune.ui.library
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +33,11 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
         items(likedSongs) { song ->
             // You can reuse your SearchResultItem or create a new one
             SongItem(song = song, onClick = { playerViewModel.playSongById(song.id) })
+        }
+
+
+        item {
+            Spacer(modifier = Modifier.height(64.dp))
         }
     }
 }

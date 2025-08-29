@@ -8,5 +8,5 @@ data class MusicResponsiveHeaderRenderer(
     val title: ContentTitle,
     val subtitle: ContentTitle,
     val secondSubtitle: ContentTitle,
-    val straplineTextOne: ContentTitle,
+    val straplineTextOne: ContentTitle? = null,
 )

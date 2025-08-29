@@ -7,5 +7,8 @@ data class ArtistDetails(
     val images: List<Image>,
     val topSongs: List<Song>,
     val albums: List<Playlist>,
+    val singlesAndEp: List<Playlist>,
+    val featuring: List<Playlist>,
+    val playlists: List<Playlist>,
     val similarArtists: List<Artist>
 )

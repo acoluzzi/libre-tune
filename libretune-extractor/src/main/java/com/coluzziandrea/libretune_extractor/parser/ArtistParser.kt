@@ -2,7 +2,6 @@ package com.coluzziandrea.libretune_extractor.parser
 
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
 import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Image
@@ -41,38 +40,13 @@ class ArtistParser {
 
                                 content.musicShelfRenderer.contents.forEach { shelfItem ->
                                     if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                        val titleFlex =
-                                            shelfItem.musicResponsiveListItemRenderer.flexColumns.find { flex ->
-                                                flex.musicResponsiveListItemFlexColumnRenderer.text.runs?.find { run ->
-                                                    run.navigationEndpoint != null && run.navigationEndpoint is NavigationEndpoint.WatchNavigationEndpoint
-                                                            && run.navigationEndpoint.watchEndpoint.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType == "MUSIC_VIDEO_TYPE_ATV"
-                                                } != null
+                                        Song.from(shelfItem).let {
+                                            if (it != null) {
+                                                topSongs.add(it)
                                             }
-
-                                        val songImages =
-                                            shelfItem.musicResponsiveListItemRenderer.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.map {
-                                                Image(
-                                                    url = it.url,
-                                                    width = it.width,
-                                                    height = it.height
-                                                )
-                                            }
-
-                                        topSongs.add(
-                                            Song(
-                                                id = shelfItem.musicResponsiveListItemRenderer.overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.videoId,
-                                                playlistId = shelfItem.musicResponsiveListItemRenderer.overlay.musicItemThumbnailOverlayRenderer.content.musicPlayButtonRenderer.playNavigationEndpoint.watchEndpoint.playlistId,
-                                                images = songImages ?: emptyList(),
-                                                artist = artistName,
-                                                title = titleFlex?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.get(
-                                                    0
-                                                )?.text ?: ""
-                                            )
-                                        )
+                                        }
                                     }
-
                                 }
-
                             }
                         }
 
@@ -90,14 +64,9 @@ class ArtistParser {
                             ) {
 
                                 val currentPlaylists =
-                                    content.musicCarouselShelfRenderer.contents.map { carouselItem ->
-                                        Playlist(
-                                            id = (carouselItem.musicTwoRowItemRenderer.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId,
-                                            name = carouselItem.musicTwoRowItemRenderer.title.runs[0].text,
-                                            thumbnailUrl = carouselItem.musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails.firstOrNull()?.url
-                                                ?: ""
-                                        )
-                                    }
+                                    content.musicCarouselShelfRenderer.contents.map(Playlist.Companion::from)
+                                        .filter { it != null }
+                                        .map { it!! }
 
 
                                 when (headerText) {
@@ -122,26 +91,18 @@ class ArtistParser {
 
                             if (headerText == "Fans might also like") {
                                 content.musicCarouselShelfRenderer.contents.forEach { carouselItem ->
-                                    similarArtists.add(
-                                        Artist(
-                                            id = (carouselItem.musicTwoRowItemRenderer.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId,
-                                            name = carouselItem.musicTwoRowItemRenderer.title.runs[0].text,
-                                            images = carouselItem.musicTwoRowItemRenderer.thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails.map {
-                                                Image(
-                                                    url = it.url,
-                                                    width = it.width,
-                                                    height = it.height
-                                                )
-                                            }
-                                        )
-                                    )
+                                    Artist.from(carouselItem).let {
+                                        if (it != null) {
+                                            similarArtists.add(it)
+                                        }
+                                    }
                                 }
                             }
 
 
                         }
 
-                        is SectionContent.MusicResponsiveListItemContent, is SectionContent.MusicResponsiveHeaderContent, is SectionContent.EmptyContent -> {
+                        else -> {
                             // DO NOTHING
                         }
                     }

@@ -24,7 +24,7 @@ data class MusicTwoRowsItemRenderer(
 
 @Serializable
 data class CarouselContent(
-    val musicTwoRowItemRenderer: MusicTwoRowsItemRenderer
+    val musicTwoRowItemRenderer: MusicTwoRowsItemRenderer? = null
 )
 
 @Serializable

@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class MicroformatDataRenderer(
     val urlCanonical: String,
     val title: String,
-    val description: String,
+    val description: String? = null,
     val thumbnail: MusicThumbnail
 )
 

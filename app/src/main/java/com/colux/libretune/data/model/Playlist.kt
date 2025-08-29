@@ -9,7 +9,7 @@ data class Playlist(val id: String, val name: String, val thumbnailUrl: String) 
             return Playlist(
                 id = raw.id,
                 name = raw.name,
-                thumbnailUrl = raw.thumbnailUrl
+                thumbnailUrl = raw.images.firstOrNull()?.url ?: ""
             )
         }
 

@@ -5,7 +5,7 @@ import com.coluzziandrea.libretune_extractor.model.PlaylistDetails as ExtractorP
 data class PlaylistDetails(
     val name: String,
     val bannerUrl: String?,
-    val artist: String,
+    val artist: String? = null,
     val songs: List<Song>,
     val relatedPlaylists: List<Playlist>
 ) {

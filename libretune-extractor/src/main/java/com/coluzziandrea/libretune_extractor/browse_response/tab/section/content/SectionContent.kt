@@ -17,6 +17,11 @@ sealed interface SectionContent {
         val musicCarouselShelfRenderer: MusicCarouselShelfRenderer
     ) : SectionContent
 
+    @Serializable
+    data class MusicPlaylistShelfContent(
+        val musicPlaylistShelfRenderer: MusicPlaylistShelfRenderer
+    ) : SectionContent
+
 
     @Serializable
     data class MusicResponsiveListItemContent(

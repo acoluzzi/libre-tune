@@ -88,7 +88,14 @@ fun PlaylistDetailScreen(
                             .padding(16.dp)
                     ) {
                         Text(playlistDetails.name, style = MaterialTheme.typography.headlineLarge)
-                        Text(playlistDetails.artist, style = MaterialTheme.typography.titleMedium)
+
+                        if (playlistDetails.artist?.isNotEmpty() == true) {
+                            Text(
+                                playlistDetails.artist,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                        }
                     }
 
                 }
@@ -103,37 +110,29 @@ fun PlaylistDetailScreen(
                     )
                 }
 
-                item {
-                    PlaylistCarousel(
-                        title = "More from " + playlistDetails.artist,
-                        playlists = playlistDetails.relatedPlaylists.map {
-                            PlaylistItem(
-                                id = it.id,
-                                title = it.name,
-                                imageUrl = it.thumbnailUrl
-                            )
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(playlistDetails.relatedPlaylists[index].id))
-                        }
-                    )
+
+                if (playlistDetails.relatedPlaylists.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "You may Also Like",
+                            playlists = playlistDetails.relatedPlaylists.map {
+                                PlaylistItem(
+                                    id = it.id,
+                                    title = it.name,
+                                    imageUrl = it.thumbnailUrl
+                                )
+                            },
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        playlistDetails.relatedPlaylists[index].id
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
 
-                item {
-                    PlaylistCarousel(
-                        title = "You may Also Like",
-                        playlists = playlistDetails.relatedPlaylists.map {
-                            PlaylistItem(
-                                id = it.id,
-                                title = it.name,
-                                imageUrl = it.thumbnailUrl
-                            )
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(playlistDetails.relatedPlaylists[index].id))
-                        }
-                    )
-                }
 
                 item {
                     Spacer(modifier = Modifier.height(64.dp))

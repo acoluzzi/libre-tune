@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.components.playlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -21,7 +22,9 @@ fun PlaylistCarousel(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(MaterialTheme.colorScheme.surface)
         )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp)

@@ -2,7 +2,6 @@ package com.coluzziandrea.libretune_extractor.parser
 
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
 import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
@@ -13,13 +12,11 @@ class PlaylistParser {
     companion object {
         fun from(browseDataObject: BrowseData): PlaylistDetails {
             var playlistName = ""
-            var artist = ""
+            var artist: String? = null
             val songs = mutableListOf<Song>()
             val relatedPlaylists = mutableListOf<Playlist>()
             val playlistImages = mutableListOf<Image>()
 
-            val playlistId = browseDataObject.microformat.microformatDataRenderer.urlCanonical
-                .replace("https://music.youtube.com/playlist?list=", "")
 
             val header =
                 browseDataObject.contents.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
@@ -29,7 +26,7 @@ class PlaylistParser {
                     header.musicResponsiveHeaderRenderer.title.runs.firstOrNull()?.text ?: ""
                 artist =
                     header.musicResponsiveHeaderRenderer.straplineTextOne?.runs?.firstOrNull()?.text
-                        ?: ""
+
 
                 header.musicResponsiveHeaderRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails.forEach {
                     playlistImages.add(
@@ -44,34 +41,46 @@ class PlaylistParser {
             }
 
             browseDataObject.contents.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents?.forEach { content ->
-                if (content is SectionContent.MusicShelfContent) {
-                    content.musicShelfRenderer.contents.forEach { shelfContent ->
+                if (content is SectionContent.MusicShelfContent || content is SectionContent.MusicPlaylistShelfContent) {
+                    val contents = when (content) {
+                        is SectionContent.MusicShelfContent -> content.musicShelfRenderer.contents
+                        is SectionContent.MusicPlaylistShelfContent -> content.musicPlaylistShelfRenderer.contents
+                        else -> null
+                    }
+                    contents?.forEach { shelfContent ->
                         if (shelfContent is SectionContent.MusicResponsiveListItemContent) {
-                            val songItem =
-                                shelfContent.musicResponsiveListItemRenderer.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs?.get(
-                                    0
-                                )
-
-
-                            if (songItem != null) {
-                                val navigationEndpoint = songItem?.navigationEndpoint
-                                if (navigationEndpoint != null && navigationEndpoint is NavigationEndpoint.WatchNavigationEndpoint) {
-                                    val videoId = navigationEndpoint.watchEndpoint.videoId
-
+                            Song.from(shelfContent).let {
+                                if (it != null) {
+                                    var images = it.images
+                                    if (images.isEmpty()) {
+                                        images = playlistImages
+                                    }
                                     songs.add(
                                         Song(
-                                            id = videoId,
-                                            playlistId = playlistId,
-                                            title = songItem.text,
-                                            artist = artist,
-                                            images = playlistImages
+                                            id = it.id,
+                                            artists = it.artists,
+                                            playlistId = it.playlistId,
+                                            title = it.title,
+                                            images = images
                                         )
                                     )
                                 }
-
                             }
-
                         }
+                    }
+                }
+                if (content is SectionContent.MusicCarouselContent) {
+                    val headerText =
+                        content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.title.runs.firstOrNull()?.text
+
+                    if (headerText == "Releases for you") {
+
+                        val currentPlaylists =
+                            content.musicCarouselShelfRenderer.contents.map(Playlist.Companion::from)
+                                .filter { it != null }
+                                .map { it!! }
+
+                        relatedPlaylists.addAll(currentPlaylists)
                     }
                 }
             }

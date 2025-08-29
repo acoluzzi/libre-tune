@@ -86,7 +86,7 @@ class LibreTuneExtractorTest {
             assert(artistDetails?.topSongs?.isNotEmpty() == true)
             assertEquals(5, artistDetails?.topSongs?.size)
             assertEquals("Let It Be (Remastered 2009)", artistDetails?.topSongs?.get(0)?.title)
-            assertEquals("The Beatles", artistDetails?.topSongs?.get(0)?.artist)
+            assertEquals("The Beatles", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
             assertEquals("QDYfEBY9NM4", artistDetails?.topSongs?.get(0)?.id)
             assertEquals(
                 "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
@@ -106,7 +106,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_OLtz6K1cjET", artistDetails?.albums?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
-                artistDetails?.albums?.get(0)?.thumbnailUrl
+                artistDetails?.albums?.get(0)?.images?.firstOrNull()?.url
             )
 
 
@@ -124,7 +124,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_RFwSD0tp3ZA", artistDetails?.singlesAndEp?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/O7-pu1WloTc_ortWcFfH-u-9t1xMsgYatQKF130s_YLtlBmh5EASF23BYFbptqfN_uF0I8QSnoQhAco9=w226-h226-l90-rj",
-                artistDetails?.singlesAndEp?.get(0)?.thumbnailUrl
+                artistDetails?.singlesAndEp?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.featuring?.size)
@@ -135,7 +135,7 @@ class LibreTuneExtractorTest {
             )
             assertEquals(
                 "https://lh3.googleusercontent.com/jGf8Fhs5mcuymBGeSNt1XgIEo0yC9sBN7hwEBQ5x590ZO_dHu0XVtzTVBD_OkY5tYcwTywu9A9IZ4bI=w226-h226-l90-rj",
-                artistDetails?.featuring?.get(0)?.thumbnailUrl
+                artistDetails?.featuring?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.playlists?.size)
@@ -149,7 +149,7 @@ class LibreTuneExtractorTest {
             )
             assertEquals(
                 "https://yt3.ggpht.com/YBt8Xst5N_I35MAUzdZwh_5ltgdlU7uxsojLYVqUIYUV8GTuKSDZ0K5O1AaFIuH3BZ20b4KbM5U=s192",
-                artistDetails?.playlists?.get(0)?.thumbnailUrl
+                artistDetails?.playlists?.get(0)?.images?.firstOrNull()?.url
             )
 
         }
@@ -192,7 +192,7 @@ class LibreTuneExtractorTest {
             assert(artistDetails?.topSongs?.isNotEmpty() == true)
             assertEquals(5, artistDetails?.topSongs?.size)
             assertEquals("Thunderstruck", artistDetails?.topSongs?.get(0)?.title)
-            assertEquals("AC/DC", artistDetails?.topSongs?.get(0)?.artist)
+            assertEquals("AC/DC", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
             assertEquals("lhg9bYNLvOg", artistDetails?.topSongs?.get(0)?.id)
             assertEquals(
                 "OLAK5uy_lVoh11X5c3o6PR2nO88388e9jdmc7deac",
@@ -208,7 +208,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_mInwWNWkfbx", artistDetails?.albums?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w226-h226-l90-rj",
-                artistDetails?.albums?.get(0)?.thumbnailUrl
+                artistDetails?.albums?.get(0)?.images?.firstOrNull()?.url
             )
 
 
@@ -227,7 +227,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_dIdasNmkwkk", artistDetails?.singlesAndEp?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/l7bMTqeHjXCWuSRPZ_5WRWJvunpCChVSrh9XeB4Zb4gnigwIvT9mVLuIf8g4Dd8ejFUkuUFxtgkSqhkw=w226-h226-l90-rj",
-                artistDetails?.singlesAndEp?.get(0)?.thumbnailUrl
+                artistDetails?.singlesAndEp?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.featuring?.size)
@@ -238,7 +238,7 @@ class LibreTuneExtractorTest {
             )
             assertEquals(
                 "https://lh3.googleusercontent.com/NiGNADW5KMheBFYHGqosaoAB0WqvjJFcI32fGh2aktIKaN_Gt_CTBAHOZFsl954m_VPqmRiC95qQVQ=w226-h226-l90-rj",
-                artistDetails?.featuring?.get(0)?.thumbnailUrl
+                artistDetails?.featuring?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.playlists?.size)
@@ -249,7 +249,7 @@ class LibreTuneExtractorTest {
             )
             assertEquals(
                 "https://yt3.googleusercontent.com/mLsHmia72pA53gOe97h7ka59SVdHm7-gXJpY24f4oWq2hOC_wdRO5cOp7oEKe6Zl9xFSdhu82PQ=s192",
-                artistDetails?.playlists?.get(0)?.thumbnailUrl
+                artistDetails?.playlists?.get(0)?.images?.firstOrNull()?.url
             )
         }
 
@@ -291,7 +291,7 @@ class LibreTuneExtractorTest {
             assert(artistDetails?.topSongs?.isNotEmpty() == true)
             assertEquals(5, artistDetails?.topSongs?.size)
             assertEquals("Nothing Else Matters", artistDetails?.topSongs?.get(0)?.title)
-            assertEquals("Metallica", artistDetails?.topSongs?.get(0)?.artist)
+            assertEquals("Metallica", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
             assertEquals("pTYIf2pkxzQ", artistDetails?.topSongs?.get(0)?.id)
             assertEquals(
                 "OLAK5uy_miOHTfPNlwsbuoYYtAeefJHDm3Qcv-ebQ",
@@ -307,7 +307,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_Sc6OpME3TWu", artistDetails?.albums?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/vCwdAeNhB0HRSg0vzY3RwSAQwzmaiU_dA7xQ1Fq-31ffXF3FKbVMpgeFy8Ws5KqjSBADbUEDx4vNpLjL=w226-h226-l90-rj",
-                artistDetails?.albums?.get(0)?.thumbnailUrl
+                artistDetails?.albums?.get(0)?.images?.firstOrNull()?.url
             )
 
 
@@ -325,7 +325,7 @@ class LibreTuneExtractorTest {
             assertEquals("MPREb_49wzEEqwX0i", artistDetails?.singlesAndEp?.get(0)?.id)
             assertEquals(
                 "https://lh3.googleusercontent.com/ZY4ZZepXmrPnEjFHPDcNXCurK4BXZxLiU_XNFK8IhS5dGmj9kfnSSQWqsD6aciqg4vW-tSGWs20veseQ=w226-h226-l90-rj",
-                artistDetails?.singlesAndEp?.get(0)?.thumbnailUrl
+                artistDetails?.singlesAndEp?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.featuring?.size)
@@ -336,7 +336,7 @@ class LibreTuneExtractorTest {
             )
             assertEquals(
                 "https://lh3.googleusercontent.com/YoQ-YE_Ipl6mYG1XI5QaydMSvFm07JVLx225idwKk-x0j6aOJlBViGLp62fscR2KWSBkeS3SOgVAn98=w226-h226-l90-rj",
-                artistDetails?.featuring?.get(0)?.thumbnailUrl
+                artistDetails?.featuring?.get(0)?.images?.firstOrNull()?.url
             )
 
             assertEquals(10, artistDetails?.playlists?.size)
@@ -347,7 +347,7 @@ class LibreTuneExtractorTest {
             assertEquals("VLPL2D4A44B959D87893", artistDetails?.playlists?.get(0)?.id)
             assertEquals(
                 "https://yt3.googleusercontent.com/hzgUjSLVPf87Pp72xZQMhCe7e1m-S2bxtQBrLXOj7cxriyRkRdJP2KIyWJvkiN_me6rhaeUBGqE=s192",
-                artistDetails?.playlists?.get(0)?.thumbnailUrl
+                artistDetails?.playlists?.get(0)?.images?.firstOrNull()?.url
             )
 
         }
@@ -355,12 +355,12 @@ class LibreTuneExtractorTest {
 
 
     @Nested
-    @DisplayName("Playlist Page Scraping")
-    inner class PlaylistPageScrapingTests {
+    @DisplayName("Album Page Scraping")
+    inner class AlbumPageScrapingTests {
         @Test
         fun `scrapePlaylist should correctly parse abbeyRoad HTML`() = runTest {
             // Arrange: Create a fake HTML response
-            val fakeHtml = readFileFromResources("abbeyRoad.html")
+            val fakeHtml = readFileFromResources("abbey_road.html")
 
             val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
             val response = Response.Builder()
@@ -387,28 +387,28 @@ class LibreTuneExtractorTest {
             )
 
             assertNotNull(playlistDetails?.songs)
-            assertEquals(5, playlistDetails?.songs?.size)
-            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
-            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(40, playlistDetails?.songs?.size)
+            assertEquals("Come Together (2019 Mix)", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("45cYwDMibGo", playlistDetails?.songs?.get(0)?.id)
             assertEquals(
-                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                "OLAK5uy_lqcFZTOPHGwcnP0nYMzNuY0IES0fl7Fe4",
                 playlistDetails?.songs?.get(0)?.playlistId
             )
             assertEquals(
-                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                "https://lh3.googleusercontent.com/g8bzAg2zxvdnm7ismLMYLA9-9azb4y6VP2uOF56A2G2rpsqLHT6mrJWXRKq_VttXQZ-o-jmVgTFIVgdj=w60-h60-l90-rj",
                 playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
             )
 
 
             assertEquals(10, playlistDetails?.relatedPlaylists?.size)
             assertEquals(
-                "Beatles '64 (Music from the Disney+ Documentary)",
+                "Sounds Of Silence",
                 playlistDetails?.relatedPlaylists?.get(0)?.name
             )
-            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals("MPREb_WzySvZJyDsg", playlistDetails?.relatedPlaylists?.get(0)?.id)
             assertEquals(
-                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
-                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+                "https://lh3.googleusercontent.com/n2QV30WE3MKk1E2-XqiUBDz9v7MTiWQF3t2HmbndDBGtnFu41pNehddWzhwX8BZlDbsCGGvz179HnEQ=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
             )
 
         }
@@ -416,7 +416,7 @@ class LibreTuneExtractorTest {
         @Test
         fun `scrapePlaylist should correctly parse deathMagnetic HTML`() = runTest {
             // Arrange: Create a fake HTML response
-            val fakeHtml = readFileFromResources("deathMagnetic.html")
+            val fakeHtml = readFileFromResources("death_magnetic.html")
 
             val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
             val response = Response.Builder()
@@ -443,28 +443,28 @@ class LibreTuneExtractorTest {
             )
 
             assertNotNull(playlistDetails?.songs)
-            assertEquals(5, playlistDetails?.songs?.size)
-            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
-            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(10, playlistDetails?.songs?.size)
+            assertEquals("That Was Just Your Life", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("VBKtoY8TucA", playlistDetails?.songs?.get(0)?.id)
             assertEquals(
-                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                "OLAK5uy_lIZirsnSbg41CX1xYgibpRhMlZWOwb1LM",
                 playlistDetails?.songs?.get(0)?.playlistId
             )
             assertEquals(
-                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                "https://lh3.googleusercontent.com/jKSy3N15Nd2vF0OG4m10y4A-GgN94CJQIyseGZ0HjJIDUL9dqfY1SI4mqOuJkuUdmaOQ-HRI9q_9BXo=w60-h60-l90-rj",
                 playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
             )
 
 
             assertEquals(10, playlistDetails?.relatedPlaylists?.size)
             assertEquals(
-                "Beatles '64 (Music from the Disney+ Documentary)",
+                "Overkill (Exclusive Version)",
                 playlistDetails?.relatedPlaylists?.get(0)?.name
             )
-            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals("MPREb_ZGG3JZ6eAEz", playlistDetails?.relatedPlaylists?.get(0)?.id)
             assertEquals(
-                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
-                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+                "https://lh3.googleusercontent.com/8wtjuBicAha4rscwnt2vM7fvywMf2MyrTLDSvYpGA_UQCHKdIQOSX4PLpX2lxN-57JCH3ljp9b0H02oP=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
             )
 
         }
@@ -473,7 +473,7 @@ class LibreTuneExtractorTest {
         @Test
         fun `scrapePlaylist should correctly parse shotDownInTheBigEasy HTML`() = runTest {
             // Arrange: Create a fake HTML response
-            val fakeHtml = readFileFromResources("shotDownInTheBigEasy.html")
+            val fakeHtml = readFileFromResources("shot_down_in_the_big_easy.html")
 
             val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
             val response = Response.Builder()
@@ -500,29 +500,88 @@ class LibreTuneExtractorTest {
             )
 
             assertNotNull(playlistDetails?.songs)
-            assertEquals(5, playlistDetails?.songs?.size)
-            assertEquals("Let It Be (Remastered 2009)", playlistDetails?.songs?.get(0)?.title)
-            assertEquals("QDYfEBY9NM4", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(25, playlistDetails?.songs?.size)
+            assertEquals("Back In Black", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("oH751DemK_8", playlistDetails?.songs?.get(0)?.id)
             assertEquals(
-                "OLAK5uy_mSSvmI1EpoPDI0BbUg1bPCOc6_pF8150Q",
+                "OLAK5uy_kUh4caU62Brx6Op4EEtRY_z6ksFPmDuEY",
                 playlistDetails?.songs?.get(0)?.playlistId
             )
             assertEquals(
-                "https://lh3.googleusercontent.com/octdAIhLRBSYd5JKOeTsF5zNhQ4C0L3JtOnjUYPvHLtJaxXr68NVW8gUfsE05aarfaDmZe_ibrVMxo-y4g=w60-h60-l90-rj",
+                "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w60-h60-l90-rj",
                 playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
             )
 
 
             assertEquals(10, playlistDetails?.relatedPlaylists?.size)
             assertEquals(
-                "Beatles '64 (Music from the Disney+ Documentary)",
+                "Ac/Dc Medley: Highway to Hell / Touch Too Much / Back in Black / Shot Down in Flames / Thunderstruck / You Shook Me All Night Long / Sin City / She's Got Balls / Dirty Deeds Done Dirt Cheap",
                 playlistDetails?.relatedPlaylists?.get(0)?.name
             )
-            assertEquals("MPREb_OLtz6K1cjET", playlistDetails?.relatedPlaylists?.get(0)?.id)
+            assertEquals("MPREb_US5vRZVKy5s", playlistDetails?.relatedPlaylists?.get(0)?.id)
             assertEquals(
-                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
-                playlistDetails?.relatedPlaylists?.get(0)?.thumbnailUrl
+                "https://lh3.googleusercontent.com/92FWou-vY0wcP53mDtjlW7RjgATwfdEFzkLWvuHZ2yjyCnKxI-4lbgyn2ccedQG4Nb8f6N3sIYcUtpX4=w226-h226-l90-rj",
+                playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
             )
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Playlist Page Scraping")
+    inner class PlaylistPageScrapingTests {
+        @Test
+        fun `scrapePlaylist should correctly parse sanremo2025 HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("sanremo2025.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val playlistDetails = scraper.playlist("any_id")
+
+            // Assert: Check if your parsing logic worked on the FAKE HTML
+            assertNotNull(playlistDetails)
+            assertEquals("Sanremo 2025", playlistDetails?.name)
+            assertEquals(
+                "https://lh3.googleusercontent.com/Oo3AzftPmxArlhTwmbsQxhPSTWalRorPF3pjf7r2IRxfIAsYFqvB1JDd15VYcabqa41sn7fIkWzpbeg=w60-h60-l90-rj",
+                playlistDetails?.images?.firstOrNull()?.url
+            )
+
+            assertNotNull(playlistDetails?.songs)
+            assertEquals(29, playlistDetails?.songs?.size)
+            assertEquals("Incoscienti Giovani", playlistDetails?.songs?.get(0)?.title)
+            assertEquals("Achille Lauro", playlistDetails?.songs?.get(0)?.artists?.get(0)?.name)
+            assertEquals("qU-KFzHN1wM", playlistDetails?.songs?.get(0)?.id)
+            assertEquals(
+                "RDCLAK5uy_nHn0clIvDJ3tfaKC9kFs9x1Fy1hR65jUo",
+                playlistDetails?.songs?.get(0)?.playlistId
+            )
+            assertEquals(
+                "https://i.ytimg.com/vi/qU-KFzHN1wM/sddefault.jpg?sqp=-oaymwEWCJADEOEBIAQqCghqEJQEGHgg6AJIWg&rs=AMzJL3kSoYGxksHHrJLF8SsJ_seJHbOsrA",
+                playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
+            )
+
+            assertEquals("La Mia Parola (feat. Tormento)", playlistDetails?.songs?.get(27)?.title)
+            assertEquals("Shablo", playlistDetails?.songs?.get(27)?.artists?.get(0)?.name)
+            assertEquals("Guè", playlistDetails?.songs?.get(27)?.artists?.get(1)?.name)
+            assertEquals("Joshua", playlistDetails?.songs?.get(27)?.artists?.get(2)?.name)
+
+
+
+            assertEquals(0, playlistDetails?.relatedPlaylists?.size)
 
         }
     }

@@ -17,6 +17,9 @@ object SectionContentSerializer :
             "musicResponsiveListItemRenderer" in element.jsonObject -> SectionContent.MusicResponsiveListItemContent.serializer()
 
             "musicResponsiveHeaderRenderer" in element.jsonObject -> SectionContent.MusicResponsiveHeaderContent.serializer()
+
+            "musicPlaylistShelfRenderer" in element.jsonObject -> SectionContent.MusicPlaylistShelfContent.serializer()
+
             // Default case
             else -> SectionContent.EmptyContent.serializer()
         }

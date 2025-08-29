@@ -15,7 +15,11 @@ data class Song(
             return Song(
                 id = song.id,
                 title = song.title,
-                artist = song.artist,
+                artist = song.artists.map {
+                    it.name
+                }.joinToString(", ") {
+                    it
+                },
                 imageUrl = song.images.firstOrNull()?.url ?: "",
                 mediaUrl = null,
             )

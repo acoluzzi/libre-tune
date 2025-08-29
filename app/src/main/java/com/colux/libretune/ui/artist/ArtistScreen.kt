@@ -3,6 +3,7 @@ package com.colux.libretune.ui.artist
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -86,6 +88,29 @@ fun ArtistScreen(
                 )
             }
 
+            if (artistDetails!!.topSongs.size == 5 && artistDetails?.topSongPlaylist != null) {
+                item {
+                    TextButton(
+                        onClick = {
+                            // Navigate to the PlaylistDetailScreen using the uploads ID
+                            artistDetails?.topSongPlaylist.let { playlist ->
+                                if (playlist != null) {
+                                    navController.navigate(
+                                        Screen.PlaylistDetail.createRoute(
+                                            playlist.id
+                                        )
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("More")
+                    }
+                }
+            }
+
+
             // Similar Artists Carousel
             if (artistDetails!!.albums.isNotEmpty()) {
                 item {
@@ -96,6 +121,9 @@ fun ArtistScreen(
                         },
                         onItemClick = { index ->
                             navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.albums[index].id))
+                        },
+                        onViewAllClick = {
+                            navController.navigate(Screen.ArtistDiscography.createRoute(artistId))
                         }
                     )
                 }
@@ -110,6 +138,9 @@ fun ArtistScreen(
                         },
                         onItemClick = { index ->
                             navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.singlesAndEPs[index].id))
+                        },
+                        onViewAllClick = {
+                            navController.navigate(Screen.ArtistDiscography.createRoute(artistId))
                         }
                     )
                 }

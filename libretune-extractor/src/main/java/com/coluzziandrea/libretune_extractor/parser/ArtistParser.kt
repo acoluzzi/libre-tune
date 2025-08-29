@@ -2,6 +2,7 @@ package com.coluzziandrea.libretune_extractor.parser
 
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
 import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Image
@@ -18,6 +19,8 @@ class ArtistParser {
             val featuring = mutableListOf<Playlist>()
             val playlists = mutableListOf<Playlist>()
             val similarArtists = mutableListOf<Artist>()
+
+            var topSongsPlaylist: Playlist? = null
 
             val artistName = browseDataObject.microformat.microformatDataRenderer.title
             val description = browseDataObject.microformat.microformatDataRenderer.description
@@ -46,6 +49,14 @@ class ArtistParser {
                                             }
                                         }
                                     }
+                                }
+
+                                if (content.musicShelfRenderer.bottomEndpoint != null && content.musicShelfRenderer.bottomEndpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
+                                    topSongsPlaylist = Playlist(
+                                        id = content.musicShelfRenderer.bottomEndpoint.browseEndpoint.browseId,
+                                        name = "Top songs",
+                                        images = emptyList()
+                                    )
                                 }
                             }
                         }
@@ -121,7 +132,8 @@ class ArtistParser {
                 similarArtists = similarArtists,
                 singlesAndEp = singlesEp,
                 featuring = featuring,
-                playlists = playlists
+                playlists = playlists,
+                topSongsPlaylist = topSongsPlaylist
             )
         }
 

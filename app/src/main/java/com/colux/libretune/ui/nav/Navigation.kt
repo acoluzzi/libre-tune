@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.artist.ArtistScreen
+import com.colux.libretune.ui.discography.DiscographyScreen
 import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
 import com.colux.libretune.ui.player.PlayerViewModel
@@ -55,6 +56,19 @@ fun Navigation(
                     PlaylistDetailScreen(
                         playlistId = playlistId,
                         playerViewModel = playerViewModel,
+                        navController = navController
+                    )
+                }
+            }
+
+            composable(
+                route = Screen.ArtistDiscography.route,
+                arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+            ) {
+                val artistId = it.arguments?.getString("artistId")
+                if (artistId != null) {
+                    DiscographyScreen(
+                        artistId = artistId,
                         navController = navController
                     )
                 }

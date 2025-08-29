@@ -8,6 +8,7 @@ data class ArtistDetails(
     val avatarUrl: String?,
     val bannerUrl: String?,
     val topSongs: List<Song>,
+    val topSongPlaylist: Playlist? = null,
     val albums: List<Playlist>,
     val singlesAndEPs: List<Playlist>,
     val featuring: List<Playlist>,
@@ -25,6 +26,7 @@ data class ArtistDetails(
                 bannerUrl = raw.images.maxByOrNull { image ->
                     image.width
                 }?.url,
+                topSongPlaylist = raw.topSongsPlaylist?.let(Playlist.Companion::from),
                 topSongs = raw.topSongs.map(Song.Companion::from),
                 albums = raw.albums.map(Playlist::from),
                 singlesAndEPs = raw.singlesAndEp.map(Playlist::from),

@@ -20,4 +20,9 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
         Screen("playlist_detail/{playlistId}", "Playlist Detail", Icons.Default.Album) {
         fun createRoute(playlistId: String) = "playlist_detail/$playlistId"
     }
+
+    data object ArtistDiscography :
+        Screen("artist_discography/{artistId}", "Discography", Icons.Default.Album) {
+        fun createRoute(artistId: String) = "artist_discography/$artistId"
+    }
 }

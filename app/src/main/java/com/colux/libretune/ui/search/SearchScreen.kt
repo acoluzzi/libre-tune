@@ -51,7 +51,7 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                 query = it
                 searchViewModel.search(it)
             },
-            label = { Text("Search for a song...") },
+            label = { Text("What do you want to play?") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),

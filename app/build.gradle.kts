@@ -5,6 +5,8 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
+
+    kotlin("plugin.serialization") version "1.9.24"
 }
 
 android {
@@ -69,6 +71,9 @@ dependencies {
 
     implementation(libs.github.teamnewpipe.newpipeextractor)
     implementation(libs.retrofit)
+
+    implementation(libs.kotlinx.serialization.json.v170)
+
 
     // Moshi for parsing JSON
     implementation(libs.converter.moshi)

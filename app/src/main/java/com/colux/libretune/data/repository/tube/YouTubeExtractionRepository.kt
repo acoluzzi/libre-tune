@@ -3,6 +3,7 @@ package com.colux.libretune.data.repository.tube
 import android.util.Log
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
+import com.colux.libretune.data.model.Image
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
@@ -32,7 +33,7 @@ class YouTubeExtractionRepository @Inject constructor(
         NewPipe.init(DownloaderImpl.init(null), Localization("en", "US"))
     }
 
-    override suspend fun getSongById(id: String): Song? {
+    override suspend fun getSongUrlById(id: String): String? {
         return withContext(Dispatchers.IO) {
             Log.d("YouTubeExtractionRepository", "Fetching song with ID: $id")
             try {
@@ -58,13 +59,7 @@ class YouTubeExtractionRepository @Inject constructor(
                 }
 
                 // 4. Extract metadata and build the Song object
-                Song(
-                    id = id,
-                    title = extractor.name,
-                    artist = extractor.uploaderName,
-                    imageUrl = extractor.thumbnails.first().url,
-                    mediaUrl = bestAudioStreamUrl
-                )
+                bestAudioStreamUrl
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -72,16 +67,6 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
-    override suspend fun getSongs(): List<Song> {
-        return withContext(Dispatchers.IO) {
-            val song = getSongById("dQw4w9WgXcQ") // Example video ID
-            if (song != null) {
-                listOf(song)
-            } else {
-                emptyList()
-            }
-        }
-    }
 
     override suspend fun searchContent(query: String): List<SearchResult> {
         // We use coroutineScope to run both searches concurrently for better performance.
@@ -172,9 +157,20 @@ class YouTubeExtractionRepository @Inject constructor(
                         Song(
                             id = item.url.substringAfter("?v="),
                             title = item.name,
-                            artist = item.uploaderName,
-                            imageUrl = item.thumbnails.first().url,
-                            mediaUrl = null
+                            artists = listOf(
+                                Artist(
+                                    id = "unknown",
+                                    name = item.uploaderName ?: "unknown",
+                                    imageUrl = null
+                                )
+                            ),
+                            images = item.thumbnails.map {
+                                Image(
+                                    url = it.url,
+                                    width = it.width,
+                                    height = it.height
+                                )
+                            }
                         )
                     )
 

@@ -29,7 +29,7 @@ class PlaybackService : MediaSessionService() {
     lateinit var musicRepository: MusicRepository
 
     @Inject
-    lateinit var exoPlayer: ExoPlayer // Provide ExoPlayer with Hilt
+    lateinit var exoPlayer: ExoPlayer
 
     private var mediaSession: MediaSession? = null
     private var backgroundFetchJob: Job? = null
@@ -79,12 +79,12 @@ class PlaybackService : MediaSessionService() {
                 backgroundFetchJob = CoroutineScope(Dispatchers.Main).launch {
                     // 4. Fetch the URL for the song that needs to start playing NOW.
                     val startingSong = playlist[startingIndex]
-                    val fullSong = musicRepository.getSongById(startingSong.id)
+                    val songUrl = musicRepository.getSongUrlById(startingSong.id)
 
-                    if (fullSong?.mediaUrl != null) {
+                    if (songUrl != null) {
                         // 5. Create a real MediaItem with the fetched URL.
                         val realMediaItem = placeholderMediaItems[startingIndex].buildUpon()
-                            .setUri(fullSong.mediaUrl)
+                            .setUri(songUrl)
                             .build()
 
                         // 6. Replace the placeholder for the starting song.
@@ -98,10 +98,10 @@ class PlaybackService : MediaSessionService() {
                     // 8. Continue fetching the rest of the playlist in the background.
                     playlist.forEachIndexed { index, song ->
                         if (index == startingIndex) return@forEachIndexed
-                        val songWithUrl = musicRepository.getSongById(song.id)
-                        if (songWithUrl?.mediaUrl != null) {
+                        val songUrl = musicRepository.getSongUrlById(song.id)
+                        if (songUrl != null) {
                             val realItem = placeholderMediaItems[index].buildUpon()
-                                .setUri(songWithUrl.mediaUrl)
+                                .setUri(songUrl)
                                 .build()
                             exoPlayer.replaceMediaItem(index, realItem)
                         }
@@ -145,8 +145,8 @@ fun Song.toPlaceholderMediaItem(): MediaItem {
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(title)
-                .setArtist(artist)
-                .setArtworkUri(android.net.Uri.parse(imageUrl))
+                .setArtist(getArtistNames())
+                .setArtworkUri(android.net.Uri.parse(getBestImageUrl()))
                 .build()
         )
         .build()

@@ -39,7 +39,7 @@ fun PlayerBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = song.imageUrl,
+            model = song.images.firstOrNull()?.url,
             contentDescription = "Song thumbnail",
             modifier = Modifier
                 .size(48.dp)
@@ -48,7 +48,7 @@ fun PlayerBar(
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text(song.artist ?: "", style = MaterialTheme.typography.bodySmall, maxLines = 1)
+            Text(song.getArtistNames(), style = MaterialTheme.typography.bodySmall, maxLines = 1)
         }
         Spacer(Modifier.width(8.dp))
         IconButton(onClick = onPlayPauseClick) {

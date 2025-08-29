@@ -2,7 +2,6 @@ package com.colux.libretune.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.colux.libretune.data.DummyData
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.MusicRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,17 +21,12 @@ class HomeViewModel @Inject constructor(private val musicRepository: MusicReposi
     private val _madeForYou = MutableStateFlow<List<Song>>(emptyList())
     val madeForYou: StateFlow<List<Song>> = _madeForYou
 
-    private val _ytSongs = MutableStateFlow<List<Song>>(emptyList())
-    val ytSongs: StateFlow<List<Song>> = _ytSongs
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
 
     init {
-        // In a real app, you would fetch this data from a repository
-        _recentlyPlayed.value = DummyData.albums.shuffled()
-        _madeForYou.value = DummyData.albums.shuffled()
         fetchSongs()
     }
 
@@ -40,7 +34,6 @@ class HomeViewModel @Inject constructor(private val musicRepository: MusicReposi
     private fun fetchSongs() {
         viewModelScope.launch {
             _isLoading.value = true
-            _ytSongs.value = musicRepository.getSongs()
             _isLoading.value = false
         }
     }

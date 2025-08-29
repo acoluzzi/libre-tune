@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -40,6 +39,8 @@ class PlayerViewModel @Inject constructor(
 
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
+
+    private val _currentPlaylist = MutableStateFlow<List<Song>>(emptyList())
 
     private val _totalDuration = MutableStateFlow(0L)
     val totalDuration: StateFlow<Long> = _totalDuration.asStateFlow()
@@ -76,30 +77,12 @@ class PlayerViewModel @Inject constructor(
     }
 
 
-//    private val playerListener = object : Player.Listener {
-//        override fun onIsPlayingChanged(isPlayingValue: Boolean) {
-//            _isPlaying.value = isPlayingValue
-//            if (isPlayingValue) {
-//                startProgressTracking()
-//            } else {
-//                stopProgressTracking()
-//            }
-//        }
-//
-//        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-//            updateStateWithController()
-//        }
-//
-//
-//        override fun onRepeatModeChanged(repeatMode: Int) {
-//            _repeatMode.value = repeatMode
-//        }
-//    }
-
     private fun updateStateWithController() {
         mediaController?.let { controller ->
             _isPlaying.value = controller.isPlaying
-            _currentSong.value = controller.currentMediaItem?.toSong()
+            _currentSong.value = _currentPlaylist.value.find {
+                it.id == controller.currentMediaItem?.mediaId
+            }
             _totalDuration.value = controller.duration.coerceAtLeast(0L)
             _repeatMode.value = controller.repeatMode
 
@@ -117,6 +100,7 @@ class PlayerViewModel @Inject constructor(
             "PLAYLIST" to ArrayList(playlist),
             "START_INDEX" to startingIndex
         )
+        _currentPlaylist.value = playlist
         mediaController?.sendCustomCommand(PlaybackService.COMMAND_PLAY_PLAYLIST_WITH_FETCH, args)
     }
 
@@ -162,7 +146,7 @@ class PlayerViewModel @Inject constructor(
     fun isCurrentSongLiked(songId: String): Flow<Boolean> = likedSongDao.isLiked(songId)
     fun onLikeClick(song: Song, isLiked: Boolean) {
         viewModelScope.launch {
-            val entity = LikedSongEntity(song.id, song.title, song.artist ?: "", song.imageUrl)
+            val entity = LikedSongEntity.from(song)
             if (isLiked) likedSongDao.unlikeSong(entity) else likedSongDao.likeSong(entity)
         }
     }
@@ -175,19 +159,8 @@ class PlayerViewModel @Inject constructor(
             MediaController.releaseFuture(controllerFuture)
         }
     }
+
+
 }
 
-// Helper to convert a MediaItem back to a Song for the UI
-fun MediaItem.toSong(): Song? {
-    return if (mediaMetadata.title != null) {
-        Song(
-            id = mediaId,
-            title = mediaMetadata.title.toString(),
-            artist = mediaMetadata.artist.toString(),
-            imageUrl = mediaMetadata.artworkUri.toString(),
-            mediaUrl = null
-        )
-    } else {
-        null
-    }
-}
+

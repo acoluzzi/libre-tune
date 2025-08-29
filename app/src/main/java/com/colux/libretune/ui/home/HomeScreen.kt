@@ -25,7 +25,6 @@ fun HomeScreen(
 ) {
     val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
     val madeForYou by viewModel.madeForYou.collectAsState()
-    val ytSongs by viewModel.ytSongs.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -47,7 +46,7 @@ fun HomeScreen(
                     PlaylistItem(
                         id = it.id,
                         title = it.title,
-                        imageUrl = it.imageUrl
+                        imageUrl = it.getBestImageUrl() ?: ""
                     )
                 },
                 onItemClick = { index ->
@@ -62,7 +61,7 @@ fun HomeScreen(
                     PlaylistItem(
                         id = it.id,
                         title = it.title,
-                        imageUrl = it.imageUrl
+                        imageUrl = it.getBestImageUrl() ?: ""
                     )
                 },
                 onItemClick = { index ->
@@ -70,17 +69,6 @@ fun HomeScreen(
                 })
         }
 
-        item {
-            PlaylistCarousel(title = "YT", playlists = ytSongs.map {
-                PlaylistItem(
-                    id = it.id,
-                    title = it.title,
-                    imageUrl = it.imageUrl
-                )
-            }, onItemClick = { index ->
-                onSongClick(ytSongs, index)
-            })
-        }
 
 
         item {

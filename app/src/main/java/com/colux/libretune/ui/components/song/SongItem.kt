@@ -31,7 +31,7 @@ fun SongItem(song: Song, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = song.imageUrl,
+            model = song.images.firstOrNull()?.url,
             contentDescription = song.title,
             modifier = Modifier
                 .size(56.dp)
@@ -40,7 +40,11 @@ fun SongItem(song: Song, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(text = song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text(text = song.artist ?: "", style = MaterialTheme.typography.bodySmall, maxLines = 1)
+            Text(
+                text = song.getArtistNames(),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1
+            )
         }
     }
 }

@@ -78,7 +78,7 @@ fun PlayerFullScreen(
         ) {
             // Album Art
             AsyncImage(
-                model = song.imageUrl,
+                model = song.getBestImageUrl(),
                 contentDescription = "Full-screen album art",
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
@@ -94,7 +94,7 @@ fun PlayerFullScreen(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    song.artist ?: "Unknown Artist",
+                    song.getArtistNames(),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )

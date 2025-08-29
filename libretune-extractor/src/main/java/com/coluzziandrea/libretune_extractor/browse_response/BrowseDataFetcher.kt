@@ -1,10 +1,9 @@
 package com.coluzziandrea.libretune_extractor.browse_response
 
-import com.coluzziandrea.libretune_extractor.utils.unescapeHex
+import com.coluzziandrea.libretune_extractor.utils.decodeJsonLikeString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.jsoup.Jsoup
 import java.util.logging.Logger
 
 
@@ -20,6 +19,9 @@ class BrowseDataFetcher(
 
 
     fun fetchBrowseData(url: String): BrowseData? {
+        Logger.getLogger("BrowseDataFetcher").info {
+            "Fetching browse data from URL: $url"
+        }
         val fullUrl = if (url.startsWith("http")) url else "$BASE_URL$url"
         val request = Request.Builder().header(
             "User-Agent",
@@ -32,55 +34,40 @@ class BrowseDataFetcher(
             ).url(fullUrl).build()
         val response = client.newCall(request).execute()
 
+        Logger.getLogger("BrowseDataFetcher").info {
+            "Received response for: $url"
+        }
         if (!response.isSuccessful) {
+            Logger.getLogger("BrowseDataFetcher").warning {
+                "No response from URL: $url"
+            }
             return null
         }
 
         val htmlBody = response.body.string()
 
-        // --- Part 2: Parse the HTML with Jsoup ---
-        val document = Jsoup.parse(htmlBody)
-
-        val scriptElements =
-            document.select("script:containsData(try {const initialData = )")
-        if (scriptElements.isEmpty()) {
-            Logger.getLogger("ArtistScraper")
-                .warning("No script elements found containing initialData")
-            return null
-        }
-        val scriptContent = scriptElements.firstOrNull()?.data()
-        if (scriptContent == null) {
-            Logger.getLogger("ArtistScraper")
-                .warning("Script content is null")
-            return null
-        }
-
-        val doubleEscapesRemoved = scriptContent.replace("\\\"", "\"")
-            // Replace \\" with "
-            .replace("\\\\", "\\")   // Replace \\ with \
-        val cleanText = unescapeHex(doubleEscapesRemoved)
-
-        val browseDataStart =
-            cleanText.indexOf("initialData.push({path: '\\/browse") + "initialData.push(".length
-        val browseDataEnd =
-            cleanText.indexOf("});ytcfg.set({'YTMUSIC_INITIAL_DATA", browseDataStart) + 1
-        if (browseDataStart == -1 || browseDataEnd == -1 || browseDataEnd <= browseDataStart) {
-            Logger.getLogger("ArtistScraper")
-                .warning("Could not find browse data in the script content")
-            return null
-        }
-        val browseData = cleanText.substring(browseDataStart, browseDataEnd)
-
-        val jsonStart = browseData.indexOf("data: '") + "data: '".length
-        val jsonEnd = browseData.lastIndexOf("'}")
+        Logger.getLogger("BrowseDataFetcher")
+            .info("Extracting JSON data from the HTML body")
+        val jsonStart = htmlBody.lastIndexOf("data: '") + "data: '".length
+        val jsonEnd = htmlBody.lastIndexOf("'}")
         if (jsonStart == -1 || jsonEnd == -1 || jsonEnd <= jsonStart) {
             Logger.getLogger("ArtistScraper")
                 .warning("Could not find JSON data in the browse data")
             return null
         }
-        val jsonData = browseData.substring(jsonStart, jsonEnd)
+        val jsonDataString = htmlBody.substring(jsonStart, jsonEnd)
+
+        Logger.getLogger("BrowseDataFetcher")
+            .info("Unescaping hex characters in JSON data")
+        val cleanText = decodeJsonLikeString(jsonDataString)
 
 
-        return jsonParser.decodeFromString<BrowseData>(jsonData)
+        Logger.getLogger("BrowseDataFetcher")
+            .info("Parsing JSON data into BrowseData object")
+        val result = jsonParser.decodeFromString<BrowseData>(cleanText)
+
+        Logger.getLogger("BrowseDataFetcher")
+            .info("Successfully parsed BrowseData")
+        return result
     }
 }

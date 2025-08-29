@@ -1,16 +1,21 @@
 package com.colux.libretune.ui.player
 
+import android.content.ComponentName
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.colux.libretune.data.local.LikedSongDao
 import com.colux.libretune.data.local.LikedSongEntity
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.MusicRepository
+import com.colux.libretune.service.PlaybackService
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -18,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,196 +34,148 @@ class PlayerViewModel @Inject constructor(
     private val likedSongDao: LikedSongDao,
 ) : ViewModel() {
 
-    private var exoPlayer: ExoPlayer? = null
-    private var currentPlaylist: List<Song> = emptyList()
-
-    private var backgroundFetchJob: Job? = null
+    private var mediaController: MediaController? = null
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
 
     private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
     private val _currentSong = MutableStateFlow<Song?>(null)
-    val currentSong: StateFlow<Song?> = _currentSong
+    val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
 
     private val _totalDuration = MutableStateFlow(0L)
-    val totalDuration: StateFlow<Long> = _totalDuration
+    val totalDuration: StateFlow<Long> = _totalDuration.asStateFlow()
+
     private val _currentPosition = MutableStateFlow(0L)
-    val currentPosition: StateFlow<Long> = _currentPosition
-    private val _isShuffleEnabled = MutableStateFlow(false)
-    val isShuffleEnabled: StateFlow<Boolean> = _isShuffleEnabled
+    val currentPosition: StateFlow<Long> = _currentPosition.asStateFlow()
+
     private val _repeatMode = MutableStateFlow(Player.REPEAT_MODE_OFF)
-    val repeatMode: StateFlow<Int> = _repeatMode
+    val repeatMode: StateFlow<Int> = _repeatMode.asStateFlow()
+
     private var progressTrackingJob: Job? = null
 
-
     init {
-        initializePlayer()
+        initializeController()
     }
 
-    private fun initializePlayer() {
-        exoPlayer = ExoPlayer.Builder(context).build().apply {
-            addListener(object : Player.Listener {
-                override fun onIsPlayingChanged(isPlayingValue: Boolean) {
-                    _isPlaying.value = isPlayingValue
-                    if (isPlayingValue) startProgressTracking() else stopProgressTracking()
-                }
-
-                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    super.onMediaItemTransition(mediaItem, reason)
-                    val newIndex = this@apply.currentMediaItemIndex
-                    if (newIndex >= 0 && newIndex < currentPlaylist.size) {
-                        _currentSong.value = currentPlaylist[newIndex]
-                        _totalDuration.value = this@apply.duration
-                    }
-                }
-
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY) {
-                        _totalDuration.value = this@apply.duration
-                    }
-                }
-
-                override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-                    _isShuffleEnabled.value = shuffleModeEnabled
-                }
-
-                override fun onRepeatModeChanged(repeatMode: Int) {
-                    _repeatMode.value = repeatMode
-                }
-            })
-        }
+    private fun initializeController() {
+        val sessionToken =
+            SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture.addListener({
+            mediaController = controllerFuture.get()
+            mediaController?.addListener(playerListener)
+            updateStateWithController()
+        }, MoreExecutors.directExecutor())
     }
 
-
-    fun playSongFromPlaylist(playlist: List<Song>, startingIndex: Int) {
-        // Cancel any previous background fetching
-        backgroundFetchJob?.cancel()
-
-        // Immediately update the current song in the UI
-        _currentSong.value = playlist.getOrNull(startingIndex)
-        currentPlaylist = playlist
-
-        // Create placeholder MediaItems for the entire playlist.
-        // These only contain metadata and can't be played yet.
-        val placeholderMediaItems = playlist.map { song ->
-            MediaItem.Builder()
-                .setMediaId(song.id)
-                .setUri(song.id)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(song.title)
-                        .setArtist(song.artist)
-                        .setArtworkUri(android.net.Uri.parse(song.imageUrl))
-                        .build()
-                )
-                .build()
-        }
-
-        // Set the full list of placeholders in ExoPlayer
-        exoPlayer?.setMediaItems(placeholderMediaItems, startingIndex, 0L)
-        exoPlayer?.prepare()
-
-        // Start the background job to fetch real URLs
-        backgroundFetchJob = viewModelScope.launch {
-            // 1. Fetch the selected song first to start playback ASAP
-            val startingSong = playlist[startingIndex]
-            val fullSong = musicRepository.getSongById(startingSong.id)
-            if (fullSong?.mediaUrl != null) {
-                val realMediaItem = placeholderMediaItems[startingIndex].buildUpon()
-                    .setUri(fullSong.mediaUrl)
-                    .build()
-
-                // Replace the placeholder with the real item and play
-                exoPlayer?.replaceMediaItem(startingIndex, realMediaItem)
-                exoPlayer?.play()
-            }
-
-            // 2. Fetch the rest of the playlist in the background
-            playlist.forEachIndexed { index, song ->
-                // Skip the one we just fetched
-                if (index == startingIndex) return@forEachIndexed
-
-                val songWithUrl = musicRepository.getSongById(song.id)
-                if (songWithUrl?.mediaUrl != null) {
-                    val realItem = placeholderMediaItems[index].buildUpon()
-                        .setUri(songWithUrl.mediaUrl)
-                        .build()
-                    // Silently replace the placeholder in the queue
-                    exoPlayer?.replaceMediaItem(index, realItem)
-                }
+    private val playerListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlayingValue: Boolean) {
+            _isPlaying.value = isPlayingValue
+            if (isPlayingValue) {
+                startProgressTracking()
+            } else {
+                stopProgressTracking()
             }
         }
-    }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            updateStateWithController()
+        }
 
 
-    fun onPlayPauseClick() {
-        if (exoPlayer?.isPlaying == true) {
-            exoPlayer?.pause()
-        } else {
-            exoPlayer?.play()
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            _repeatMode.value = repeatMode
         }
     }
 
-
-    fun toggleRepeat() {
-        val nextRepeatMode = when (exoPlayer?.repeatMode) {
-            Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
-            Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
-            else -> Player.REPEAT_MODE_OFF
+    private fun updateStateWithController() {
+        mediaController?.let {
+            _currentSong.value = it.currentMediaItem?.toSong()
+            _totalDuration.value = it.duration.coerceAtLeast(0L)
+            _isPlaying.value = it.isPlaying
+            _repeatMode.value = it.repeatMode
+            // Ensure progress tracking is correct based on the latest state
+            if (it.isPlaying) startProgressTracking() else stopProgressTracking()
         }
-        exoPlayer?.repeatMode = nextRepeatMode
     }
 
+    fun playPlaylist(playlist: List<Song>, startingIndex: Int) {
+        val args = bundleOf(
+            "PLAYLIST" to ArrayList(playlist),
+            "START_INDEX" to startingIndex
+        )
+        mediaController?.sendCustomCommand(PlaybackService.COMMAND_PLAY_PLAYLIST_WITH_FETCH, args)
+    }
 
     private fun startProgressTracking() {
+        stopProgressTracking()
+        // Start a new job
         progressTrackingJob = viewModelScope.launch {
-            while (isPlaying.value) {
-                _currentPosition.value = exoPlayer?.currentPosition ?: 0L
-                delay(500) // Update every 500ms
+            while (true) {
+                val currentPosition = mediaController?.currentPosition?.coerceAtLeast(0L) ?: 0L
+                _currentPosition.value = currentPosition
+                delay(500)
             }
         }
-    }
-
-    fun isCurrentSongLiked(songId: String): Flow<Boolean> {
-        return likedSongDao.isLiked(songId)
-    }
-
-    fun onLikeClick(song: Song, isLiked: Boolean) {
-        viewModelScope.launch {
-            val entity = LikedSongEntity(song.id, song.title, song.artist ?: "", song.imageUrl)
-            if (isLiked) {
-                likedSongDao.unlikeSong(entity)
-            } else {
-                likedSongDao.likeSong(entity)
-            }
-        }
-    }
-
-    fun playNextSong() {
-        exoPlayer?.seekToNextMediaItem()
-        _currentSong.value = currentPlaylist[exoPlayer?.currentMediaItemIndex ?: 0]
-    }
-
-    fun playPreviousSong() {
-        exoPlayer?.seekToPreviousMediaItem()
-        _currentSong.value = currentPlaylist[exoPlayer?.currentMediaItemIndex ?: 0]
     }
 
     private fun stopProgressTracking() {
         progressTrackingJob?.cancel()
     }
 
-    fun seekToPosition(position: Long) {
-        exoPlayer?.seekTo(position)
+    // --- Standard Player Controls ---
+    fun onPlayPauseClick() {
+        if (mediaController?.isPlaying == true) mediaController?.pause() else mediaController?.play()
+    }
+
+    fun playNextSong() = mediaController?.seekToNextMediaItem()
+    fun playPreviousSong() = mediaController?.seekToPreviousMediaItem()
+    fun seekToPosition(position: Long) = mediaController?.seekTo(position)
+
+
+    fun toggleRepeat() {
+        mediaController?.let {
+            val nextRepeatMode = when (it.repeatMode) {
+                Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                else -> Player.REPEAT_MODE_OFF
+            }
+            it.setRepeatMode(nextRepeatMode)
+        }
     }
 
 
-    // Release the player when the ViewModel is cleared
+    // --- Liked Songs Logic (can remain in ViewModel) ---
+    fun isCurrentSongLiked(songId: String): Flow<Boolean> = likedSongDao.isLiked(songId)
+    fun onLikeClick(song: Song, isLiked: Boolean) {
+        viewModelScope.launch {
+            val entity = LikedSongEntity(song.id, song.title, song.artist ?: "", song.imageUrl)
+            if (isLiked) likedSongDao.unlikeSong(entity) else likedSongDao.likeSong(entity)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopProgressTracking()
-        backgroundFetchJob?.cancel()
-        exoPlayer?.release()
-        exoPlayer = null
+        mediaController?.let {
+            it.removeListener(playerListener)
+            MediaController.releaseFuture(controllerFuture)
+        }
+    }
+}
+
+// Helper to convert a MediaItem back to a Song for the UI
+fun MediaItem.toSong(): Song? {
+    return if (mediaMetadata.title != null) {
+        Song(
+            id = mediaId,
+            title = mediaMetadata.title.toString(),
+            artist = mediaMetadata.artist.toString(),
+            imageUrl = mediaMetadata.artworkUri.toString(),
+            mediaUrl = null
+        )
+    } else {
+        null
     }
 }

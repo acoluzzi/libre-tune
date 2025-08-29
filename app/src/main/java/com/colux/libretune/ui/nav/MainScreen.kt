@@ -83,7 +83,7 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
                 playerViewModel,
                 onSongClick = { playlist, songIndex ->
                     // When a song is clicked, update the playerViewModel with the new song
-                    playerViewModel.playSongFromPlaylist(playlist, songIndex)
+                    playerViewModel.playPlaylist(playlist, songIndex)
                 }
             )
 

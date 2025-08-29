@@ -78,7 +78,7 @@ fun ArtistScreen(
                 SongItem(
                     song = song,
                     onClick = {
-                        playerViewModel.playSongFromPlaylist(
+                        playerViewModel.playPlaylist(
                             artistDetails!!.topSongs,
                             artistDetails!!.topSongs.indexOf(song)
                         )

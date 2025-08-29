@@ -105,7 +105,7 @@ fun PlaylistDetailScreen(
                     SongItem(
                         song = song,
                         onClick = {
-                            playerViewModel.playSongFromPlaylist(
+                            playerViewModel.playPlaylist(
                                 playlistDetails.songs,
                                 index
                             )

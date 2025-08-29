@@ -50,7 +50,6 @@ fun PlayerFullScreen(
     val isPlaying by playerViewModel.isPlaying.collectAsState()
     val currentPosition by playerViewModel.currentPosition.collectAsState()
     val totalDuration by playerViewModel.totalDuration.collectAsState()
-    val isShuffleEnabled by playerViewModel.isShuffleEnabled.collectAsState()
     val repeatMode by playerViewModel.repeatMode.collectAsState()
 
     // This flow depends on the current song's ID.

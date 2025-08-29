@@ -33,7 +33,7 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
         items(likedSongs) { song ->
             // You can reuse your SearchResultItem or create a new one
             SongItem(song = song, onClick = {
-                playerViewModel.playSongFromPlaylist(
+                playerViewModel.playPlaylist(
                     likedSongs,
                     likedSongs.indexOf(song)
                 )

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -83,6 +84,9 @@ dependencies {
 
     // For parsing the HTML
     implementation(libs.jsoup)
+
+    implementation(libs.androidx.media3.session)
+
 
     implementation(project(":libretune-extractor"))
 

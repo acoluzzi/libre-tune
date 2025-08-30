@@ -1,4 +1,4 @@
-package com.colux.libretune.data.repository.tube
+package com.colux.libretune.data.remote.tube
 
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody

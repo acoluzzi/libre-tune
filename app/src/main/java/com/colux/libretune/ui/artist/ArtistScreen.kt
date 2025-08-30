@@ -35,163 +35,226 @@ fun ArtistScreen(
     artistId: String,
     playerViewModel: PlayerViewModel,
     navController: NavHostController,
-    viewModel: ArtistDetailViewModel = hiltViewModel()
+    viewModel: ArtistViewModel = hiltViewModel()
 ) {
-    val artistDetails by viewModel.artistDetails.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    if (isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+
+    when (val state = uiState) {
+        is ArtistUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
-    } else if (artistDetails != null) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            // Artist Banner
-            item {
-                Box(modifier = Modifier.height(200.dp)) {
-                    AsyncImage(
-                        model = artistDetails?.bannerUrl,
-                        contentDescription = "Artist Banner",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = artistDetails!!.name,
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = Color.White,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                    )
-                }
-            }
 
-
-            item {
-                Text(
-                    text = "Top Songs",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                )
-            }
-
-            // The list of songs comes right after the title
-            items(artistDetails!!.topSongs) { song ->
-                SongItem(
-                    song = song,
-                    onClick = {
-                        playerViewModel.playPlaylist(
-                            artistDetails!!.topSongs,
-                            artistDetails!!.topSongs.indexOf(song)
+        is ArtistUiState.Success -> {
+            // Your existing LazyColumn UI goes here.
+            // You can access the data via 'state.details'
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                // Artist Banner
+                item {
+                    Box(modifier = Modifier.height(200.dp)) {
+                        AsyncImage(
+                            model = state.details.getImageUrlForBanner(),
+                            contentDescription = "Artist Banner",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        Text(
+                            text = state.details.name,
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(16.dp)
                         )
                     }
-                )
-            }
+                }
 
-            if (artistDetails!!.topSongs.size == 5 && artistDetails?.topSongPlaylist != null) {
+
                 item {
-                    TextButton(
+                    Text(
+                        text = "Top Songs",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    )
+                }
+
+                // The list of songs comes right after the title
+                items(state.details.topSongs) { song ->
+                    SongItem(
+                        song = song,
                         onClick = {
-                            // Navigate to the PlaylistDetailScreen using the uploads ID
-                            artistDetails?.topSongPlaylist.let { playlist ->
-                                if (playlist != null) {
-                                    navController.navigate(
-                                        Screen.PlaylistDetail.createRoute(
-                                            playlist.id
+                            playerViewModel.playPlaylist(
+                                state.details.topSongs,
+                                state.details.topSongs.indexOf(song)
+                            )
+                        }
+                    )
+                }
+
+                if (state.details.topSongs.size == 5 && state.details?.topSongPlaylist != null) {
+                    item {
+                        TextButton(
+                            onClick = {
+                                // Navigate to the PlaylistDetailScreen using the uploads ID
+                                state.details?.topSongPlaylist.let { playlist ->
+                                    if (playlist != null) {
+                                        navController.navigate(
+                                            Screen.PlaylistDetail.createRoute(
+                                                playlist.id
+                                            )
                                         )
-                                    )
+                                    }
                                 }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("More")
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("More")
+                        }
                     }
                 }
-            }
 
 
-            // Similar Artists Carousel
-            if (artistDetails!!.albums.isNotEmpty()) {
+                // Similar Artists Carousel
+                if (state.details!!.albums.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "Albums",
+                            playlists = state.details.albums.map {
+                                PlaylistItem(
+                                    id = it.id,
+                                    title = it.name,
+                                    imageUrl = it.thumbnailUrl
+                                )
+                            },
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        state.details.albums[index].id
+                                    )
+                                )
+                            },
+                            onViewAllClick = state.details.discographyId?.let { id ->
+                                if (id.isNotEmpty()) {
+                                    {
+                                        navController.navigate(
+                                            Screen.Discography.createRoute(
+                                                id
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    null
+                                }
+                            }
+                        )
+                    }
+                }
+
+                if (state.details.singlesAndEPs.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "Singles & EPs",
+                            playlists = state.details.singlesAndEPs.map {
+                                PlaylistItem(
+                                    id = it.id,
+                                    title = it.name,
+                                    imageUrl = it.thumbnailUrl
+                                )
+                            },
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        state.details.singlesAndEPs[index].id
+                                    )
+                                )
+                            },
+                            onViewAllClick = state.details.discographyId?.let { id ->
+                                if (id.isNotEmpty()) {
+                                    {
+                                        navController.navigate(
+                                            Screen.Discography.createRoute(
+                                                id
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    null
+                                }
+                            }
+                        )
+                    }
+                }
+
+                if (state.details.playlists.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "Playlists by ${state.details.name}",
+                            playlists = state.details.playlists.map {
+                                PlaylistItem(
+                                    id = it.id,
+                                    title = it.name,
+                                    imageUrl = it.thumbnailUrl
+                                )
+                            },
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        state.details.playlists[index].id
+                                    )
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (state.details.featuring.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "Featuring ${state.details.name}",
+                            playlists = state.details.featuring.map {
+                                PlaylistItem(
+                                    id = it.id,
+                                    title = it.name,
+                                    imageUrl = it.thumbnailUrl
+                                )
+                            },
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        state.details.featuring[index].id
+                                    )
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (state.details.similarArtists.isNotEmpty()) {
+                    item {
+                        ArtistCarousel(
+                            title = "Similar Artists",
+                            artists = state.details.similarArtists,
+                            onItemClick = { artistId ->
+                                navController.navigate(Screen.Artist.createRoute(artistId))
+                            }
+                        )
+                    }
+                }
+
+
                 item {
-                    PlaylistCarousel(
-                        title = "Albums",
-                        playlists = artistDetails!!.albums.map {
-                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.albums[index].id))
-                        },
-                        onViewAllClick = {
-                            navController.navigate(Screen.ArtistDiscography.createRoute(artistId))
-                        }
-                    )
+                    Spacer(modifier = Modifier.height(64.dp))
                 }
             }
 
-            if (artistDetails!!.singlesAndEPs.isNotEmpty()) {
-                item {
-                    PlaylistCarousel(
-                        title = "Singles & EPs",
-                        playlists = artistDetails!!.singlesAndEPs.map {
-                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.singlesAndEPs[index].id))
-                        },
-                        onViewAllClick = {
-                            navController.navigate(Screen.ArtistDiscography.createRoute(artistId))
-                        }
-                    )
-                }
-            }
-
-            if (artistDetails!!.playlists.isNotEmpty()) {
-                item {
-                    PlaylistCarousel(
-                        title = "Playlists by ${artistDetails!!.name}",
-                        playlists = artistDetails!!.playlists.map {
-                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.playlists[index].id))
-                        }
-                    )
-                }
-            }
-
-            if (artistDetails!!.featuring.isNotEmpty()) {
-                item {
-                    PlaylistCarousel(
-                        title = "Featuring ${artistDetails!!.name}",
-                        playlists = artistDetails!!.featuring.map {
-                            PlaylistItem(id = it.id, title = it.name, imageUrl = it.thumbnailUrl)
-                        },
-                        onItemClick = { index ->
-                            navController.navigate(Screen.PlaylistDetail.createRoute(artistDetails!!.featuring[index].id))
-                        }
-                    )
-                }
-            }
-
-            if (artistDetails!!.similarArtists.isNotEmpty()) {
-                item {
-                    ArtistCarousel(
-                        title = "Similar Artists",
-                        artists = artistDetails!!.similarArtists,
-                        onItemClick = { artistId ->
-                            navController.navigate(Screen.Artist.createRoute(artistId))
-                        }
-                    )
-                }
-            }
-
-
-            item {
-                Spacer(modifier = Modifier.height(64.dp))
-            }
         }
-    } else {
-        Text("Could not load artist details.")
+
+        is ArtistUiState.Error -> {
+            Text("Could not load artist details: ${state.message}")
+        }
     }
+    // TODO handle items continuation
+
 }

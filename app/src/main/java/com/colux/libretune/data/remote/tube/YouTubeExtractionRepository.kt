@@ -1,25 +1,19 @@
-package com.colux.libretune.data.repository.tube
+package com.colux.libretune.data.remote.tube
 
 import android.util.Log
-import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
-import com.colux.libretune.data.model.Image
+import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
-import com.colux.libretune.data.model.Song
-import com.colux.libretune.data.repository.MusicRepository
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.channel.ChannelInfoItem
 import org.schabi.newpipe.extractor.localization.Localization
 import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
-import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,13 +21,13 @@ import javax.inject.Singleton
 @Singleton
 class YouTubeExtractionRepository @Inject constructor(
     val libreTuneExtractor: LibreTuneExtractor
-) : MusicRepository {
+) {
 
     init {
         NewPipe.init(DownloaderImpl.init(null), Localization("en", "US"))
     }
 
-    override suspend fun getSongUrlById(id: String): String? {
+    suspend fun getSongUrlById(id: String): String? {
         return withContext(Dispatchers.IO) {
             Log.d("YouTubeExtractionRepository", "Fetching song with ID: $id")
             try {
@@ -68,7 +62,7 @@ class YouTubeExtractionRepository @Inject constructor(
     }
 
 
-    override suspend fun searchContent(query: String): List<SearchResult> {
+    suspend fun searchContent(query: String): List<SearchResult> {
         // We use coroutineScope to run both searches concurrently for better performance.
         return coroutineScope {
             // Start the artist search in the background
@@ -94,7 +88,7 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
-    override suspend fun getArtistDetails(id: String): ArtistDetails? {
+    suspend fun getArtistDetails(id: String): ArtistDetails? {
         return withContext(Dispatchers.IO) {
             try {
 
@@ -118,7 +112,11 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
-    override suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
+    suspend fun getArtistItemContinuation(id: String): List<Playlist> {
+        TODO("Not yet implemented")
+    }
+
+    suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
 
         return withContext(Dispatchers.IO) {
             try {
@@ -144,51 +142,53 @@ class YouTubeExtractionRepository @Inject constructor(
      * A helper function to perform a search with a specific filter.
      */
     private fun performSearch(query: String, contentFilter: List<String>): List<SearchResult> {
-        return try {
-            val service = NewPipe.getService(ServiceList.YouTube.serviceId)
-            val searchExtractor = service.getSearchExtractor(query, contentFilter, "")
-            searchExtractor.fetchPage()
+        TODO()
 
-            val searchResults: List<InfoItem> = searchExtractor.initialPage.items
-
-            searchResults.mapNotNull { item ->
-                when (item) {
-                    is StreamInfoItem -> SearchResult.SongResult(
-                        Song(
-                            id = item.url.substringAfter("?v="),
-                            title = item.name,
-                            artists = listOf(
-                                Artist(
-                                    id = "unknown",
-                                    name = item.uploaderName ?: "unknown",
-                                    imageUrl = null
-                                )
-                            ),
-                            images = item.thumbnails.map {
-                                Image(
-                                    url = it.url,
-                                    width = it.width,
-                                    height = it.height
-                                )
-                            }
-                        )
-                    )
-
-                    is ChannelInfoItem -> SearchResult.ArtistResult(
-                        Artist(
-                            id = item.url.substringAfter("/channel/"),
-                            name = item.name,
-                            imageUrl = item.thumbnails.first().url
-                        )
-                    )
-
-                    else -> null
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
+//        return try {
+//            val service = NewPipe.getService(ServiceList.YouTube.serviceId)
+//            val searchExtractor = service.getSearchExtractor(query, contentFilter, "")
+//            searchExtractor.fetchPage()
+//
+//            val searchResults: List<InfoItem> = searchExtractor.initialPage.items
+//
+//            searchResults.mapNotNull { item ->
+//                when (item) {
+//                    is StreamInfoItem -> SearchResult.SongResult(
+//                        Song(
+//                            id = item.url.substringAfter("?v="),
+//                            title = item.name,
+//                            artists = listOf(
+//                                Artist(
+//                                    id = "unknown",
+//                                    name = item.uploaderName ?: "unknown",
+//                                    imageUrl = null
+//                                )
+//                            ),
+//                            images = item.thumbnails.map {
+//                                Image(
+//                                    url = it.url,
+//                                    width = it.width,
+//                                    height = it.height
+//                                )
+//                            }
+//                        )
+//                    )
+//
+//                    is ChannelInfoItem -> SearchResult.ArtistResult(
+//                        Artist(
+//                            id = item.url.substringAfter("/channel/"),
+//                            name = item.name,
+//                            imageUrl = item.thumbnails.first().url
+//                        )
+//                    )
+//
+//                    else -> null
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            emptyList()
+//        }
     }
 
 }

@@ -8,16 +8,26 @@ import com.coluzziandrea.libretune_extractor.model.Artist as ExtractorArtist
 data class Artist(
     val id: String,
     val name: String,
-    val imageUrl: String? = null
+    val images: List<Image>
 ) : Parcelable {
     companion object {
         fun from(raw: ExtractorArtist): Artist {
             return Artist(
                 id = raw.id,
                 name = raw.name,
-                imageUrl = raw.images.firstOrNull()?.url
+                images = raw.images.map { image ->
+                    Image(
+                        url = image.url,
+                        width = image.width,
+                        height = image.height
+                    )
+                }
             )
         }
+    }
+
+    fun bestImageForCarousel() {
+        images.minByOrNull { it.width ?: 0 }?.url
     }
 }
 

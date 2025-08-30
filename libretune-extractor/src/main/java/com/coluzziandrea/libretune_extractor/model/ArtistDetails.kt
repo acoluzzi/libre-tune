@@ -9,6 +9,7 @@ data class ArtistDetails(
     val topSongsPlaylist: Playlist?,
     val albums: List<Playlist>,
     val singlesAndEp: List<Playlist>,
+    val discographyId: String?,
     val featuring: List<Playlist>,
     val playlists: List<Playlist>,
     val similarArtists: List<Artist>

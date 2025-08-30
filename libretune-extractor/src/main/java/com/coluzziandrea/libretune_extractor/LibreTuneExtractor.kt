@@ -3,8 +3,10 @@ package com.coluzziandrea.libretune_extractor
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseDataFetcher
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
+import com.coluzziandrea.libretune_extractor.model.Discography
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
 import com.coluzziandrea.libretune_extractor.parser.ArtistParser
+import com.coluzziandrea.libretune_extractor.parser.DiscographyParser
 import com.coluzziandrea.libretune_extractor.parser.PlaylistParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,6 +27,10 @@ class LibreTuneExtractor @Inject constructor(
         return fetchAndParseBrowseData("/browse/$playlistId", PlaylistParser.Companion::from)
     }
 
+
+    suspend fun discography(discographyId: String): Discography? {
+        return fetchAndParseBrowseData("/browse/$discographyId", DiscographyParser.Companion::from)
+    }
 
     suspend fun artist(channelId: String): ArtistDetails? {
         return fetchAndParseBrowseData("/channel/$channelId", ArtistParser.Companion::from)

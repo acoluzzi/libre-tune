@@ -110,7 +110,7 @@ fun ArtistSearchResultItem(artist: Artist, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = artist.imageUrl,
+            model = artist.bestImageForCarousel(),
             contentDescription = artist.name,
             modifier = Modifier
                 .size(56.dp)

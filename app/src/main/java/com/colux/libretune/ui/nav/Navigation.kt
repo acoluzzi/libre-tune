@@ -62,13 +62,13 @@ fun Navigation(
             }
 
             composable(
-                route = Screen.ArtistDiscography.route,
-                arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+                route = Screen.Discography.route,
+                arguments = listOf(navArgument("discographyId") { type = NavType.StringType })
             ) {
-                val artistId = it.arguments?.getString("artistId")
-                if (artistId != null) {
+                val discographyId = it.arguments?.getString("discographyId")
+                if (discographyId != null) {
                     DiscographyScreen(
-                        artistId = artistId,
+                        discographyId = discographyId,
                         navController = navController
                     )
                 }

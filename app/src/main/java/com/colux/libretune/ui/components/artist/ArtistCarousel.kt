@@ -48,7 +48,7 @@ fun ArtistCarousel(
 
                     ) {
                     AsyncImage(
-                        model = artist.imageUrl,
+                        model = artist.bestImageForCarousel(),
                         contentDescription = artist.name,
                         modifier = Modifier
                             .fillMaxSize()

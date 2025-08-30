@@ -21,6 +21,7 @@ class ArtistParser {
             val similarArtists = mutableListOf<Artist>()
 
             var topSongsPlaylist: Playlist? = null
+            var discographyId: String? = null
 
             val artistName = browseDataObject.microformat.microformatDataRenderer.title
             val description = browseDataObject.microformat.microformatDataRenderer.description
@@ -83,10 +84,26 @@ class ArtistParser {
                                 when (headerText) {
                                     "Albums" -> {
                                         albums.addAll(currentPlaylists)
+                                        discographyId =
+                                            content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
+                                                if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
+                                                    endpoint.browseEndpoint.browseId
+                                                } else {
+                                                    null
+                                                }
+                                            }
                                     }
 
                                     "Singles & EPs" -> {
                                         singlesEp.addAll(currentPlaylists)
+                                        discographyId =
+                                            content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
+                                                if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
+                                                    endpoint.browseEndpoint.browseId
+                                                } else {
+                                                    null
+                                                }
+                                            }
                                     }
 
                                     "Featured on" -> {
@@ -131,6 +148,7 @@ class ArtistParser {
                 albums = albums,
                 similarArtists = similarArtists,
                 singlesAndEp = singlesEp,
+                discographyId = discographyId,
                 featuring = featuring,
                 playlists = playlists,
                 topSongsPlaylist = topSongsPlaylist

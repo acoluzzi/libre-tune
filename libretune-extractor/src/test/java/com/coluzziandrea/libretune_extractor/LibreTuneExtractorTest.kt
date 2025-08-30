@@ -587,4 +587,53 @@ class LibreTuneExtractorTest {
     }
 
 
+    @Nested
+    @DisplayName("Discography Page Scraping")
+    inner class DiscographyPageScrapingTests {
+        @Test
+        fun `scrapeDiscography should correctly parse Iron Maiden Discography HTML`() = runTest {
+            // Arrange: Create a fake HTML response
+            val fakeHtml = readFileFromResources("iron_maiden_discography.html")
+
+            val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
+            val response = Response.Builder()
+                .request(Request.Builder().url("http://googleusercontent.com").build())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body(responseBody)
+                .build()
+
+            // Tell the mock client what to do when a call is made
+            whenever(mockClient.newCall(any())).thenReturn(mockCall)
+            whenever(mockCall.execute()).thenReturn(response)
+
+            // Act: Call the method with any channel ID (it won't be used)
+            val result = scraper.discography("any_id")
+
+
+            assertEquals(10, result?.albums?.size)
+            assertEquals(
+                "Beatles '64 (Music from the Disney+ Documentary)",
+                result?.albums?.get(0)?.name
+            )
+            assertEquals("MPREb_OLtz6K1cjET", result?.albums?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",
+                result?.albums?.get(0)?.images?.firstOrNull()?.url
+            )
+
+
+            assertEquals(2, result?.singlesAndEp?.size)
+            assertEquals("Free As A Bird (2025 Mix)", result?.singlesAndEp?.get(0)?.name)
+            assertEquals("MPREb_RFwSD0tp3ZA", result?.singlesAndEp?.get(0)?.id)
+            assertEquals(
+                "https://lh3.googleusercontent.com/O7-pu1WloTc_ortWcFfH-u-9t1xMsgYatQKF130s_YLtlBmh5EASF23BYFbptqfN_uF0I8QSnoQhAco9=w226-h226-l90-rj",
+                result?.singlesAndEp?.get(0)?.images?.firstOrNull()?.url
+            )
+
+        }
+    }
+
+
 }

@@ -4,8 +4,20 @@ import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ButtonRenderer(
+    val text: ContentTitle,
+    val navigationEndpoint: NavigationEndpoint? = null
+)
+
+@Serializable
+data class MoreContentButton(
+    val buttonRenderer: ButtonRenderer? = null
+)
+
+@Serializable
 data class MusicCarouselShelfBasicHeaderRenderer(
-    val title: ContentTitle
+    val title: ContentTitle,
+    val moreContentButton: MoreContentButton? = null
 )
 
 

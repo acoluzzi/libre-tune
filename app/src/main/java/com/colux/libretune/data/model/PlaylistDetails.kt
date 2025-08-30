@@ -11,15 +11,16 @@ data class PlaylistDetails(
 ) {
     companion object {
         fun from(raw: ExtractorPlaylistDetails): PlaylistDetails {
-            return PlaylistDetails(
-                name = raw.name,
-                artist = raw.artist,
-                bannerUrl = raw.images.maxByOrNull { image ->
-                    image.width
-                }?.url,
-                songs = raw.songs.map(Song.Companion::from),
-                relatedPlaylists = raw.relatedPlaylists.map(Playlist::from),
-            )
+//            return PlaylistDetails(
+//                name = raw.name,
+//                artist = raw.artist,
+//                bannerUrl = raw.images.maxByOrNull { image ->
+//                    image.width
+//                }?.url,
+//                songs = raw.songs.map(Song.Companion::from),
+//                relatedPlaylists = raw.relatedPlaylists.map(Playlist::from),
+//            )
+            TODO("Not yet implemented")
         }
     }
 }

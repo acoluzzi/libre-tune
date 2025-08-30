@@ -12,25 +12,32 @@ data class Song(
 ) : Parcelable {
     companion object {
 
-        fun from(song: com.coluzziandrea.libretune_extractor.model.Song): Song {
-            return Song(
-                id = song.id,
-                title = song.title,
-                artists = song.artists.map {
-                    Artist(
-                        id = it.id,
-                        name = it.name
-                    )
-                },
-                images = song.images.map {
-                    Image(
-                        url = it.url,
-                        width = it.width,
-                        height = it.height
-                    )
-                },
-            )
-        }
+//        fun from(song: com.coluzziandrea.libretune_extractor.model.Song): Song {
+//            return Song(
+//                id = song.id,
+//                title = song.title,
+//                artists = song.artists.map { artist ->
+//                    Artist(
+//                        id = artist.id,
+//                        name = artist.name,
+//                        images = artist.images.map { image ->
+//                            Image(
+//                                url = it.url,
+//                                width = it.width,
+//                                height = it.height
+//                            )
+//                        }
+//                    )
+//                },
+//                images = song.images.map {
+//                    Image(
+//                        url = it.url,
+//                        width = it.width,
+//                        height = it.height
+//                    )
+//                },
+//            )
+//        }
     }
 
 

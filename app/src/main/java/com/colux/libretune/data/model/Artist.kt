@@ -9,8 +9,8 @@ data class Artist(
     val name: String,
     val images: List<Image>
 ) : Parcelable {
-    fun bestImageForCarousel() {
-        images.minByOrNull { it.width ?: 0 }?.url
+    fun bestImageForCarousel(): String? {
+        return images.minByOrNull { it.width ?: 0 }?.url
     }
 }
 

@@ -38,7 +38,7 @@ class LibreTuneExtractor @Inject constructor(
     suspend fun search(query: String): SearchResult? {
         val safeQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.name())
         return fetchAndParseBrowseData(
-            "/search?query=${safeQuery}", SearchResultParser.Companion::from
+            "/search?q=${safeQuery}", SearchResultParser.Companion::from
         )
     }
 

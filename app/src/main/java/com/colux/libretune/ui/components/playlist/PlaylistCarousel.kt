@@ -17,11 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.colux.libretune.data.model.Playlist
 
 @Composable
 fun PlaylistCarousel(
     title: String,
-    playlists: List<PlaylistItem>,
+    playlists: List<Playlist>,
     onItemClick: (itemIndex: Int) -> Unit,
     onViewAllClick: (() -> Unit)? = null
 ) {

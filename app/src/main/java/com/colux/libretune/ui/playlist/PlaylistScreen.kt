@@ -26,7 +26,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
-import com.colux.libretune.ui.components.playlist.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
@@ -118,13 +117,7 @@ fun PlaylistDetailScreen(
                     item {
                         PlaylistCarousel(
                             title = "You may Also Like",
-                            playlists = playlistDetails.relatedPlaylists.map {
-                                PlaylistItem(
-                                    id = it.id,
-                                    title = it.name,
-                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
-                                )
-                            },
+                            playlists = listOf(),
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(

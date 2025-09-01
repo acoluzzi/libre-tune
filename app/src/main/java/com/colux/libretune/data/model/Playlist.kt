@@ -13,4 +13,8 @@ data class Playlist(
     fun bestImageUrlForCarousel(): String? {
         return images.minByOrNull { it.width ?: 0 }?.url
     }
+
+    fun getArtistNames(): String {
+        return artists.joinToString(", ") { it.name }
+    }
 }

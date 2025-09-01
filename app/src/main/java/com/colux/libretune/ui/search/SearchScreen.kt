@@ -49,8 +49,11 @@ import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.Image
 import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.Song
+import com.colux.libretune.ui.components.album.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
+import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 
 // --- DATA MODELS (as provided by you, with fixes) ---
@@ -135,8 +138,13 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                 when (val state = uiState) {
                     is SearchUiState.Explore -> ExplorePanel(genres = DummyData.genres)
                     is SearchUiState.Loading -> SearchResultsSkeleton()
+                    is SearchUiState.Empty -> EmptyResults(query = state.query)
+                    is SearchUiState.Results -> SearchResultsList(
+                        results = state.results,
+                        navController = navController,
+                        playerViewModel = playerViewModel
+                    )
 
-                    is SearchUiState.Results -> SearchResultsList(results = state.results)
                     is SearchUiState.Suggestions -> {
                         // This case is handled by the `if` check above, but we can show
                         // the explore panel as a background for a better look.
@@ -144,8 +152,13 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                     }
                 }
             }
+
         }
+
+
     }
+
+
 }
 
 // --- UI Components for Each State ---
@@ -178,6 +191,22 @@ fun ExplorePanel(genres: List<String>) {
     }
 }
 
+
+@Composable
+fun EmptyResults(query: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No results found for \"$query\"",
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
 @Composable
 fun SuggestionsOverlay(suggestions: List<String>, onSuggestionClick: (String) -> Unit) {
     LazyColumn(
@@ -199,8 +228,50 @@ fun SuggestionsOverlay(suggestions: List<String>, onSuggestionClick: (String) ->
 }
 
 @Composable
-fun SearchResultsList(results: CategorizedSearchResults) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+fun SearchResultsList(
+    results: SearchResult,
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 64.dp)) {
+
+
+        if (results.hasTopResults) {
+            item {
+                Text(
+                    "Best Results",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            items(results.topArtists) { artist ->
+                ArtistSearchResultItem(
+                    artist = artist,
+                    onClick = {
+                        navController.navigate(Screen.Artist.createRoute(artist.id))
+                    })
+            }
+
+
+            items(results.topAlbums) { album ->
+                PlaylistItem(
+                    album = album,
+                    onClick = {
+                        navController.navigate(Screen.PlaylistDetail.createRoute(album.id))
+                    })
+            }
+
+            items(results.topSongs) { song ->
+                SongItem(song = song, onClick = {
+                    playerViewModel.playPlaylist(results.topSongs, results.topSongs.indexOf(song))
+                })
+            }
+
+
+        }
+
+
         // --- Songs Section ---
         if (results.songs.isNotEmpty()) {
             item {
@@ -211,7 +282,9 @@ fun SearchResultsList(results: CategorizedSearchResults) {
                 )
             }
             items(results.songs) { song ->
-                SongItem(song = song, onClick = { /* TODO: playerViewModel.play... */ })
+                SongItem(song = song, onClick = {
+                    playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
+                })
             }
         }
 
@@ -227,11 +300,62 @@ fun SearchResultsList(results: CategorizedSearchResults) {
             items(results.artists) { artist ->
                 ArtistSearchResultItem(
                     artist = artist,
-                    onClick = { /* TODO: navController.navigate... */ })
+                    onClick = {
+                        navController.navigate(Screen.Artist.createRoute(artist.id))
+                    })
             }
         }
 
-        // You would add sections for albums, playlists, etc. in the same way.
+        if (results.albums.isNotEmpty()) {
+            item {
+                Text(
+                    "Albums",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            items(results.albums) { album ->
+                PlaylistItem(
+                    album = album,
+                    onClick = {
+                        navController.navigate(Screen.PlaylistDetail.createRoute(album.id))
+                    })
+            }
+        }
+
+        if (results.playlists.isNotEmpty()) {
+            item {
+                Text(
+                    "Featured Playlists",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            items(results.playlists) { playlist ->
+                PlaylistItem(
+                    album = playlist,
+                    onClick = {
+                        navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id))
+                    })
+            }
+        }
+
+        if (results.communityPlaylists.isNotEmpty()) {
+            item {
+                Text(
+                    "Community Playlists",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+            items(results.communityPlaylists) { playlist ->
+                PlaylistItem(
+                    album = playlist,
+                    onClick = {
+                        navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id))
+                    })
+            }
+        }
     }
 }
 

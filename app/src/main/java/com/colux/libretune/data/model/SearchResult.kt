@@ -10,4 +10,13 @@ data class SearchResult(
     val artists: List<Artist>,
     val playlists: List<Playlist>,
     val communityPlaylists: List<Playlist>,
-)
+) {
+    val hasTopResults: Boolean
+        get() = topSongs.isNotEmpty() || topAlbums.isNotEmpty() || topArtists.isNotEmpty()
+
+
+    val isEmpty: Boolean
+        get() = topSongs.isEmpty() && topAlbums.isEmpty() && topArtists.isEmpty() &&
+                songs.isEmpty() && albums.isEmpty() && artists.isEmpty() &&
+                playlists.isEmpty() && communityPlaylists.isEmpty()
+}

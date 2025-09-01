@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
-import com.colux.libretune.ui.components.playlist.PlaylistItem
 
 @Composable
 fun HomeScreen(
@@ -42,13 +41,7 @@ fun HomeScreen(
         item {
             PlaylistCarousel(
                 title = "Recently Played",
-                playlists = recentlyPlayed.map {
-                    PlaylistItem(
-                        id = it.id,
-                        title = it.title,
-                        imageUrl = it.getBestImageUrl() ?: ""
-                    )
-                },
+                playlists = listOf(),
                 onItemClick = { index ->
                     onSongClick(recentlyPlayed, index)
                 })
@@ -57,13 +50,7 @@ fun HomeScreen(
         item {
             PlaylistCarousel(
                 title = "Made for You",
-                playlists = madeForYou.map {
-                    PlaylistItem(
-                        id = it.id,
-                        title = it.title,
-                        imageUrl = it.getBestImageUrl() ?: ""
-                    )
-                },
+                playlists = listOf(),
                 onItemClick = { index ->
                     onSongClick(madeForYou, index)
                 })

@@ -25,7 +25,6 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.ui.components.artist.ArtistCarousel
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
-import com.colux.libretune.ui.components.playlist.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
@@ -121,13 +120,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Albums",
-                            playlists = state.details.albums.map {
-                                PlaylistItem(
-                                    id = it.id,
-                                    title = it.name,
-                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
-                                )
-                            },
+                            playlists = state.details.albums,
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(
@@ -156,13 +149,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Singles & EPs",
-                            playlists = state.details.singlesAndEPs.map {
-                                PlaylistItem(
-                                    id = it.id,
-                                    title = it.name,
-                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
-                                )
-                            },
+                            playlists = state.details.singlesAndEPs,
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(
@@ -191,13 +178,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Playlists by ${state.details.name}",
-                            playlists = state.details.playlists.map {
-                                PlaylistItem(
-                                    id = it.id,
-                                    title = it.name,
-                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
-                                )
-                            },
+                            playlists = state.details.playlists,
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(
@@ -213,13 +194,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Featuring ${state.details.name}",
-                            playlists = state.details.featuring.map {
-                                PlaylistItem(
-                                    id = it.id,
-                                    title = it.name,
-                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
-                                )
-                            },
+                            playlists = state.details.featuring,
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(

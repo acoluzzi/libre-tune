@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -216,13 +217,20 @@ fun SuggestionsOverlay(suggestions: List<String>, onSuggestionClick: (String) ->
             .background(MaterialTheme.colorScheme.surface)
     ) {
         items(suggestions) { suggestion ->
-            Text(
-                text = suggestion,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onSuggestionClick(suggestion) }
-                    .padding(16.dp)
-            )
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.History,
+                    contentDescription = "Past query"
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text = suggestion)
+            }
         }
     }
 }

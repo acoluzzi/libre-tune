@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.colux.libretune.data.local.dao.ArtistDao
 import com.colux.libretune.data.local.dao.PlaylistDao
+import com.colux.libretune.data.local.dao.SearchQueryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,6 +37,12 @@ object DatabaseModule {
     @Singleton
     fun provideApplicationScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+
+    @Provides
+    @Singleton
+    fun provideSearchQueryDao(database: AppDatabase): SearchQueryDao {
+        return database.searchQueryDao()
+    }
 
     @Provides
     @Singleton

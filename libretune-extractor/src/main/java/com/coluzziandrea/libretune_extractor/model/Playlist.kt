@@ -1,9 +1,34 @@
 package com.coluzziandrea.libretune_extractor.model
 
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.CarouselContent
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.browse_response.section.content.CarouselContent
+import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
 
-data class Playlist(val id: String, val name: String, val images: List<Image>) {
+data class Playlist(
+    val node: MusicNode,
+    val images: List<Image>,
+    val artists: List<Artist>? = null
+) {
+
+    val name: String
+        get() = node.name
+
+    val id: String
+        get() = node.id
+
+    constructor(
+        id: String,
+        name: String,
+        images: List<Image>,
+        artists: List<Artist>? = null
+    ) : this(
+        node = MusicNode(
+            id = id,
+            name = name
+        ),
+        images = images,
+        artists = artists
+    )
+
     companion object {
         fun from(carouselItem: CarouselContent): Playlist? {
             val item = carouselItem.musicTwoRowItemRenderer
@@ -38,5 +63,7 @@ data class Playlist(val id: String, val name: String, val images: List<Image>) {
                 images = images
             )
         }
+
+
     }
 }

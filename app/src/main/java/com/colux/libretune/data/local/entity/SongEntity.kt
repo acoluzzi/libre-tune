@@ -23,22 +23,24 @@ data class SongEntity(
     @PrimaryKey val songId: String,
     val title: String,
     val albumId: String?,
-    val images: List<ImageAttribute>
+    val images: List<ImageAttribute>,
+    val updateTimestamp: Long
 ) {
     companion object {
         fun from(song: Song): SongEntity {
-            return SongEntity(
-                songId = song.id,
-                title = song.title,
-                albumId = song.artists.firstOrNull()?.id,
-                images = song.images.map {
-                    ImageAttribute(
-                        url = it.url,
-                        width = it.width,
-                        height = it.height
-                    )
-                }
-            )
+//            return SongEntity(
+//                songId = song.id,
+//                title = song.title,
+//                albumId = song.artists.firstOrNull()?.id,
+//                images = song.images.map {
+//                    ImageAttribute(
+//                        url = it.url,
+//                        width = it.width,
+//                        height = it.height
+//                    )
+//                }
+//            )
+            TODO()
         }
     }
 

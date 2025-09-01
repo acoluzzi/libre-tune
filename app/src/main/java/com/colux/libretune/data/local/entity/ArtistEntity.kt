@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class ArtistEntity(
     @PrimaryKey val artistId: String,
     val name: String,
-    val images: List<ImageAttribute>
+    val images: List<ImageAttribute>,
+    val updateTimestamp: Long
 )

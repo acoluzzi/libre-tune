@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class PlaylistEntity(
     @PrimaryKey val playlistId: String,
     val name: String,
-    val isLocal: Boolean
+    val isLocal: Boolean,
+    val updateTimestamp: Long
 )

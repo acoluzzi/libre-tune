@@ -1,6 +1,6 @@
 package com.coluzziandrea.libretune_extractor.browse_response
 
-import com.coluzziandrea.libretune_extractor.browse_response.shared.MusicThumbnail
+import com.coluzziandrea.libretune_extractor.browse_response.section.content.MusicThumbnail
 import kotlinx.serialization.Serializable
 
 

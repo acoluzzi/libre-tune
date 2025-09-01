@@ -1,8 +1,8 @@
 package com.coluzziandrea.libretune_extractor.parser
 
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.tab.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Image
@@ -12,7 +12,7 @@ import com.coluzziandrea.libretune_extractor.model.Song
 class ArtistParser {
 
     companion object {
-        fun from(browseDataObject: BrowseData): ArtistDetails {
+        fun from(browseDataObject: BrowseData): ArtistDetails? {
             val topSongs = mutableListOf<Song>()
             val albums = mutableListOf<Playlist>()
             val singlesEp = mutableListOf<Playlist>()
@@ -23,10 +23,10 @@ class ArtistParser {
             var topSongsPlaylist: Playlist? = null
             var discographyId: String? = null
 
-            val artistName = browseDataObject.microformat.microformatDataRenderer.title
-            val description = browseDataObject.microformat.microformatDataRenderer.description
+            val artistName = browseDataObject.microformat?.microformatDataRenderer?.title
+            val description = browseDataObject.microformat?.microformatDataRenderer?.description
             val images =
-                browseDataObject.microformat.microformatDataRenderer.thumbnail.thumbnails.map {
+                browseDataObject.microformat?.microformatDataRenderer?.thumbnail?.thumbnails?.map {
                     Image(
                         url = it.url,
                         width = it.width,
@@ -137,6 +137,10 @@ class ArtistParser {
                 }
             }
 
+
+            if (artistName.isNullOrEmpty() || images.isNullOrEmpty()) {
+                return null
+            }
 
 
 

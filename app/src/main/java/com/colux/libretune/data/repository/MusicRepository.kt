@@ -9,6 +9,7 @@ import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,38 +27,59 @@ class MusicRepository @Inject constructor(
         return remote.searchContent(query)
     }
 
-    fun getArtistDetails(artistId: String): Flow<ArtistDetails?> {
-        return artistDao.getArtistWithContent(artistId)
-            .map { databaseModel ->
-                // The Flow is now of type ArtistDetails?, which the ViewModel expects.
-                databaseModel?.toArtistDetails()
-            }
-            .onStart {
-                updateArtistDetailsFromRemote(artistId)
-            }
-
-    }
-
 
     suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
         return remote.getPlaylistDetails(id)
     }
 
+    // Define how long the cache should be valid (e.g., 60 minutes)
+    private val cacheTtlMillis = TimeUnit.MINUTES.toMillis(60)
+
+    fun getArtistDetails(artistId: String): Flow<ArtistDetails?> {
+        return artistDao.getArtistWithContent(artistId)
+            .map { it?.toArtistDetails() }
+            .onStart {
+                // Check if we need to fetch before emitting the cached data
+                if (shouldFetch(artistId)) {
+                    updateArtistDetailsFromRemote(artistId)
+                }
+            }
+    }
+
+    private suspend fun shouldFetch(artistId: String): Boolean {
+        // Fetch the artist record just to check its timestamp
+        val cachedArtist = artistDao.getArtist(artistId)
+
+        // Always fetch if there's no data
+        if (cachedArtist == null) return true
+
+        // Fetch if the data is older than our TTL
+        val isStale =
+            (System.currentTimeMillis() - cachedArtist.updateTimestamp) > cacheTtlMillis
+        return isStale
+    }
 
     private suspend fun updateArtistDetailsFromRemote(artistId: String) {
 //        try {
-//            // 3. Fetch fresh data from the remote source (your scraper).
-//            val remoteArtistDetails = remote.scrapeArtistPage(artistId)
-//
-//            // 4. If the fetch was successful, save the new data to the database.
+//            val remoteArtistDetails = remoteSource.scrapeArtistPage(artistId)
 //            if (remoteArtistDetails != null) {
-//                // You would have DAO methods to insert/update artists, songs, albums, etc.
-//                artistDao.insertOrUpdate(remoteArtistDetails)
+//                // When mapping, include the current timestamp
+//                val artistEntity = ArtistEntity(
+//                    artistId = artistId,
+//                    name = remoteArtistDetails.name,
+//                    imageUrl = remoteArtistDetails.imageUrl,
+//                    bannerUrl = remoteArtistDetails.bannerUrl,
+//                    lastFetchedTimestamp = System.currentTimeMillis() // Set the timestamp
+//                )
+//                // You would update your mapper to handle this and save all related data
+//                artistDao.insertArtist(artistEntity)
+//                // ... save songs, albums, etc.
 //            }
 //        } catch (e: Exception) {
-//            // Handle network errors, etc.
 //            e.printStackTrace()
 //        }
         TODO()
     }
+
+
 }

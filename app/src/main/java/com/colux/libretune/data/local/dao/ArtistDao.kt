@@ -15,7 +15,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ArtistDao {
-    // --- INSERTION HELPERS (used by the transactional method below) ---
+    @Query("SELECT * FROM artists WHERE artistId = :artistId")
+    suspend fun getArtist(artistId: String): ArtistEntity?
+
+    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArtist(artist: ArtistEntity)
 

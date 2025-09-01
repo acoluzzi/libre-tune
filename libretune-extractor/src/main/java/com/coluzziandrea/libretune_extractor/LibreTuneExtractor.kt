@@ -3,17 +3,20 @@ package com.coluzziandrea.libretune_extractor
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
 import com.coluzziandrea.libretune_extractor.browse_response.BrowseDataFetcher
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
-import com.coluzziandrea.libretune_extractor.model.Discography
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
+import com.coluzziandrea.libretune_extractor.model.SearchResult
 import com.coluzziandrea.libretune_extractor.parser.ArtistParser
-import com.coluzziandrea.libretune_extractor.parser.DiscographyParser
 import com.coluzziandrea.libretune_extractor.parser.PlaylistParser
+import com.coluzziandrea.libretune_extractor.parser.SearchResultParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
+
 
 @Singleton
 class LibreTuneExtractor @Inject constructor(
@@ -28,12 +31,15 @@ class LibreTuneExtractor @Inject constructor(
     }
 
 
-    suspend fun discography(discographyId: String): Discography? {
-        return fetchAndParseBrowseData("/browse/$discographyId", DiscographyParser.Companion::from)
-    }
-
     suspend fun artist(channelId: String): ArtistDetails? {
         return fetchAndParseBrowseData("/channel/$channelId", ArtistParser.Companion::from)
+    }
+
+    suspend fun search(query: String): SearchResult? {
+        val safeQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.name())
+        return fetchAndParseBrowseData(
+            "/search?query=${safeQuery}", SearchResultParser.Companion::from
+        )
     }
 
 

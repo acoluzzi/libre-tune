@@ -1,6 +1,13 @@
 package com.colux.libretune.data.model
 
-sealed interface SearchResult {
-    data class SongResult(val song: Song) : SearchResult
-    data class ArtistResult(val artist: Artist) : SearchResult
-}
+
+data class SearchResult(
+    val topSongs: List<Song>,
+    val topAlbums: List<Playlist>,
+    val topArtists: List<Artist>,
+    val songs: List<Song>,
+    val albums: List<Playlist>,
+    val artists: List<Artist>,
+    val playlists: List<Playlist>,
+    val communityPlaylists: List<Playlist>,
+)

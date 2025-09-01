@@ -122,7 +122,7 @@ fun PlaylistDetailScreen(
                                 PlaylistItem(
                                     id = it.id,
                                     title = it.name,
-                                    imageUrl = it.thumbnailUrl
+                                    imageUrl = it.bestImageUrlForCarousel() ?: ""
                                 )
                             },
                             onItemClick = { index ->

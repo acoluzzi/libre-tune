@@ -5,15 +5,14 @@ import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
+import com.colux.libretune.data.remote.tube.mapper.toDataModel
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.localization.Localization
-import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -62,29 +61,14 @@ class YouTubeExtractionRepository @Inject constructor(
     }
 
 
-    suspend fun searchContent(query: String): List<SearchResult> {
-        // We use coroutineScope to run both searches concurrently for better performance.
+    suspend fun searchContent(query: String): SearchResult? {
         return coroutineScope {
-            // Start the artist search in the background
-            val artistsDeferred = async(Dispatchers.IO) {
-                performSearch(query, listOf(YoutubeSearchQueryHandlerFactory.MUSIC_ARTISTS))
+            try {
+                return@coroutineScope libreTuneExtractor.search(query)?.toDataModel()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
-
-            // Start the song search in the background
-            val songsDeferred = async(Dispatchers.IO) {
-                performSearch(query, listOf(YoutubeSearchQueryHandlerFactory.MUSIC_SONGS))
-            }
-
-            // Wait for both searches to complete
-            val artistResults = artistsDeferred.await()
-            val songResults = songsDeferred.await()
-
-            // Combine the lists: top 3 artists first, then all the songs
-            val combinedList = mutableListOf<SearchResult>()
-            combinedList.addAll(artistResults.take(2))
-            combinedList.addAll(songResults)
-
-            combinedList
         }
     }
 
@@ -117,25 +101,25 @@ class YouTubeExtractionRepository @Inject constructor(
     }
 
     suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
-
-        return withContext(Dispatchers.IO) {
-            try {
-                libreTuneExtractor.playlist(id).let {
-                    if (it != null) {
-                        Log.d(
-                            "YouTubeExtractionRepository",
-                            "Scraped playlist: ${it.name}"
-                        )
-                        return@withContext PlaylistDetails.from(it)
-                    } else {
-                        null
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
+        TODO()
+//        return withContext(Dispatchers.IO) {
+//            try {
+//                libreTuneExtractor.playlist(id).let {
+//                    if (it != null) {
+//                        Log.d(
+//                            "YouTubeExtractionRepository",
+//                            "Scraped playlist: ${it.name}"
+//                        )
+//                        return@withContext PlaylistDetails.from(it)
+//                    } else {
+//                        null
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                null
+//            }
+//        }
     }
 
     /**

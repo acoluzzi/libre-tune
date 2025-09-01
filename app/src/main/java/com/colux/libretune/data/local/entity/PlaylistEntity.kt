@@ -8,5 +8,5 @@ data class PlaylistEntity(
     @PrimaryKey val playlistId: String,
     val name: String,
     val isLocal: Boolean,
-    val updateTimestamp: Long
+    val updateTimestamp: Long = System.currentTimeMillis()
 )

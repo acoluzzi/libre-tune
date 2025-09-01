@@ -34,7 +34,7 @@ fun ArtistAlbum(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = playlist.thumbnailUrl,
+            model = playlist.bestImageUrlForCarousel(),
             contentDescription = "Album art for ${playlist.name}",
             modifier = Modifier
                 .size(64.dp)

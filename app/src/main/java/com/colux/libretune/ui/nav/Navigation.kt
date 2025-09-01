@@ -1,6 +1,5 @@
 package com.colux.libretune.ui.nav
 
-import SearchScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -15,6 +14,7 @@ import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.playlist.PlaylistDetailScreen
+import com.colux.libretune.ui.search.SearchScreen
 
 @Composable
 fun Navigation(

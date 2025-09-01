@@ -23,7 +23,7 @@ class MusicRepository @Inject constructor(
         return remote.getSongUrlById(id)
     }
 
-    suspend fun searchContent(query: String): List<SearchResult> {
+    suspend fun searchContent(query: String): SearchResult? {
         return remote.searchContent(query)
     }
 

@@ -1,8 +1,10 @@
 package com.colux.libretune.data.remote.tube.mapper
 
+import com.colux.libretune.data.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import com.colux.libretune.data.model.Artist as DataModelArtist
 import com.coluzziandrea.libretune_extractor.model.Artist as ExtractorArtist
+import com.coluzziandrea.libretune_extractor.model.ArtistDetails as ExtractorArtistDetails
 
 
 fun ExtractorArtist.toDataModel(): DataModelArtist {
@@ -19,4 +21,34 @@ fun GenericMusicItem.toArtist(): DataModelArtist? {
         is GenericMusicItem.ArtistResult -> this.artist?.toDataModel()
         else -> null
     }
+}
+
+
+fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
+    return ArtistDetails(
+        name = name,
+        description = description,
+        images = images.map { image ->
+            image.toDataModel()
+        },
+        topSongPlaylist = topSongsPlaylist?.toDataModel(),
+        topSongs = topSongs.map {
+            it.toDataModel()
+        },
+        albums = albums.map {
+            it.toDataModel()
+        },
+        singlesAndEPs = singlesAndEp.map {
+            it.toDataModel()
+        },
+        featuring = featuring.map {
+            it.toDataModel()
+        },
+        playlists = playlists.map {
+            it.toDataModel()
+        },
+        similarArtists = similarArtists.map {
+            it.toDataModel()
+        }
+    )
 }

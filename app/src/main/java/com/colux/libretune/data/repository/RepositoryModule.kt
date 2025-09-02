@@ -1,5 +1,7 @@
 package com.colux.libretune.data.repository
 
+import com.colux.libretune.data.local.AppDatabase
+import com.colux.libretune.data.local.dao.AlbumDao
 import com.colux.libretune.data.local.dao.ArtistDao
 import com.colux.libretune.data.local.dao.SearchQueryDao
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
@@ -13,12 +15,35 @@ import dagger.hilt.components.SingletonComponent
 class RepositoryModule {
 
     @Provides
-    fun provideMusicRepositoryImpl(
-        repository: YouTubeExtractionRepository,
+    fun provideArtistRepositoryImpl(
+        remote: YouTubeExtractionRepository,
+        db: AppDatabase
+    ): ArtistRepository {
+        return ArtistRepository(remote, db)
+    }
+
+    @Provides
+    fun provideSearchRepositoryImpl(
+        remote: YouTubeExtractionRepository,
+        searchQueryDao: SearchQueryDao,
+    ): SearchRepository {
+        return SearchRepository(remote, searchQueryDao)
+    }
+
+    @Provides
+    fun providePlaylistRepositoryImpl(
+        remote: YouTubeExtractionRepository,
         artistDao: ArtistDao,
-        searchQueryDao: SearchQueryDao
-    ): MusicRepository {
-        return MusicRepository(repository, artistDao, searchQueryDao)
+        albumDao: AlbumDao
+    ): PlaylistRepository {
+        return PlaylistRepository(remote, artistDao, albumDao)
+    }
+
+    @Provides
+    fun provideSongRepositoryImpl(
+        remote: YouTubeExtractionRepository,
+    ): SongRepository {
+        return SongRepository(remote)
     }
 
 }

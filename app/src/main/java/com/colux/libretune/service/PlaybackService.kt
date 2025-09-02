@@ -11,7 +11,7 @@ import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.colux.libretune.data.model.Song
-import com.colux.libretune.data.repository.MusicRepository
+import com.colux.libretune.data.repository.SongRepository
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class PlaybackService : MediaSessionService() {
 
     @Inject
-    lateinit var musicRepository: MusicRepository
+    lateinit var musicRepository: SongRepository
 
     @Inject
     lateinit var exoPlayer: ExoPlayer

@@ -134,7 +134,7 @@ class YouTubeExtractionRepository @Inject constructor(
                             "YouTubeExtractionRepository",
                             "Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}"
                         )
-                        return@withContext ArtistDetails.from(it)
+                        return@withContext it.toDataModel()
                     } else {
                         null
                     }
@@ -174,57 +174,5 @@ class YouTubeExtractionRepository @Inject constructor(
 //        }
     }
 
-    /**
-     * A helper function to perform a search with a specific filter.
-     */
-    private fun performSearch(query: String, contentFilter: List<String>): List<SearchResult> {
-        TODO()
-
-//        return try {
-//            val service = NewPipe.getService(ServiceList.YouTube.serviceId)
-//            val searchExtractor = service.getSearchExtractor(query, contentFilter, "")
-//            searchExtractor.fetchPage()
-//
-//            val searchResults: List<InfoItem> = searchExtractor.initialPage.items
-//
-//            searchResults.mapNotNull { item ->
-//                when (item) {
-//                    is StreamInfoItem -> SearchResult.SongResult(
-//                        Song(
-//                            id = item.url.substringAfter("?v="),
-//                            title = item.name,
-//                            artists = listOf(
-//                                Artist(
-//                                    id = "unknown",
-//                                    name = item.uploaderName ?: "unknown",
-//                                    imageUrl = null
-//                                )
-//                            ),
-//                            images = item.thumbnails.map {
-//                                Image(
-//                                    url = it.url,
-//                                    width = it.width,
-//                                    height = it.height
-//                                )
-//                            }
-//                        )
-//                    )
-//
-//                    is ChannelInfoItem -> SearchResult.ArtistResult(
-//                        Artist(
-//                            id = item.url.substringAfter("/channel/"),
-//                            name = item.name,
-//                            imageUrl = item.thumbnails.first().url
-//                        )
-//                    )
-//
-//                    else -> null
-//                }
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            emptyList()
-//        }
-    }
 
 }

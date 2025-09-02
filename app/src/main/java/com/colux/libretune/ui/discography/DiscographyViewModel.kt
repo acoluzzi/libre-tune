@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.Playlist
-import com.colux.libretune.data.repository.MusicRepository
+import com.colux.libretune.data.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DiscographyViewModel @Inject constructor(
-    private val repository: MusicRepository,
+    private val repository: ArtistRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val discographyId: String = savedStateHandle.get<String>("discographyId")!!

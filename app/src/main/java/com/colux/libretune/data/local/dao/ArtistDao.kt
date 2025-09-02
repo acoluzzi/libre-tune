@@ -4,62 +4,46 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
-import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.entity.ArtistEntity
-import com.colux.libretune.data.local.entity.SongEntity
-import com.colux.libretune.data.local.join.AlbumArtistCrossRef
-import com.colux.libretune.data.local.join.SongArtistCrossRef
-import com.colux.libretune.data.local.relation.ArtistWithSongsAndAlbums
+import com.colux.libretune.data.local.join.ArtistArtistCrossRef
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ArtistDao {
-    @Query("SELECT * FROM artists WHERE artistId = :artistId")
-    suspend fun getArtist(artistId: String): ArtistEntity?
-
-    
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArtist(artist: ArtistEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAlbums(albums: List<AlbumEntity>)
+    suspend fun insertArtists(artists: List<ArtistEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSongs(songs: List<SongEntity>)
+    suspend fun linkSimilarArtists(artistLinks: List<ArtistArtistCrossRef>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun linkAlbumsToArtist(crossRefs: List<AlbumArtistCrossRef>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun linkSongsToArtist(crossRefs: List<SongArtistCrossRef>)
-
-    /**
-     * A single transaction to save all details for an artist.
-     * This is called by the repository after a successful network fetch.
-     */
-    @Transaction
-    suspend fun insertArtistDetails(details: ArtistWithSongsAndAlbums) {
-        insertArtist(details.artist)
-        insertAlbums(details.albums)
-        insertSongs(details.songs)
-
-        val albumArtistLinks = details.albums.map { album ->
-            AlbumArtistCrossRef(albumId = album.albumId, artistId = details.artist.artistId)
-        }
-        linkAlbumsToArtist(albumArtistLinks)
-
-        val songArtistLinks = details.songs.map { song ->
-            SongArtistCrossRef(songId = song.songId, artistId = details.artist.artistId)
-        }
-        linkSongsToArtist(songArtistLinks)
-    }
-
-    /**
-     * Fetches a single artist with their complete list of songs and albums.
-     * @Transaction ensures Room runs all underlying queries together.
-     */
-    @Transaction
+    // A simple query that just returns the artist.
     @Query("SELECT * FROM artists WHERE artistId = :artistId")
-    fun getArtistWithContent(artistId: String): Flow<ArtistWithSongsAndAlbums?>
+    fun getArtist(artistId: String): Flow<ArtistEntity?>
+
+
+    @Query(
+        """
+        SELECT * FROM artists 
+        WHERE artistId IN (
+            SELECT artistId FROM album_artist_cross_ref WHERE albumId = :albumId
+        )
+    """
+    )
+    fun getArtistsByAlbumId(albumId: String): Flow<List<ArtistEntity>>
+
+
+    @Query(
+        """
+        SELECT * FROM artists 
+        WHERE artistId IN (
+            SELECT relatedArtistId FROM artist_artist_cross_ref WHERE parentArtistId = :artistId
+        )
+    """
+    )
+    fun getSimilarArtists(artistId: String): Flow<List<ArtistEntity>>
+
+
 }

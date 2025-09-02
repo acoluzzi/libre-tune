@@ -4,17 +4,18 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.ArtistDetails
-import com.colux.libretune.data.repository.MusicRepository
+import com.colux.libretune.data.repository.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ArtistViewModel @Inject constructor(
-    private val repository: MusicRepository,
+    private val repository: ArtistRepository,
     savedStateHandle: SavedStateHandle // Hilt provides this to access navigation arguments
 ) : ViewModel() {
 
@@ -41,6 +42,14 @@ class ArtistViewModel @Inject constructor(
                 // The initial state while the flow is starting up.
                 initialValue = ArtistUiState.Loading
             )
+
+
+    init {
+        // Trigger a refresh when the ViewModel is created
+        viewModelScope.launch {
+            repository.refreshArtistDetails(artistId)
+        }
+    }
 }
 
 // A sealed interface to represent the different states of your screen's UI

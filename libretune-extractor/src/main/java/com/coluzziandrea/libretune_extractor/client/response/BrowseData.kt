@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class BrowseData(
     val contents: BrowseDataContents,
     val microformat: Microformat? = null,
+    val header: BrowseDataHeader? = null,
 )

@@ -128,20 +128,8 @@ fun ArtistScreen(
                                     )
                                 )
                             },
-                            onViewAllClick = state.details.discographyId?.let { id ->
-                                if (id.isNotEmpty()) {
-                                    {
-                                        navController.navigate(
-                                            Screen.Discography.createRoute(
-                                                id
-                                            )
-                                        )
-                                    }
-                                } else {
-                                    null
-                                }
-                            }
-                        )
+
+                            )
                     }
                 }
 
@@ -157,19 +145,6 @@ fun ArtistScreen(
                                     )
                                 )
                             },
-                            onViewAllClick = state.details.discographyId?.let { id ->
-                                if (id.isNotEmpty()) {
-                                    {
-                                        navController.navigate(
-                                            Screen.Discography.createRoute(
-                                                id
-                                            )
-                                        )
-                                    }
-                                } else {
-                                    null
-                                }
-                            }
                         )
                     }
                 }

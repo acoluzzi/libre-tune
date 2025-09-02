@@ -157,7 +157,7 @@ class ArtistParser {
                 discographyId = discographyId,
                 featuring = featuring,
                 playlists = playlists,
-                topSongsPlaylist = topSongsPlaylist
+                topSongsPlaylist = topSongsPlaylist,
             )
         }
 

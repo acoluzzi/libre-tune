@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.SearchSuggestion
-import com.colux.libretune.data.repository.MusicRepository
+import com.colux.libretune.data.repository.SearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ sealed interface SearchUiState {
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: MusicRepository,
+    private val repository: SearchRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Explore)

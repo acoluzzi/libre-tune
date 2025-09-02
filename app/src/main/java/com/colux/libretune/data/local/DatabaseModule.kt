@@ -2,6 +2,7 @@ package com.colux.libretune.data.local
 
 import android.content.Context
 import androidx.room.Room
+import com.colux.libretune.data.local.dao.AlbumDao
 import com.colux.libretune.data.local.dao.ArtistDao
 import com.colux.libretune.data.local.dao.PlaylistDao
 import com.colux.libretune.data.local.dao.SearchQueryDao
@@ -37,6 +38,11 @@ object DatabaseModule {
     @Singleton
     fun provideApplicationScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    @Provides
+    @Singleton
+    fun provideAlbumDao(database: AppDatabase): AlbumDao {
+        return database.albumDao()
+    }
 
     @Provides
     @Singleton
@@ -54,7 +60,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideLikedSongDao(database: AppDatabase) = database.likedSongDao()
+    fun provideLikedSongDao(database: AppDatabase) = database.songDao()
 
 
     @Provides

@@ -1,8 +1,9 @@
 package com.coluzziandrea.libretune_extractor.parser.mapper
 
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.MusicCardShelfRenderer
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.section.content.MusicCardShelfRenderer
+import com.coluzziandrea.libretune_extractor.client.response.section.content.MusicResponsiveListItemRenderer
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
@@ -57,29 +58,29 @@ fun MusicCardShelfRenderer.toPlaylist(): Playlist? {
 fun SectionContent.toPlaylist(): Playlist? {
     return when (this) {
         is SectionContent.MusicResponsiveListItemContent -> {
-            this.toPlaylist()
+            this.musicResponsiveListItemRenderer.toPlaylist()
         }
 
         else -> null
     }
 }
 
-fun SectionContent.MusicResponsiveListItemContent.toPlaylist(): Playlist? {
+fun MusicResponsiveListItemRenderer.toPlaylist(): Playlist? {
 
 
     val id =
-        (musicResponsiveListItemRenderer.navigationEndpoint as? NavigationEndpoint.BrowseNavigationEndpoint)?.browseEndpoint?.browseId
+        (navigationEndpoint as? NavigationEndpoint.BrowseNavigationEndpoint)?.browseEndpoint?.browseId
 
 
     val name =
-        musicResponsiveListItemRenderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+        flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
 
     if (id == null || name == null || id.isEmpty() || name.isEmpty()) {
         return null
     }
 
     val images =
-        musicResponsiveListItemRenderer.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.map {
+        thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.map {
             Image(
                 url = it.url,
                 width = it.width,

@@ -1,63 +1,26 @@
 package com.coluzziandrea.libretune_extractor
 
 import com.coluzziandrea.libretune_extractor.util.TestUtil
+import com.coluzziandrea.libretune_extractor.util.provideMockClient
 import kotlinx.coroutines.test.runTest
-import okhttp3.Call
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.ResponseBody
 import org.junit.experimental.runners.Enclosed
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 
 @DisplayName("Album")
 @RunWith(Enclosed::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AlbumPageScrapingTests {
 
-    @Mock
-    private lateinit var mockClient: OkHttpClient
-
-    @Mock
-    private lateinit var mockCall: Call
-
-    private lateinit var scraper: LibreTuneExtractor
-
-    @BeforeAll
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        scraper = LibreTuneExtractor(mockClient)
-    }
 
     @Test
     fun `scrapePlaylist should correctly parse abbeyRoad HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("abbey_road.html")
-
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("abbeyRoad.json")))
 
         // Act: Call the method with any channel ID (it won't be used)
         val playlistDetails = scraper.playlist("any_id")
@@ -86,12 +49,12 @@ class AlbumPageScrapingTests {
 
         assertEquals(10, playlistDetails?.relatedPlaylists?.size)
         assertEquals(
-            "Sounds Of Silence",
+            "Let It Be (Super Deluxe)",
             playlistDetails?.relatedPlaylists?.get(0)?.name
         )
-        assertEquals("MPREb_WzySvZJyDsg", playlistDetails?.relatedPlaylists?.get(0)?.id)
+        assertEquals("MPREb_zBKX8qwlKte", playlistDetails?.relatedPlaylists?.get(0)?.id)
         assertEquals(
-            "https://lh3.googleusercontent.com/n2QV30WE3MKk1E2-XqiUBDz9v7MTiWQF3t2HmbndDBGtnFu41pNehddWzhwX8BZlDbsCGGvz179HnEQ=w226-h226-l90-rj",
+            "https://lh3.googleusercontent.com/0uSK3j19kosq8SmrnZZ_mlw3kL6ZWFcLRgt0cqhACJcA6cEfLgCscIllVfF-LjkuV3zhuYG6MSFih6PdMw=w226-h226-l90-rj",
             playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
         )
 
@@ -99,21 +62,9 @@ class AlbumPageScrapingTests {
 
     @Test
     fun `scrapePlaylist should correctly parse deathMagnetic HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("death_magnetic.html")
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("deathMagnetic.json")))
 
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
 
         // Act: Call the method with any channel ID (it won't be used)
         val playlistDetails = scraper.playlist("any_id")
@@ -142,12 +93,12 @@ class AlbumPageScrapingTests {
 
         assertEquals(10, playlistDetails?.relatedPlaylists?.size)
         assertEquals(
-            "Overkill (Exclusive Version)",
+            "Awake",
             playlistDetails?.relatedPlaylists?.get(0)?.name
         )
-        assertEquals("MPREb_ZGG3JZ6eAEz", playlistDetails?.relatedPlaylists?.get(0)?.id)
+        assertEquals("MPREb_TDaJ1HErJsN", playlistDetails?.relatedPlaylists?.get(0)?.id)
         assertEquals(
-            "https://lh3.googleusercontent.com/8wtjuBicAha4rscwnt2vM7fvywMf2MyrTLDSvYpGA_UQCHKdIQOSX4PLpX2lxN-57JCH3ljp9b0H02oP=w226-h226-l90-rj",
+            "https://lh3.googleusercontent.com/cuAmsZeqgsDjEb0DIe0UyYCGXVm-kIMoGTXF-4y4B8eiDRjpr7i4lJzKNDyxTIiC4_Zp_Y-82h1bxe5N=w226-h226-l90-rj",
             playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
         )
 
@@ -156,21 +107,9 @@ class AlbumPageScrapingTests {
 
     @Test
     fun `scrapePlaylist should correctly parse shotDownInTheBigEasy HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("shot_down_in_the_big_easy.html")
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("shotdowninthebigeasy.json")))
 
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
 
         // Act: Call the method with any channel ID (it won't be used)
         val playlistDetails = scraper.playlist("any_id")
@@ -199,12 +138,12 @@ class AlbumPageScrapingTests {
 
         assertEquals(10, playlistDetails?.relatedPlaylists?.size)
         assertEquals(
-            "Ac/Dc Medley: Highway to Hell / Touch Too Much / Back in Black / Shot Down in Flames / Thunderstruck / You Shook Me All Night Long / Sin City / She's Got Balls / Dirty Deeds Done Dirt Cheap",
+            "The Early Years",
             playlistDetails?.relatedPlaylists?.get(0)?.name
         )
-        assertEquals("MPREb_US5vRZVKy5s", playlistDetails?.relatedPlaylists?.get(0)?.id)
+        assertEquals("MPREb_HEOEUG7Pe8n", playlistDetails?.relatedPlaylists?.get(0)?.id)
         assertEquals(
-            "https://lh3.googleusercontent.com/92FWou-vY0wcP53mDtjlW7RjgATwfdEFzkLWvuHZ2yjyCnKxI-4lbgyn2ccedQG4Nb8f6N3sIYcUtpX4=w226-h226-l90-rj",
+            "https://lh3.googleusercontent.com/JLdWzTgNqfFoLaWkBMmowC-f6WsfQyVyUO8vv3FLe5M_5zA-aKlelDQte_O_Wfc2UplymrUlIs_zRe6T=w226-h226-l90-rj",
             playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url
         )
 

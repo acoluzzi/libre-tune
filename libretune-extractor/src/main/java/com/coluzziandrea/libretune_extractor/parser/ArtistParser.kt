@@ -1,13 +1,14 @@
 package com.coluzziandrea.libretune_extractor.parser
 
-import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.BrowseData
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.Song
+import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
 class ArtistParser {
 
@@ -44,11 +45,12 @@ class ArtistParser {
 
                                 content.musicShelfRenderer.contents.forEach { shelfItem ->
                                     if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                        Song.from(shelfItem).let {
-                                            if (it != null) {
-                                                topSongs.add(it)
+                                        shelfItem.musicResponsiveListItemRenderer.toSong()
+                                            .let { song ->
+                                                if (song != null) {
+                                                    topSongs.add(song)
+                                                }
                                             }
-                                        }
                                     }
                                 }
 

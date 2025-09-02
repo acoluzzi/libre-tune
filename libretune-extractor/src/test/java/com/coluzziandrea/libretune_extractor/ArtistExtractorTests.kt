@@ -1,71 +1,38 @@
 package com.coluzziandrea.libretune_extractor
 
 import com.coluzziandrea.libretune_extractor.util.TestUtil
+import com.coluzziandrea.libretune_extractor.util.provideMockClient
 import kotlinx.coroutines.test.runTest
-import okhttp3.Call
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.ResponseBody
 import org.junit.experimental.runners.Enclosed
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 
 @DisplayName("Artist")
 @RunWith(Enclosed::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArtistPageScrapingTests {
 
-    @Mock
-    private lateinit var mockClient: OkHttpClient
-
-    @Mock
-    private lateinit var mockCall: Call
-
-    private lateinit var scraper: LibreTuneExtractor
-
-    @BeforeAll
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        scraper = LibreTuneExtractor(mockClient)
-    }
 
     @Test
     fun `scrapeArtistPage should correctly parse beatles HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("beatles.html")
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("theBeatles.json")))
 
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
 
         // Act: Call the method with any channel ID (it won't be used)
         val artistDetails = scraper.artist("any_id")
 
         // Assert: Check if your parsing logic worked on the FAKE HTML
         assertNotNull(artistDetails)
-        assertEquals("The Beatles", artistDetails?.name)
-        assert(artistDetails?.description?.contains("It did all happen. The whole wonderful thing did happen, a long time ago, on the Mersey, on the") == true)
+        assertEquals(
+            "The Beatles",
+            artistDetails?.name
+        )
+        assert(artistDetails?.description?.contains("We didn't dream it... though it came out of John's dream of") == true)
         assertEquals(
             "https://lh3.googleusercontent.com/z8KZsHNKS-O1qYVyKlSErT_RLMSMwVht89USvSdFAd0EoRlBOppi9DOdRkv609Ye_tfq_Wp8WwhVJbw=w544-h544-p-l90-rj",
             artistDetails?.images?.first()?.url
@@ -100,10 +67,10 @@ class ArtistPageScrapingTests {
 
 
         assertEquals(10, artistDetails?.similarArtists?.size)
-        assertEquals("Cream", artistDetails?.similarArtists?.get(0)?.name)
-        assertEquals("UC_oKib7DXJ7JE5erWrFUbEQ", artistDetails?.similarArtists?.get(0)?.id)
+        assertEquals("Traveling Wilburys", artistDetails?.similarArtists?.get(0)?.name)
+        assertEquals("UC2zPxEtkJD0hh8cpXq2Rl9A", artistDetails?.similarArtists?.get(0)?.id)
         assertEquals(
-            "https://lh3.googleusercontent.com/0QzjdJsmsrFI1O7-c2MbLaouS1gGeH01fQZvdHZSKqJALKtPd0CWP0J9qcvdKHTUWpOsLr2tUWjh9ho=w226-h226-p-l90-rj",
+            "https://lh3.googleusercontent.com/dpALL4GjEupfSup1LkCzrolcH9YZFOTVzNcBgfRADjWI7FAusKNYBd1yJpDq82LoTkD7CxtERYvlxQk=w226-h226-p-l90-rj",
             artistDetails?.similarArtists?.get(0)?.images?.firstOrNull()?.url
         )
 
@@ -145,21 +112,8 @@ class ArtistPageScrapingTests {
 
     @Test
     fun `scrapeArtistPage should correctly parse acdc HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("acdc.html")
-
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("acdc.json")))
 
         // Act: Call the method with any channel ID (it won't be used)
         val artistDetails = scraper.artist("any_id")
@@ -245,21 +199,8 @@ class ArtistPageScrapingTests {
 
     @Test
     fun `scrapeArtistPage should correctly parse metallica HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("metallica.html")
-
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("metallica.json")))
 
         // Act: Call the method with any channel ID (it won't be used)
         val artistDetails = scraper.artist("any_id")
@@ -301,10 +242,10 @@ class ArtistPageScrapingTests {
 
 
         assertEquals(10, artistDetails?.similarArtists?.size)
-        assertEquals("Dio", artistDetails?.similarArtists?.get(0)?.name)
-        assertEquals("UCgxv4igPRzlBIyCKEzDwiYQ", artistDetails?.similarArtists?.get(0)?.id)
+        assertEquals("Ozzy Osbourne", artistDetails?.similarArtists?.get(0)?.name)
+        assertEquals("UC3oY0sESMqxZaAy8nRcVxQQ", artistDetails?.similarArtists?.get(0)?.id)
         assertEquals(
-            "https://lh3.googleusercontent.com/NShR9qq8voOAjA05qdze6AY6OhAS77JoSdLAjaxZJrU6Au6mP_af3mW5HcRF9YEjtTVZCyLPA5f00Ro=w226-h226-p-l90-rj",
+            "https://lh3.googleusercontent.com/xbR9cvRRy6-MOnZbVbpTDc4m706kpoj7yiM-cRxXL-G_5tvgsXh50AbSQTHcnPG0DbI1J543tduScbU=w226-h226-p-l90-rj",
             artistDetails?.similarArtists?.get(0)?.images?.firstOrNull()?.url
         )
 

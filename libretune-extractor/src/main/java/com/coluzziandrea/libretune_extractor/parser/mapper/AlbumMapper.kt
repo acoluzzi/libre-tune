@@ -1,7 +1,7 @@
 package com.coluzziandrea.libretune_extractor.parser.mapper
 
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.MusicNode
 
 fun SectionContent.MusicResponsiveListItemContent.extractAlbumInfo(): MusicNode? {

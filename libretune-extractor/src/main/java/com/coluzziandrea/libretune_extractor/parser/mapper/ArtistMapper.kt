@@ -1,13 +1,15 @@
 package com.coluzziandrea.libretune_extractor.parser.mapper
 
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.section.content.MusicResponsiveListItemRenderer
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.model.Artist
+import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.MusicNode
 
-fun SectionContent.MusicResponsiveListItemContent.extractArtistsInfo(): List<MusicNode> {
+fun MusicResponsiveListItemRenderer.extractArtistsInfo(): List<MusicNode> {
     val artists = mutableListOf<MusicNode>()
 
-    val artistFlexColumn = musicResponsiveListItemRenderer.flexColumns.find {
+    val artistFlexColumn = flexColumns.find {
         it.musicResponsiveListItemFlexColumnRenderer.text.runs?.any { run ->
             run.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && run.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType == "MUSIC_PAGE_TYPE_ARTIST"
         } == true
@@ -27,3 +29,29 @@ fun SectionContent.MusicResponsiveListItemContent.extractArtistsInfo(): List<Mus
 
 }
 
+
+fun MusicResponsiveListItemRenderer.toArtist(): Artist? {
+    val name =
+        flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.get(
+            0
+        )?.text
+    val navigationEndpoint = navigationEndpoint
+    if (navigationEndpoint !is NavigationEndpoint.BrowseNavigationEndpoint) {
+        return null
+    }
+    val id = navigationEndpoint.browseEndpoint.browseId
+    if (name.isNullOrEmpty() || id.isEmpty()) {
+        return null
+    }
+    return Artist(
+        id = id,
+        name = name,
+        images = thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.map {
+            Image(
+                url = it.url,
+                width = it.width,
+                height = it.height
+            )
+        } ?: emptyList()
+    )
+}

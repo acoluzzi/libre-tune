@@ -1,11 +1,12 @@
 package com.coluzziandrea.libretune_extractor.parser
 
-import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.BrowseData
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
 import com.coluzziandrea.libretune_extractor.model.Song
+import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
 class PlaylistParser {
 
@@ -49,7 +50,7 @@ class PlaylistParser {
                     }
                     contents?.forEach { shelfContent ->
                         if (shelfContent is SectionContent.MusicResponsiveListItemContent) {
-                            Song.from(shelfContent).let {
+                            shelfContent.musicResponsiveListItemRenderer.toSong().let {
                                 if (it != null) {
                                     var images = it.images
                                     if (images.isEmpty()) {

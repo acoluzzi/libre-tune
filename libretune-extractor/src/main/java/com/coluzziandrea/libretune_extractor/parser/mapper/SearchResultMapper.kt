@@ -1,11 +1,11 @@
 package com.coluzziandrea.libretune_extractor.parser.mapper
 
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 import com.coluzziandrea.libretune_extractor.model.Artist
-import com.coluzziandrea.libretune_extractor.model.TopResult
+import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 
-fun SectionContent.MusicCardShelfContent.toTopResult(): TopResult? {
+fun SectionContent.MusicCardShelfContent.toTopResult(): GenericMusicItem? {
     val navigationEndpoint =
         musicCardShelfRenderer.title.runs.firstOrNull()?.navigationEndpoint
 
@@ -15,17 +15,17 @@ fun SectionContent.MusicCardShelfContent.toTopResult(): TopResult? {
 
         when (pageType) {
             "MUSIC_PAGE_TYPE_ARTIST" -> {
-                val artistTopResult = TopResult.ArtistResult(
+                val artistGenericMusicItem = GenericMusicItem.ArtistResult(
                     artist = Artist.from(musicCardShelfRenderer)
                 )
-                return artistTopResult
+                return artistGenericMusicItem
             }
 
             "MUSIC_PAGE_TYPE_ALBUM" -> {
-                val albumTopResult = TopResult.AlbumResult(
+                val albumGenericMusicItem = GenericMusicItem.AlbumResult(
                     album = musicCardShelfRenderer.toPlaylist()
                 )
-                return albumTopResult
+                return albumGenericMusicItem
             }
         }
     }

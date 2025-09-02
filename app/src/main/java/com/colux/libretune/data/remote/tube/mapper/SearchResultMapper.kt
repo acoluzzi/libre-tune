@@ -1,26 +1,26 @@
 package com.colux.libretune.data.remote.tube.mapper
 
-import com.coluzziandrea.libretune_extractor.model.TopResult
+import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import com.colux.libretune.data.model.SearchResult as DataModelSearchResult
 import com.coluzziandrea.libretune_extractor.model.SearchResult as ExtractorSearchResult
 
 
 fun ExtractorSearchResult.toDataModel(): DataModelSearchResult {
-    val topSongs = topResults.mapNotNull {
+    val topSongs = genericMusicItems.mapNotNull {
         when (it) {
-            is TopResult.SongResult -> it.song?.toDataModel()
+            is GenericMusicItem.SongResult -> it.song?.toDataModel()
             else -> null
         }
     }
-    val topAlbums = topResults.mapNotNull {
+    val topAlbums = genericMusicItems.mapNotNull {
         when (it) {
-            is TopResult.AlbumResult -> it.album?.toDataModel()
+            is GenericMusicItem.AlbumResult -> it.album?.toDataModel()
             else -> null
         }
     }
-    val topArtists = topResults.mapNotNull {
+    val topArtists = genericMusicItems.mapNotNull {
         when (it) {
-            is TopResult.ArtistResult -> it.artist?.toDataModel()
+            is GenericMusicItem.ArtistResult -> it.artist?.toDataModel()
             else -> null
         }
     }

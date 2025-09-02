@@ -1,73 +1,34 @@
 package com.coluzziandrea.libretune_extractor
 
-import com.coluzziandrea.libretune_extractor.model.TopResult
+import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import com.coluzziandrea.libretune_extractor.util.TestUtil
+import com.coluzziandrea.libretune_extractor.util.provideMockClient
 import kotlinx.coroutines.test.runTest
-import okhttp3.Call
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.ResponseBody
 import org.junit.experimental.runners.Enclosed
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 import kotlin.test.assertTrue
 
 
-@RunWith(Enclosed::class)
 @DisplayName("Search")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@RunWith(Enclosed::class)
 class SearchExtractorTests {
-    @Mock
-    private lateinit var mockClient: OkHttpClient
-
-    @Mock
-    private lateinit var mockCall: Call
-
-    private lateinit var scraper: LibreTuneExtractor
-
-    @BeforeAll
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        scraper = LibreTuneExtractor(mockClient)
-    }
 
 
     @Test
     fun `scrapeSearch should correctly parse Iron Maiden search HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("search_iron_maiden.html")
-
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("searchIronMaiden.json")))
 
         // Act: Call the method with any channel ID (it won't be used)
         val result = scraper.search("any_id")
 
 
-        assertEquals(4, result?.topResults?.size)
-        assertTrue(result?.topResults?.get(0) is TopResult.ArtistResult)
-        val artistResult = result.topResults.get(0) as TopResult.ArtistResult
+        assertEquals(4, result?.genericMusicItems?.size)
+        assertTrue(result?.genericMusicItems?.get(0) is GenericMusicItem.ArtistResult)
+        val artistResult = result.genericMusicItems.get(0) as GenericMusicItem.ArtistResult
         assertEquals("Iron Maiden", artistResult.artist?.name)
         assertEquals("UC0zbzp6x7zR8u0LhanNWFyw", artistResult.artist?.id)
         assertEquals(
@@ -76,8 +37,8 @@ class SearchExtractorTests {
         )
 
 
-        assertTrue(result?.topResults?.get(1) is TopResult.SongResult)
-        val topSong = result.topResults.get(1) as TopResult.SongResult
+        assertTrue(result?.genericMusicItems?.get(1) is GenericMusicItem.SongResult)
+        val topSong = result.genericMusicItems.get(1) as GenericMusicItem.SongResult
         assertEquals("Fear of the Dark", topSong.song?.title)
         assertEquals("bePCRKGUwAY", topSong.song?.id)
         assertEquals(
@@ -286,37 +247,25 @@ class SearchExtractorTests {
 
     @Test
     fun `scrapeSearch should correctly parse Fear Of The Dark search HTML`() = runTest {
-        // Arrange: Create a fake HTML response
-        val fakeHtml = TestUtil.readFileFromResources("search_fear_of_the_dark.html")
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("searchFearOfTheDark.json")))
 
-        val responseBody = ResponseBody.create("text/html".toMediaTypeOrNull(), fakeHtml)
-        val response = Response.Builder()
-            .request(Request.Builder().url("http://googleusercontent.com").build())
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .body(responseBody)
-            .build()
-
-        // Tell the mock client what to do when a call is made
-        whenever(mockClient.newCall(any())).thenReturn(mockCall)
-        whenever(mockCall.execute()).thenReturn(response)
 
         // Act: Call the method with any channel ID (it won't be used)
         val result = scraper.search("any_id")
 
 
-        assertEquals(1, result?.topResults?.size)
-        assertTrue(result?.topResults?.get(0) is TopResult.AlbumResult)
-        val topResult = result.topResults.get(0) as TopResult.AlbumResult
-        assertEquals("Fear of the Dark", topResult.album?.name)
-        assertEquals("MPREb_2ER16Pnctup", topResult.album?.id)
+        assertEquals(1, result?.genericMusicItems?.size)
+        assertTrue(result?.genericMusicItems?.get(0) is GenericMusicItem.AlbumResult)
+        val genericMusicItem = result.genericMusicItems.get(0) as GenericMusicItem.AlbumResult
+        assertEquals("Fear of the Dark", genericMusicItem.album?.name)
+        assertEquals("MPREb_2ER16Pnctup", genericMusicItem.album?.id)
         assertEquals(
             "https://lh3.googleusercontent.com/oJwgqSS3BqNI7lLB43eOkiiKCfgMFdFucJ5yI4XDGYovcbim9TrKYMg2t4ciHQ1jjbq0re3fpgBZrz1s=w60-h60-l90-rj",
-            topResult.album?.images?.firstOrNull()?.url
+            genericMusicItem.album?.images?.firstOrNull()?.url
         )
-        assertEquals("Iron Maiden", topResult.album?.artists?.firstOrNull()?.name)
-        assertEquals("UC0zbzp6x7zR8u0LhanNWFyw", topResult.album?.artists?.firstOrNull()?.id)
+        assertEquals("Iron Maiden", genericMusicItem.album?.artists?.firstOrNull()?.name)
+        assertEquals("UC0zbzp6x7zR8u0LhanNWFyw", genericMusicItem.album?.artists?.firstOrNull()?.id)
 
 
 

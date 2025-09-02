@@ -1,20 +1,22 @@
 package com.coluzziandrea.libretune_extractor.parser
 
-import com.coluzziandrea.libretune_extractor.browse_response.BrowseData
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.client.response.BrowseData
+import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
 import com.coluzziandrea.libretune_extractor.model.Artist
+import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.SearchResult
 import com.coluzziandrea.libretune_extractor.model.Song
-import com.coluzziandrea.libretune_extractor.model.TopResult
+import com.coluzziandrea.libretune_extractor.parser.mapper.toArtist
 import com.coluzziandrea.libretune_extractor.parser.mapper.toPlaylist
+import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 import com.coluzziandrea.libretune_extractor.parser.mapper.toTopResult
 
 class SearchResultParser {
     companion object {
         fun from(browseDataObject: BrowseData): SearchResult {
 
-            val topResults = mutableListOf<TopResult>()
+            val genericMusicItems = mutableListOf<GenericMusicItem>()
             val songs = mutableListOf<Song>()
             val albums = mutableListOf<Playlist>()
             val artists = mutableListOf<Artist>()
@@ -30,16 +32,16 @@ class SearchResultParser {
 
                             content.toTopResult().let { topRes ->
                                 if (topRes != null) {
-                                    topResults.add(topRes)
+                                    genericMusicItems.add(topRes)
                                 }
                             }
 
                             content.musicCardShelfRenderer.contents?.forEach { subItem ->
                                 if (subItem is SectionContent.MusicResponsiveListItemContent) {
-                                    val songTopResult = TopResult.SongResult(
-                                        song = Song.from(subItem)
+                                    val songGenericMusicItem = GenericMusicItem.SongResult(
+                                        song = subItem.musicResponsiveListItemRenderer.toSong()
                                     )
-                                    topResults.add(songTopResult)
+                                    genericMusicItems.add(songGenericMusicItem)
                                 }
                             }
 
@@ -65,7 +67,7 @@ class SearchResultParser {
                                 "Songs" -> {
                                     content.musicShelfRenderer.contents.forEach { shelfItem ->
                                         if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                            Song.from(shelfItem).let {
+                                            shelfItem.musicResponsiveListItemRenderer.toSong().let {
                                                 if (it != null) {
                                                     songs.add(it)
                                                 }
@@ -77,11 +79,12 @@ class SearchResultParser {
                                 "Artists" -> {
                                     content.musicShelfRenderer.contents.forEach { shelfItem ->
                                         if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                            Artist.from(shelfItem).let {
-                                                if (it != null) {
-                                                    artists.add(it)
+                                            shelfItem.musicResponsiveListItemRenderer.toArtist()
+                                                .let {
+                                                    if (it != null) {
+                                                        artists.add(it)
+                                                    }
                                                 }
-                                            }
                                         }
                                     }
                                 }
@@ -118,7 +121,7 @@ class SearchResultParser {
             }
 
             return SearchResult(
-                topResults = topResults,
+                genericMusicItems = genericMusicItems,
                 songs = songs,
                 albums = albums,
                 artists = artists,

@@ -5,8 +5,14 @@ import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
+import com.colux.libretune.data.model.SearchSuggestion
+import com.colux.libretune.data.remote.tube.mapper.toAlbum
+import com.colux.libretune.data.remote.tube.mapper.toArtist
 import com.colux.libretune.data.remote.tube.mapper.toDataModel
+import com.colux.libretune.data.remote.tube.mapper.toPlaylist
+import com.colux.libretune.data.remote.tube.mapper.toSong
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
+import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -71,6 +77,52 @@ class YouTubeExtractionRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun searchSuggestions(query: String): List<SearchSuggestion> {
+        return withContext(Dispatchers.IO) {
+            try {
+                return@withContext libreTuneExtractor.searchSuggestions(query).mapNotNull {
+                    if (it.suggestion != null && it.suggestion?.isNotEmpty() == true) {
+                        com.colux.libretune.data.model.SearchSuggestion.QuerySuggestion(
+                            it.suggestion!!,
+                            false
+                        )
+                    } else if (it.musicItem != null) {
+                        val musicItem = it.musicItem
+                        when (musicItem) {
+                            is GenericMusicItem.SongResult -> SearchSuggestion.EntitySuggestion(
+                                song = musicItem.toSong(), type = "Song"
+                            )
+
+                            is GenericMusicItem.ArtistResult -> SearchSuggestion.EntitySuggestion(
+                                artist = musicItem.toArtist(),
+                                type = "Artist"
+                            )
+
+                            is GenericMusicItem.AlbumResult -> SearchSuggestion.EntitySuggestion(
+                                album = musicItem.toAlbum(),
+                                type = "Album"
+                            )
+
+                            is GenericMusicItem.PlaylistResult -> SearchSuggestion.EntitySuggestion(
+                                playlist = musicItem.toPlaylist(),
+                                type = "Playlist"
+                            )
+
+                            else -> null
+                        }
+
+                    } else {
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+    }
+
 
     suspend fun getArtistDetails(id: String): ArtistDetails? {
         return withContext(Dispatchers.IO) {

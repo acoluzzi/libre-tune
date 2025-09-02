@@ -46,6 +46,19 @@ android {
 
 dependencies {
 
+    // Ktor Client Core
+    implementation(libs.ktor.client.core)
+    // CIO is a good default engine for Android
+    implementation(libs.ktor.client.cio)
+
+    // This plugin handles automatic JSON serialization/deserialization
+    implementation(libs.ktor.client.content.negotiation)
+    // This tells the plugin to use kotlinx.serialization
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.3")
+
+    // Optional: for logging network requests, very useful for debugging
+    implementation("io.ktor:ktor-client-logging:3.2.3")
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

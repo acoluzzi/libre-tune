@@ -1,7 +1,7 @@
 package com.coluzziandrea.libretune_extractor.model
 
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.CarouselContent
-import com.coluzziandrea.libretune_extractor.browse_response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.client.response.section.content.CarouselContent
+import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 
 data class Playlist(
     val node: MusicNode,

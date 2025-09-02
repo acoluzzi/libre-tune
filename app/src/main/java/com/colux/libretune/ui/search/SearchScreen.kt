@@ -20,11 +20,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +53,7 @@ import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.Image
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.SearchResult
+import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.album.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
@@ -129,8 +132,43 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                 SuggestionsOverlay(
                     suggestions = (uiState as SearchUiState.Suggestions).suggestions,
                     onSuggestionClick = { suggestion ->
-                        query = suggestion
-                        searchViewModel.submitSearch(suggestion)
+                        when (suggestion) {
+                            is SearchSuggestion.QuerySuggestion -> {
+                                // If it's a simple query, submit a new search
+                                query = suggestion.query
+                                searchViewModel.submitSearch(suggestion.query)
+                            }
+
+                            is SearchSuggestion.EntitySuggestion -> {
+                                // If it's a specific entity, handle based on type
+                                when (suggestion.type) {
+                                    "Song" -> {
+                                        playerViewModel.playPlaylist(
+                                            listOfNotNull(suggestion.song),
+                                            0
+                                        )
+                                    }
+
+                                    "Artist" -> {
+                                        navController.navigate(
+                                            Screen.Artist.createRoute(
+                                                suggestion.artist?.id ?: return@SuggestionsOverlay
+                                            )
+                                        )
+                                    }
+
+                                    "Album", "Playlist" -> {
+                                        navController.navigate(
+                                            Screen.PlaylistDetail.createRoute(
+                                                suggestion.album?.id ?: suggestion.playlist?.id
+                                                ?: return@SuggestionsOverlay
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        // Hide the keyboard and suggestions overlay
                         focusManager.clearFocus()
                     }
                 )
@@ -209,7 +247,10 @@ fun EmptyResults(query: String) {
 }
 
 @Composable
-fun SuggestionsOverlay(suggestions: List<String>, onSuggestionClick: (String) -> Unit) {
+fun SuggestionsOverlay(
+    suggestions: List<SearchSuggestion>,
+    onSuggestionClick: (SearchSuggestion) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -217,20 +258,80 @@ fun SuggestionsOverlay(suggestions: List<String>, onSuggestionClick: (String) ->
             .background(MaterialTheme.colorScheme.surface)
     ) {
         items(suggestions) { suggestion ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onSuggestionClick(suggestion) }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.History,
-                    contentDescription = "Past query"
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(text = suggestion)
+            // Use a 'when' statement to handle each type of suggestion
+            when (suggestion) {
+                is SearchSuggestion.QuerySuggestion -> {
+                    QuerySuggestionItem(
+                        suggestion = suggestion,
+                        onClick = { onSuggestionClick(suggestion) }
+                    )
+                }
+
+                is SearchSuggestion.EntitySuggestion -> {
+                    EntitySuggestionItem(
+                        suggestion = suggestion,
+                        onClick = { onSuggestionClick(suggestion) }
+                    )
+                }
             }
+        }
+    }
+}
+
+/**
+ * A composable for displaying a simple text suggestion (past or remote).
+ */
+@Composable
+fun QuerySuggestionItem(suggestion: SearchSuggestion.QuerySuggestion, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Show History or Search icon based on the 'isFromHistory' flag
+        val icon = if (suggestion.isFromHistory) Icons.Outlined.History else Icons.Outlined.Search
+        Icon(
+            imageVector = icon,
+            contentDescription = if (suggestion.isFromHistory) "Past query" else "Search suggestion"
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = suggestion.query)
+    }
+}
+
+/**
+ * A composable for displaying an entity suggestion (Song, Artist, etc.).
+ */
+@Composable
+fun EntitySuggestionItem(suggestion: SearchSuggestion.EntitySuggestion, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = suggestion.getImageForList(),
+            contentDescription = suggestion.getName(),
+            modifier = Modifier
+                .size(48.dp)
+                .clip(if (suggestion.type == "Artist") CircleShape else RoundedCornerShape(4.dp))
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = suggestion.getName(), style = MaterialTheme.typography.bodyLarge)
+
+            // Build a subtitle that includes the type and artist name if present.
+            val subtitle = buildString {
+                append(suggestion.type)
+                if (!suggestion.getArtistNameLabel().isNullOrBlank()) {
+                    append(" • ${suggestion.getArtistNameLabel()}")
+                }
+            }
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

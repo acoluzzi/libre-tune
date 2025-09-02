@@ -1,15 +1,15 @@
 package com.coluzziandrea.libretune_extractor.model
 
 
-sealed interface TopResult {
-    data class ArtistResult(val artist: Artist?) : TopResult
-    data class SongResult(val song: Song?) : TopResult
-    data class AlbumResult(val album: Playlist?) : TopResult
-    data class PlaylistResult(val playlist: Playlist?) : TopResult
+sealed interface GenericMusicItem {
+    data class ArtistResult(val artist: Artist?) : GenericMusicItem
+    data class SongResult(val song: Song?) : GenericMusicItem
+    data class AlbumResult(val album: Playlist?) : GenericMusicItem
+    data class PlaylistResult(val playlist: Playlist?) : GenericMusicItem
 }
 
 data class SearchResult(
-    val topResults: List<TopResult>,
+    val genericMusicItems: List<GenericMusicItem>,
     val songs: List<Song>,
     val albums: List<Playlist>,
     val artists: List<Artist>,

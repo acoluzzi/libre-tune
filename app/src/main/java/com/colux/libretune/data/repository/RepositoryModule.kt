@@ -1,6 +1,7 @@
 package com.colux.libretune.data.repository
 
 import com.colux.libretune.data.local.dao.ArtistDao
+import com.colux.libretune.data.local.dao.SearchQueryDao
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import dagger.Module
 import dagger.Provides
@@ -14,9 +15,10 @@ class RepositoryModule {
     @Provides
     fun provideMusicRepositoryImpl(
         repository: YouTubeExtractionRepository,
-        artistDao: ArtistDao
+        artistDao: ArtistDao,
+        searchQueryDao: SearchQueryDao
     ): MusicRepository {
-        return MusicRepository(repository, artistDao)
+        return MusicRepository(repository, artistDao, searchQueryDao)
     }
 
 }

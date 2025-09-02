@@ -1,12 +1,17 @@
 package com.colux.libretune.data.repository
 
 import com.colux.libretune.data.local.dao.ArtistDao
+import com.colux.libretune.data.local.dao.SearchQueryDao
+import com.colux.libretune.data.local.entity.SearchQueryEntity
 import com.colux.libretune.data.mapper.toArtistDetails
 import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
+import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import java.util.concurrent.TimeUnit
@@ -16,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class MusicRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
-    private val artistDao: ArtistDao
+    private val artistDao: ArtistDao,
+    private val searchQueryDao: SearchQueryDao
 ) {
 
     suspend fun getSongUrlById(id: String): String? {
@@ -24,7 +30,11 @@ class MusicRepository @Inject constructor(
     }
 
     suspend fun searchContent(query: String): SearchResult? {
-        return remote.searchContent(query)
+        val result = remote.searchContent(query)
+        if (result != null && !result.isEmpty) {
+            searchQueryDao.insertQuery(SearchQueryEntity(query = query))
+        }
+        return result
     }
 
 
@@ -44,6 +54,22 @@ class MusicRepository @Inject constructor(
                     updateArtistDetailsFromRemote(artistId)
                 }
             }
+    }
+
+    fun getQuerySuggestions(query: String): Flow<List<SearchSuggestion>> {
+        val fromHistory: Flow<List<SearchSuggestion>> =
+            searchQueryDao.getQuerySuggestions(query).map {
+                it.map { entity -> SearchSuggestion.QuerySuggestion(entity.query, true) }
+            }
+
+        val fromRemote: Flow<List<SearchSuggestion>> = flow {
+            val remoteResults = remote.searchSuggestions(query)
+            emit(remoteResults)
+        }
+
+        return combine(fromHistory, fromRemote) { history, remote ->
+            (history + remote)
+        }
     }
 
     private suspend fun shouldFetch(artistId: String): Boolean {

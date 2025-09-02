@@ -14,7 +14,7 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 class ArtistParser {
 
     companion object {
-        fun from(browseDataObject: BrowseData): ArtistDetails? {
+        fun from(browseDataObject: BrowseData, browseId: String): ArtistDetails? {
             val topSongs = mutableListOf<Song>()
             val albums = mutableListOf<Playlist>()
             val singlesEp = mutableListOf<Playlist>()
@@ -88,9 +88,25 @@ class ArtistParser {
                                     "Albums" -> {
                                         albums.addAll(currentPlaylists.map {
                                             if (it.type != PlaylistType.ALBUM) {
-                                                it.copy(type = PlaylistType.ALBUM)
+                                                it.copy(
+                                                    type = PlaylistType.ALBUM, artists =
+                                                        listOf(
+                                                            Artist(
+                                                                id = browseId,
+                                                                name = artistName ?: "Unknown"
+                                                            )
+                                                        )
+                                                )
                                             } else {
-                                                it
+                                                it.copy(
+                                                    artists =
+                                                        listOf(
+                                                            Artist(
+                                                                id = browseId,
+                                                                name = artistName ?: "Unknown"
+                                                            )
+                                                        )
+                                                )
                                             }
                                         })
                                         discographyId =
@@ -106,9 +122,25 @@ class ArtistParser {
                                     "Singles & EPs" -> {
                                         singlesEp.addAll(currentPlaylists.map {
                                             if (it.type != PlaylistType.SINGLE_EP) {
-                                                it.copy(type = PlaylistType.SINGLE_EP)
+                                                it.copy(
+                                                    type = PlaylistType.SINGLE_EP, artists =
+                                                        listOf(
+                                                            Artist(
+                                                                id = browseId,
+                                                                name = artistName ?: "Unknown"
+                                                            )
+                                                        )
+                                                )
                                             } else {
-                                                it
+                                                it.copy(
+                                                    artists =
+                                                        listOf(
+                                                            Artist(
+                                                                id = browseId,
+                                                                name = artistName ?: "Unknown"
+                                                            )
+                                                        )
+                                                )
                                             }
                                         })
                                         discographyId =

@@ -73,7 +73,9 @@ fun MusicResponsiveListItemRenderer.toSong(): Song? {
             return Song(
                 id = videoId,
                 playlistId = playlistId,
-                album = album,
+                album = album?.copy(
+                    artists = artists
+                ),
                 title = songItem.text,
                 artists = artists,
                 images = images

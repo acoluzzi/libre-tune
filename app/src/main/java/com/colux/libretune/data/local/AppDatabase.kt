@@ -16,14 +16,12 @@ import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
-import com.colux.libretune.data.local.join.SongArtistCrossRef
 
 @Database(
     entities = [SongEntity::class,
         ArtistEntity::class,
         AlbumEntity::class,
         PlaylistEntity::class,
-        SongArtistCrossRef::class,
         ArtistArtistCrossRef::class,
         AlbumArtistCrossRef::class,
         SearchQueryEntity::class,

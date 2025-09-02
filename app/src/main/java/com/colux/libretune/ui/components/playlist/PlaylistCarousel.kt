@@ -37,8 +37,11 @@ fun PlaylistCarousel(
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            itemsIndexed(playlists) { index, song ->
-                PlaylistCard(playlist = song, onSongClick = { onItemClick(index) })
+            itemsIndexed(playlists) { index, playlist ->
+                if (playlist.id.isEmpty() || playlist.name.isEmpty() || playlist.images.isEmpty()) {
+                    return@itemsIndexed
+                }
+                PlaylistCard(playlist = playlist, onSongClick = { onItemClick(index) })
             }
 
             if (onViewAllClick != null) {

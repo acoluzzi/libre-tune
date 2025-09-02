@@ -33,7 +33,7 @@ class LibreTuneExtractor @Inject constructor(
 
     suspend fun artist(channelId: String): ArtistDetails? {
         return client.browse(channelId).let {
-            ArtistParser.from(it)
+            ArtistParser.from(it, channelId)
         }
     }
 

@@ -8,7 +8,6 @@ import com.colux.libretune.data.local.entity.ArtistEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
-import com.colux.libretune.data.local.join.SongArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.local.wrapper.AlbumWithArtists
@@ -19,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -42,15 +42,24 @@ class ArtistRepository @Inject constructor(
 
         // 1. Get the individual flows from each DAO.
         val artistFlow: Flow<ArtistEntity?> = db.artistDao().getArtist(artistId)
-        val songsFlow: Flow<List<SongEntity>> = db.songDao().getSongsForArtist(artistId)
         val albumsFlow: Flow<List<AlbumEntity>> = db.albumDao().getAlbumsByArtistId(artistId)
         val singlesFlow: Flow<List<AlbumEntity>> = db.albumDao().getSinglesByArtistId(artistId)
         val similarArtistsFlow: Flow<List<ArtistEntity>> =
             db.artistDao().getSimilarArtists(artistId)
 
+        val albumsAndSinglesFlow = combine(albumsFlow, singlesFlow) { albums, singles ->
+            albums + singles
+        }
+
+        val songsFlow: Flow<List<SongEntity>> = albumsAndSinglesFlow.map { albums ->
+            albums.flatMap { album ->
+                db.songDao().getSongsByAlbumId(album.albumId)
+            }
+        }
+
 
         val songsWithAlbumsAndArtistsFlow: Flow<List<SongWithAlbumAndArtists>> =
-            songsFlow.map { songs ->
+            songsFlow.mapNotNull { songs ->
                 songs.map { song ->
                     val songAlbum = db.albumDao().getAlbum(song.songId).firstOrNull()
 
@@ -68,9 +77,7 @@ class ArtistRepository @Inject constructor(
             }
 
         val albumsWithArtistsFlow: Flow<List<AlbumWithArtists>> =
-            combine(albumsFlow, singlesFlow) { albums, singles ->
-                albums + singles
-            }.map { albums ->
+            albumsAndSinglesFlow.map { albums ->
                 albums.map { album ->
                     val albumArtists =
                         db.artistDao().getArtistsByAlbumId(album.albumId).firstOrNull()
@@ -91,10 +98,8 @@ class ArtistRepository @Inject constructor(
         ) { artist, songs, albums, similarArtists ->
             // This block runs whenever any of the source flows emit a new value.
             // If the main artist doesn't exist, we can't build the details.
-            logger.info { "Resolving combined artist flow $artist" }
             if (artist == null) return@combine null
 
-            logger.info { "mapping final entity" }
             // 3. Manually "stitch" the data together into the clean UI model.
             ArtistDetails(
                 name = artist.name,
@@ -159,7 +164,6 @@ class ArtistRepository @Inject constructor(
                 updateTimestamp = System.currentTimeMillis()
             )
 
-            logger.info { "built artistEntity $artistEntity" }
 
             // 2. Map the lists of other entities
             val songEntities = remoteDetails.topSongs.map { it.toEntity() }
@@ -170,10 +174,16 @@ class ArtistRepository @Inject constructor(
                 it.artists
             }
 
-            val albumEntities =
-                (remoteDetails.albums + remoteDetails.singlesAndEPs + songAlbums).distinctBy {
+            val albums =
+                (remoteDetails.albums + remoteDetails.singlesAndEPs).distinctBy {
                     it.id
-                }.map { it.toEntity() }
+                }
+
+            val songAlbumsDiff = songAlbums.filter {
+                albums.none { ae -> ae.id == it.id }
+            }
+
+            val albumEntities = (albums + songAlbumsDiff).map { it.toEntity() }
 
             val artistsEntities = (remoteDetails.similarArtists + songArtists).distinctBy {
                 it.id
@@ -183,29 +193,19 @@ class ArtistRepository @Inject constructor(
                 it.toEntity()
             }
 
-            // 3. Create the links for the join tables
-            val songArtistLinks = remoteDetails.topSongs.flatMap { song ->
-                song.artists.map { artist ->
-                    SongArtistCrossRef(
-                        songId = song.id,
-                        artistId = artist.id
-                    )
+            val albumArtistLinks =
+                (remoteDetails.albums + remoteDetails.singlesAndEPs + songAlbums).flatMap { album ->
+                    album.artists.map { artist ->
+                        AlbumArtistCrossRef(
+                            albumId = album.id,
+                            artistId = artist.id
+                        )
+                    }
                 }
-            }
-            val albumArtistLinks = remoteDetails.albums.flatMap { album ->
-                album.artists.map { artist ->
-                    AlbumArtistCrossRef(
-                        albumId = album.id,
-                        artistId = artist.id
-                    )
-                }
-            }
             val similarArtistLinks = remoteDetails.similarArtists.map { similar ->
                 ArtistArtistCrossRef(parentArtistId = artistId, relatedArtistId = similar.id)
             }
 
-
-            logger.info { "Built children entities" }
 
             // 4. Call the single transaction method in the DAO
             db.withTransaction {
@@ -235,7 +235,6 @@ class ArtistRepository @Inject constructor(
                 }
                 db.songDao().insertSongs(songEntities)
 
-                db.songDao().linkSongToArtists(songArtistLinks)
                 db.albumDao().linkAlbumToArtists(albumArtistLinks)
                 db.artistDao().linkSimilarArtists(similarArtistLinks)
 

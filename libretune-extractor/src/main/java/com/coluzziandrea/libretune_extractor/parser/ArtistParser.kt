@@ -7,6 +7,7 @@ import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
+import com.coluzziandrea.libretune_extractor.model.PlaylistType
 import com.coluzziandrea.libretune_extractor.model.Song
 import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
@@ -85,7 +86,13 @@ class ArtistParser {
 
                                 when (headerText) {
                                     "Albums" -> {
-                                        albums.addAll(currentPlaylists)
+                                        albums.addAll(currentPlaylists.map {
+                                            if (it.type != PlaylistType.ALBUM) {
+                                                it.copy(type = PlaylistType.ALBUM)
+                                            } else {
+                                                it
+                                            }
+                                        })
                                         discographyId =
                                             content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
                                                 if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
@@ -97,7 +104,13 @@ class ArtistParser {
                                     }
 
                                     "Singles & EPs" -> {
-                                        singlesEp.addAll(currentPlaylists)
+                                        singlesEp.addAll(currentPlaylists.map {
+                                            if (it.type != PlaylistType.SINGLE_EP) {
+                                                it.copy(type = PlaylistType.SINGLE_EP)
+                                            } else {
+                                                it
+                                            }
+                                        })
                                         discographyId =
                                             content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
                                                 if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {

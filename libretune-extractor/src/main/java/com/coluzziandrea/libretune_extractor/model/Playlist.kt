@@ -3,10 +3,17 @@ package com.coluzziandrea.libretune_extractor.model
 import com.coluzziandrea.libretune_extractor.client.response.section.content.CarouselContent
 import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
 
+enum class PlaylistType {
+    PLAYLIST,
+    ALBUM,
+    SINGLE_EP
+}
+
 data class Playlist(
     val node: MusicNode,
     val images: List<Image>,
-    val artists: List<Artist>? = null
+    val artists: List<Artist>? = null,
+    val type: PlaylistType? = PlaylistType.PLAYLIST
 ) {
 
     val name: String
@@ -19,14 +26,16 @@ data class Playlist(
         id: String,
         name: String,
         images: List<Image>,
-        artists: List<Artist>? = null
+        artists: List<Artist>? = null,
+        type: PlaylistType = PlaylistType.PLAYLIST
     ) : this(
         node = MusicNode(
             id = id,
             name = name
         ),
         images = images,
-        artists = artists
+        artists = artists,
+        type = type
     )
 
     companion object {

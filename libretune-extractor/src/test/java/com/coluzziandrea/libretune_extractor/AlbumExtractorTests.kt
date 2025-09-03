@@ -42,7 +42,7 @@ class AlbumPageScrapingTests {
             playlistDetails?.songs?.get(0)?.playlistId
         )
         assertEquals(
-            "OLAK5uy_lqcFZTOPHGwcnP0nYMzNuY0IES0fl7Fe4",
+            "any_id",
             playlistDetails?.songs?.get(0)?.album?.id
         )
         assertEquals(

@@ -15,6 +15,8 @@ import com.colux.libretune.data.local.entity.SearchQueryEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
+import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
+import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 
 @Database(
@@ -25,6 +27,8 @@ import com.colux.libretune.data.local.join.PlaylistSongCrossRef
         ArtistArtistCrossRef::class,
         AlbumArtistCrossRef::class,
         SearchQueryEntity::class,
+        ArtistPlaylistCrossRef::class,
+        ArtistFeaturedPlaylistCrossRef::class,
         PlaylistSongCrossRef::class], version = 1
 )
 @TypeConverters(Converters::class)

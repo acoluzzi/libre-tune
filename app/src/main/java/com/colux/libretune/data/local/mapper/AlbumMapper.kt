@@ -3,6 +3,7 @@ package com.colux.libretune.data.local.mapper
 import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
+import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.wrapper.AlbumWithArtists
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistType
@@ -28,6 +29,25 @@ fun Playlist.toEntity(albumType: AlbumType = AlbumType.ALBUM): AlbumEntity {
             PlaylistType.SINGLE_EP -> AlbumType.SINGLE_EP
             else -> AlbumType.ALBUM
         }
+    )
+}
+
+fun Playlist.toPlaylistEntity(): PlaylistEntity {
+    return PlaylistEntity(
+        playlistId = this.id,
+        name = this.name,
+        images = this.images.map { it.toEntity() },
+        isLocal = false
+    )
+}
+
+fun PlaylistEntity.toDataModel(): Playlist {
+    return Playlist(
+        id = this.playlistId,
+        name = this.name,
+        images = this.images.map { it.toDataModel() },
+        artists = emptyList(),
+        type = PlaylistType.PLAYLIST
     )
 }
 

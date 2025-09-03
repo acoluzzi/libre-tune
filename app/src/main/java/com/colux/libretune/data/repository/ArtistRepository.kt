@@ -5,11 +5,15 @@ import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
+import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
+import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
+import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
+import com.colux.libretune.data.local.mapper.toPlaylistEntity
 import com.colux.libretune.data.local.wrapper.AlbumWithArtists
 import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.ArtistDetails
@@ -24,6 +28,16 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
+
+enum class PlaylistFlowItemType {
+    PLAYLIST,
+    FEATURING
+}
+
+data class PlaylistFlowItem(
+    val playlist: PlaylistEntity,
+    val type: PlaylistFlowItemType
+)
 
 @Singleton
 class ArtistRepository @Inject constructor(
@@ -46,6 +60,23 @@ class ArtistRepository @Inject constructor(
         val singlesFlow: Flow<List<AlbumEntity>> = db.albumDao().getSinglesByArtistId(artistId)
         val similarArtistsFlow: Flow<List<ArtistEntity>> =
             db.artistDao().getSimilarArtists(artistId)
+
+        val playlistFlow: Flow<List<PlaylistEntity>> = db.playlistDao().getPlaylistsForArtist(
+            artistId
+        )
+        val featuringPlaylistFlow: Flow<List<PlaylistEntity>> =
+            db.playlistDao().getFeaturingPlaylistsForArtist(
+                artistId
+            )
+
+        val playlistAndFeaturingFlow =
+            combine(playlistFlow, featuringPlaylistFlow) { playlists, featuring ->
+                playlists.map {
+                    PlaylistFlowItem(it, PlaylistFlowItemType.PLAYLIST)
+                } + featuring.map {
+                    PlaylistFlowItem(it, PlaylistFlowItemType.FEATURING)
+                }
+            }
 
         val albumsAndSinglesFlow = combine(albumsFlow, singlesFlow) { albums, singles ->
             albums + singles
@@ -94,8 +125,9 @@ class ArtistRepository @Inject constructor(
             artistFlow,
             songsWithAlbumsAndArtistsFlow,
             albumsWithArtistsFlow,
-            similarArtistsFlow
-        ) { artist, songs, albums, similarArtists ->
+            similarArtistsFlow,
+            playlistAndFeaturingFlow
+        ) { artist, songs, albums, similarArtists, playlists ->
             // This block runs whenever any of the source flows emit a new value.
             // If the main artist doesn't exist, we can't build the details.
             if (artist == null) return@combine null
@@ -119,8 +151,16 @@ class ArtistRepository @Inject constructor(
                     it.toDataModel()
                 },
                 similarArtists = similarArtists.map { it.toDataModel() },
-                featuring = emptyList(),
-                playlists = emptyList()
+                featuring = playlists.filter {
+                    it.type == PlaylistFlowItemType.FEATURING
+                }.map {
+                    it.playlist.toDataModel()
+                },
+                playlists = playlists.filter {
+                    it.type == PlaylistFlowItemType.PLAYLIST
+                }.map {
+                    it.playlist.toDataModel()
+                }
             )
         }
     }
@@ -167,6 +207,28 @@ class ArtistRepository @Inject constructor(
                 updateTimestamp = System.currentTimeMillis()
             )
 
+            val artistPlaylistEntities = remoteDetails.playlists.map {
+                it.toPlaylistEntity()
+            }
+
+            val artistFeaturingPlaylistsEntities = remoteDetails.featuring.map {
+                it.toPlaylistEntity()
+            }
+
+
+            val artistPlaylistLinks = artistPlaylistEntities.map { playlist ->
+                ArtistPlaylistCrossRef(
+                    playlistId = playlist.playlistId,
+                    artistId = artistId
+                )
+            }
+
+            val artistFeaturingPlaylistLinks = artistFeaturingPlaylistsEntities.map { playlist ->
+                ArtistFeaturedPlaylistCrossRef(
+                    playlistId = playlist.playlistId,
+                    artistId = artistId
+                )
+            }
 
             // 2. Map the lists of other entities
             val songEntities = remoteDetails.topSongs.map { it.toEntity() }
@@ -230,6 +292,21 @@ class ArtistRepository @Inject constructor(
 
 
                 logger.info {
+                    "Inserting  playlists with IDs: ${artistPlaylistEntities.joinToString(", ") { it.playlistId }}"
+                }
+                db.playlistDao().upsertAll(artistPlaylistEntities)
+
+                logger.info {
+                    "Inserting  featuring playlists with IDs: ${
+                        artistFeaturingPlaylistsEntities.joinToString(
+                            ", "
+                        ) { it.playlistId }
+                    }"
+                }
+                db.playlistDao().upsertAll(artistFeaturingPlaylistsEntities)
+
+
+                logger.info {
                     "Inserting songs with IDs: ${songEntities.joinToString(", ") { it.songId }} and albums IDs: ${
                         songEntities.joinToString(
                             ", "
@@ -240,6 +317,9 @@ class ArtistRepository @Inject constructor(
 
                 db.albumDao().linkAlbumToArtists(albumArtistLinks)
                 db.artistDao().linkSimilarArtists(similarArtistLinks)
+
+                db.playlistDao().linkPlaylistToArtists(artistPlaylistLinks)
+                db.playlistDao().linkFeaturingPlaylistToArtists(artistFeaturingPlaylistLinks)
 
                 logger.info { "End DB Transaction" }
             }

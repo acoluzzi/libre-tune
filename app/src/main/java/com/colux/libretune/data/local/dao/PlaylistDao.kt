@@ -7,6 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.PlaylistEntity
+import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
+import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import kotlinx.coroutines.flow.Flow
 
@@ -61,6 +63,35 @@ interface PlaylistDao {
 
     @Query("SELECT * FROM playlists WHERE playlistId IN (:playlistIds)")
     suspend fun getPlaylistsByIds(playlistIds: List<String>): List<PlaylistEntity>
+
+
+    @Query(
+        """
+        SELECT * FROM playlists
+        WHERE playlistId IN (
+            SELECT playlistId FROM artist_featured_playlist_cross_ref WHERE artistId = :artistId
+        ) 
+    """
+    )
+    fun getFeaturingPlaylistsForArtist(artistId: String): Flow<List<PlaylistEntity>>
+
+
+    @Query(
+        """
+        SELECT * FROM playlists
+        WHERE playlistId IN (
+            SELECT playlistId FROM artist_playlists_cross_ref WHERE artistId = :artistId
+        ) 
+    """
+    )
+    fun getPlaylistsForArtist(artistId: String): Flow<List<PlaylistEntity>>
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun linkPlaylistToArtists(crossRefs: List<ArtistPlaylistCrossRef>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun linkFeaturingPlaylistToArtists(crossRefs: List<ArtistFeaturedPlaylistCrossRef>)
 
 
     /**

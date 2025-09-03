@@ -91,10 +91,14 @@ class PlaylistParser {
                                     if (images.isEmpty()) {
                                         images = playlistImages
                                     }
+                                    var songArtists = it.artists
+                                    if (songArtists.isEmpty()) {
+                                        songArtists = artists
+                                    }
                                     songs.add(
                                         Song(
                                             id = it.id,
-                                            artists = artists,
+                                            artists = songArtists,
                                             playlistId = it.playlistId,
                                             title = it.title,
                                             album = Playlist(

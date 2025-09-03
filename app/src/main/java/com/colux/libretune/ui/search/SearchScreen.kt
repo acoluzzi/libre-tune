@@ -91,6 +91,8 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
+
+
     Column(modifier = Modifier.fillMaxSize()) {
         // --- Search Input Field ---
         OutlinedTextField(
@@ -105,6 +107,7 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                 .padding(16.dp)
                 .onFocusChanged { focusState ->
                     isFocused = focusState.isFocused
+                    searchViewModel.onFocusChanged(focusState.isFocused, query)
                 },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -128,52 +131,56 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
         // --- Main Content Area ---
         Box(modifier = Modifier.fillMaxSize()) {
             // Show suggestions only when the user is typing and the text field is focused
-            if (isFocused && query.isNotEmpty() && uiState is SearchUiState.Suggestions) {
-                SuggestionsOverlay(
-                    suggestions = (uiState as SearchUiState.Suggestions).suggestions,
-                    onSuggestionClick = { suggestion ->
-                        when (suggestion) {
-                            is SearchSuggestion.QuerySuggestion -> {
-                                // If it's a simple query, submit a new search
-                                query = suggestion.query
-                                searchViewModel.submitSearch(suggestion.query)
-                            }
 
-                            is SearchSuggestion.EntitySuggestion -> {
-                                // If it's a specific entity, handle based on type
-                                when (suggestion.type) {
-                                    "Song" -> {
-                                        playerViewModel.playPlaylist(
-                                            listOfNotNull(suggestion.song),
-                                            0
-                                        )
-                                    }
+            if (isFocused) {
+                if (uiState is SearchUiState.Suggestions) {
+                    SuggestionsOverlay(
+                        suggestions = (uiState as SearchUiState.Suggestions).suggestions,
+                        onSuggestionClick = { suggestion ->
+                            when (suggestion) {
+                                is SearchSuggestion.QuerySuggestion -> {
+                                    // If it's a simple query, submit a new search
+                                    query = suggestion.query
+                                    searchViewModel.submitSearch(suggestion.query)
+                                }
 
-                                    "Artist" -> {
-                                        navController.navigate(
-                                            Screen.Artist.createRoute(
-                                                suggestion.artist?.id ?: return@SuggestionsOverlay
+                                is SearchSuggestion.EntitySuggestion -> {
+                                    // If it's a specific entity, handle based on type
+                                    when (suggestion.type) {
+                                        "Song" -> {
+                                            playerViewModel.playPlaylist(
+                                                listOfNotNull(suggestion.song),
+                                                0
                                             )
-                                        )
-                                    }
+                                        }
 
-                                    "Album", "Playlist" -> {
-                                        navController.navigate(
-                                            Screen.PlaylistDetail.createRoute(
-                                                suggestion.album?.id ?: suggestion.playlist?.id
-                                                ?: return@SuggestionsOverlay
+                                        "Artist" -> {
+                                            navController.navigate(
+                                                Screen.Artist.createRoute(
+                                                    suggestion.artist?.id
+                                                        ?: return@SuggestionsOverlay
+                                                )
                                             )
-                                        )
+                                        }
+
+                                        "Album", "Playlist" -> {
+                                            navController.navigate(
+                                                Screen.PlaylistDetail.createRoute(
+                                                    suggestion.album?.id ?: suggestion.playlist?.id
+                                                    ?: return@SuggestionsOverlay
+                                                )
+                                            )
+                                        }
                                     }
                                 }
                             }
+                            // Hide the keyboard and suggestions overlay
+                            focusManager.clearFocus()
                         }
-                        // Hide the keyboard and suggestions overlay
-                        focusManager.clearFocus()
-                    }
-                )
+                    )
+                }
             } else {
-                // Otherwise, show Explore, Loading, or Results based on the state
+                // If not focused, we are in "browse" or "results" mode.
                 when (val state = uiState) {
                     is SearchUiState.Explore -> ExplorePanel(genres = DummyData.genres)
                     is SearchUiState.Loading -> SearchResultsSkeleton()
@@ -183,14 +190,11 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                         navController = navController,
                         playerViewModel = playerViewModel
                     )
-
-                    is SearchUiState.Suggestions -> {
-                        // This case is handled by the `if` check above, but we can show
-                        // the explore panel as a background for a better look.
-                        ExplorePanel(genres = DummyData.genres)
-                    }
+                    // Suggestions state is ignored when not focused
+                    is SearchUiState.Suggestions -> ExplorePanel(genres = DummyData.genres)
                 }
             }
+
 
         }
 

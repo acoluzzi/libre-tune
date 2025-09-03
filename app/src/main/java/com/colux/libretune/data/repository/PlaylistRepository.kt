@@ -84,7 +84,6 @@ class PlaylistRepository @Inject constructor(
                             .firstOrNull() ?: emptyList()
                     } ?: emptyList()
 
-                    logger.info { "Building SongWithAlbumAndArtists $song, album: $songAlbum, artists: $albumArtists" }
                     SongWithAlbumAndArtists(
                         song,
                         songAlbum,
@@ -132,6 +131,9 @@ class PlaylistRepository @Inject constructor(
         // Fetch the artist record just to check its timestamp
         val cachedPlaylistObj = db.playlistDao().getPlaylistById(id)
         val cachedAlbumObj = db.albumDao().getAlbumById(id)
+
+        logger.info { "cachedPlaylistObj: $cachedPlaylistObj" }
+        logger.info { "cachedAlbumObj: $cachedAlbumObj" }
 
         // Always fetch if there's no data
         if (cachedPlaylistObj == null && cachedAlbumObj == null) return true
@@ -226,7 +228,9 @@ class PlaylistRepository @Inject constructor(
             )
 
             albumEntities.addAll(
-                songAlbums.map { it.toEntity() }.distinctBy { it.albumId }
+                songAlbums.filter { album ->
+                    album.id != playlistId // Avoid duplicating the main album if the playlist is an album
+                }.map { it.toEntity() }.distinctBy { it.albumId }
             )
 
             albumArtistLinks.addAll(

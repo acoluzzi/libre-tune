@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -31,6 +29,7 @@ import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
+import com.colux.libretune.ui.search.SongItemSkeleton
 
 @Composable
 fun PlaylistDetailScreen(
@@ -51,9 +50,7 @@ fun PlaylistDetailScreen(
 
     when (val state = uiState) {
         is PlaylistUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            PlaylistDetailSkeleton()
         }
 
         is PlaylistUiState.Success -> {
@@ -117,18 +114,27 @@ fun PlaylistDetailScreen(
 
                         }
 
-                        // 3. The list of songs
-                        itemsIndexed(playlistDetails.songs) { index, song ->
-                            SongItem(
-                                song = song,
-                                onClick = {
-                                    playerViewModel.playPlaylist(
-                                        playlistDetails.songs,
-                                        index
-                                    )
+                        if (playlistDetails.songs.isNotEmpty()) {
+                            // 3. The list of songs
+                            itemsIndexed(playlistDetails.songs) { index, song ->
+                                SongItem(
+                                    song = song,
+                                    onClick = {
+                                        playerViewModel.playPlaylist(
+                                            playlistDetails.songs,
+                                            index
+                                        )
+                                    }
+                                )
+                            }
+                        } else {
+                            item {
+                                repeat(10) {
+                                    SongItemSkeleton()
                                 }
-                            )
+                            }
                         }
+
 
 
                         if (playlistDetails.relatedPlaylists.isNotEmpty()) {

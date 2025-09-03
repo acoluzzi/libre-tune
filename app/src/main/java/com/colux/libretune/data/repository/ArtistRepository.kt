@@ -105,7 +105,7 @@ class ArtistRepository @Inject constructor(
                 name = artist.name,
                 description = artist.description,
                 images = artist.images.map { it.toDataModel() },
-                topSongs = songs.map {
+                topSongs = songs.take(5).map {
                     it.toDataModel()
                 },
                 albums = albums.filter {

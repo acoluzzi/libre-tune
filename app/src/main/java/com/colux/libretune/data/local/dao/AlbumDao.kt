@@ -8,10 +8,14 @@ import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import kotlinx.coroutines.flow.Flow
+import java.util.logging.Logger
 
 
 @Dao
 interface AlbumDao {
+
+    private val logger: Logger
+        get() = Logger.getLogger("AlbumDao")
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun _insert(album: AlbumEntity)
@@ -42,17 +46,21 @@ interface AlbumDao {
      */
     @Transaction
     suspend fun upsertAll(albums: List<AlbumEntity>) {
-        val playlistIds = albums.map { it.albumId }
-        val existingPlaylists = getAlbumsByIds(playlistIds)
-        val existingMap = existingPlaylists.associateBy { it.albumId }
+        val albumIds = albums.map { it.albumId }
+        val existingAlbums = getAlbumsByIds(albumIds)
+        val existingMap = existingAlbums.associateBy { it.albumId }
 
         val albumsToInsert = albums.filter { newAlbum ->
             val existing = existingMap[newAlbum.albumId]
-            existing == null || (newAlbum.updateTimestamp ?: 0L) >= (existing.updateTimestamp
-                ?: 0L)
+            val isToInsert =
+                existing == null || (newAlbum.updateTimestamp ?: 0L) >= (existing.updateTimestamp
+                    ?: 0L)
+            logger.info("Upsert album ${newAlbum.albumId}: $isToInsert, existing=${existing?.updateTimestamp}, new=${newAlbum.updateTimestamp}")
+            isToInsert
         }
 
         if (albumsToInsert.isNotEmpty()) {
+            logger.info("Inserting ${albumsToInsert.size} albums")
             _insertAll(albumsToInsert)
         }
     }

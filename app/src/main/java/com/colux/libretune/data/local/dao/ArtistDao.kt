@@ -8,9 +8,13 @@ import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.ArtistEntity
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
 import kotlinx.coroutines.flow.Flow
+import java.util.logging.Logger
 
 @Dao
 interface ArtistDao {
+    private val logger: Logger
+        get() = Logger.getLogger("ArtistDao")
+
     /**
      * Inserts or updates a single artist, but only if the new data is fresher.
      */
@@ -36,11 +40,15 @@ interface ArtistDao {
 
         val artistsToInsert = artists.filter { newArtist ->
             val existing = existingMap[newArtist.artistId]
-            existing == null || (newArtist.updateTimestamp ?: 0L) >= (existing.updateTimestamp
-                ?: 0L)
+            val isToInsert =
+                existing == null || (newArtist.updateTimestamp ?: 0L) >= (existing.updateTimestamp
+                    ?: 0L)
+            logger.info("Upsert album ${newArtist.artistId}: $isToInsert, existing=${existing?.updateTimestamp}, new=${newArtist.updateTimestamp}")
+            isToInsert
         }
 
         if (artistsToInsert.isNotEmpty()) {
+            logger.info("Inserting ${artistsToInsert.size} artists")
             _insertAll(artistsToInsert)
         }
     }

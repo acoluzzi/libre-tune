@@ -34,11 +34,6 @@ class SearchViewModel @Inject constructor(
 
     // This function is called on every keystroke from the UI
     fun onQueryChange(query: String) {
-        if (query.isBlank()) {
-            _uiState.value = SearchUiState.Explore
-            return
-        }
-
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             repository.getQuerySuggestions(query).collect { suggestions ->
@@ -46,6 +41,17 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    fun onFocusChanged(isFocused: Boolean, currentQuery: String) {
+        if (isFocused) {
+            // When focus is gained, immediately trigger a suggestion fetch.
+            onQueryChange(currentQuery)
+        } else if (currentQuery.isBlank()) {
+            // When focus is lost and the query is blank, go back to the Explore view.
+            _uiState.value = SearchUiState.Explore
+        }
+    }
+
 
     // This is called when the user submits the search
     fun submitSearch(query: String) {

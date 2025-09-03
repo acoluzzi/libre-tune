@@ -50,7 +50,7 @@ fun PlaylistDetailScreen(
         details?.let { playlistDetails ->
             // --- Background Image with Parallax Effect ---
             AsyncImage(
-                model = playlistDetails.bannerUrl,
+                model = playlistDetails.bestImage(),
                 contentDescription = "Playlist Banner",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -88,9 +88,9 @@ fun PlaylistDetailScreen(
                     ) {
                         Text(playlistDetails.name, style = MaterialTheme.typography.headlineLarge)
 
-                        if (playlistDetails.artist?.isNotEmpty() == true) {
+                        if (playlistDetails.getArtistNames().isNotEmpty()) {
                             Text(
-                                playlistDetails.artist,
+                                playlistDetails.getArtistNames(),
                                 style = MaterialTheme.typography.titleMedium
                             )
 
@@ -117,7 +117,7 @@ fun PlaylistDetailScreen(
                     item {
                         PlaylistCarousel(
                             title = "You may Also Like",
-                            playlists = listOf(),
+                            playlists = playlistDetails.relatedPlaylists,
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(

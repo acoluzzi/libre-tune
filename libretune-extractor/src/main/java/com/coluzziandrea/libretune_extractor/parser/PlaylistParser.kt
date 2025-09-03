@@ -2,9 +2,11 @@ package com.coluzziandrea.libretune_extractor.parser
 
 import com.coluzziandrea.libretune_extractor.client.response.BrowseData
 import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
+import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
+import com.coluzziandrea.libretune_extractor.model.PlaylistType
 import com.coluzziandrea.libretune_extractor.model.Song
 import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
@@ -13,10 +15,11 @@ class PlaylistParser {
     companion object {
         fun from(browseDataObject: BrowseData): PlaylistDetails {
             var playlistName = ""
-            var artist: String? = null
+            val artists = mutableListOf<Artist>()
             val songs = mutableListOf<Song>()
             val relatedPlaylists = mutableListOf<Playlist>()
             val playlistImages = mutableListOf<Image>()
+            val albumType = PlaylistType.PLAYLIST
 
 
             val header =
@@ -25,9 +28,41 @@ class PlaylistParser {
             if (header is SectionContent.MusicResponsiveHeaderContent) {
                 playlistName =
                     header.musicResponsiveHeaderRenderer.title.runs.firstOrNull()?.text ?: ""
-                artist =
+                val artistName =
                     header.musicResponsiveHeaderRenderer.straplineTextOne?.runs?.firstOrNull()?.text
+                val artistId =
+                    header.musicResponsiveHeaderRenderer.straplineTextOne?.runs?.firstOrNull()?.navigationEndpoint?.let { endpoint ->
+                        if (endpoint is com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint.BrowseNavigationEndpoint) {
+                            endpoint.browseEndpoint.browseId
+                        } else {
+                            null
+                        }
+                    }
 
+                val albumType =
+                    header.musicResponsiveHeaderRenderer.subtitle.runs.firstOrNull()?.text?.let { subtitle ->
+                        when {
+                            subtitle.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
+                            subtitle.contains(
+                                "Single",
+                                ignoreCase = true
+                            ) || subtitle.contains(
+                                "EP",
+                                ignoreCase = true
+                            ) -> PlaylistType.SINGLE_EP
+
+                            else -> PlaylistType.PLAYLIST
+                        }
+                    } ?: PlaylistType.PLAYLIST
+
+                if (!artistId.isNullOrEmpty() && !artistName.isNullOrEmpty()) {
+                    artists.add(
+                        Artist(
+                            id = artistId,
+                            name = artistName
+                        )
+                    )
+                }
 
                 header.musicResponsiveHeaderRenderer.thumbnail.musicThumbnailRenderer.thumbnail.thumbnails.forEach {
                     playlistImages.add(
@@ -88,10 +123,11 @@ class PlaylistParser {
 
             return PlaylistDetails(
                 name = playlistName,
-                artist = artist,
+                artists = artists,
                 images = playlistImages,
                 songs = songs,
-                relatedPlaylists = relatedPlaylists
+                relatedPlaylists = relatedPlaylists,
+                type = albumType
             )
         }
     }

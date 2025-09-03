@@ -153,25 +153,24 @@ class YouTubeExtractionRepository @Inject constructor(
     }
 
     suspend fun getPlaylistDetails(id: String): PlaylistDetails? {
-        TODO()
-//        return withContext(Dispatchers.IO) {
-//            try {
-//                libreTuneExtractor.playlist(id).let {
-//                    if (it != null) {
-//                        Log.d(
-//                            "YouTubeExtractionRepository",
-//                            "Scraped playlist: ${it.name}"
-//                        )
-//                        return@withContext PlaylistDetails.from(it)
-//                    } else {
-//                        null
-//                    }
-//                }
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//                null
-//            }
-//        }
+        return withContext(Dispatchers.IO) {
+            try {
+                libreTuneExtractor.playlist(id).let {
+                    if (it != null) {
+                        Log.d(
+                            "YouTubeExtractionRepository",
+                            "Scraped playlist: ${it.name}"
+                        )
+                        return@withContext it.toDataModel()
+                    } else {
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
     }
 
 

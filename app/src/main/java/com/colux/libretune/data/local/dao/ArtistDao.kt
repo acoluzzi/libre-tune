@@ -43,7 +43,6 @@ interface ArtistDao {
             val isToInsert =
                 existing == null || (newArtist.updateTimestamp ?: 0L) >= (existing.updateTimestamp
                     ?: 0L)
-            logger.info("Upsert album ${newArtist.artistId}: $isToInsert, existing=${existing?.updateTimestamp}, new=${newArtist.updateTimestamp}")
             isToInsert
         }
 

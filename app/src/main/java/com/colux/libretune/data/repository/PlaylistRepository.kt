@@ -132,9 +132,6 @@ class PlaylistRepository @Inject constructor(
         val cachedPlaylistObj = db.playlistDao().getPlaylistById(id)
         val cachedAlbumObj = db.albumDao().getAlbumById(id)
 
-        logger.info { "cachedPlaylistObj: $cachedPlaylistObj" }
-        logger.info { "cachedAlbumObj: $cachedAlbumObj" }
-
         // Always fetch if there's no data
         if (cachedPlaylistObj == null && cachedAlbumObj == null) return true
 
@@ -174,6 +171,7 @@ class PlaylistRepository @Inject constructor(
             // --- MAPPING LOGIC ---
             when (remoteDetails.type) {
                 PlaylistType.ALBUM, PlaylistType.SINGLE_EP -> {
+                    logger.info { "Mapping as AlbumEntity" }
                     albumEntities.add(
                         AlbumEntity(
                             albumId = playlistId,
@@ -188,6 +186,8 @@ class PlaylistRepository @Inject constructor(
                 }
 
                 PlaylistType.PLAYLIST -> {
+
+                    logger.info { "Mapping as PlaylistEntity" }
                     playlistEntities.add(
                         PlaylistEntity(
                             playlistId = playlistId,
@@ -213,7 +213,9 @@ class PlaylistRepository @Inject constructor(
 
             val songAlbums = remoteDetails.songs.mapNotNull {
                 it.album
-            }
+            }.distinctBy { it.id }
+
+            logger.info { "Songs albums size: ${songAlbums.size}" }
 
             artistsEntities.addAll(
                 remoteDetails.artists.map {
@@ -263,10 +265,11 @@ class PlaylistRepository @Inject constructor(
 
 
                 if (playlistEntities.isNotEmpty()) {
-                    logger.info { "Inserting playlist with ID: ${playlistEntities.joinToString(", ") { it.playlistId }}" }
+                    logger.info { "Inserting playlists with ID: ${playlistEntities.joinToString(", ") { it.playlistId }}" }
                     db.playlistDao().upsertAll(playlistEntities)
                 }
 
+                logger.info { "Albums size: ${albumEntities.size}" }
                 if (albumEntities.isNotEmpty()) {
                     logger.info {
                         "Inserting  albums with IDs: ${albumEntities.joinToString(", ") { it.albumId }}"
@@ -281,9 +284,12 @@ class PlaylistRepository @Inject constructor(
                         ) { it.albumId ?: "N/A" }
                     }"
                 }
+                val songAlbumIds = songEntities.mapNotNull { it.albumId }.distinct()
+                logger.info { "Song albums IDs :$songAlbumIds" }
                 db.songDao().insertSongs(songEntities)
 
                 db.albumDao().linkAlbumToArtists(albumArtistLinks)
+
                 if (playlistSongsLinks.isNotEmpty()) {
                     logger.info { "Inserting playlist-song links for playlist ID: $playlistId" }
                     playlistSongsLinks.forEach { link ->

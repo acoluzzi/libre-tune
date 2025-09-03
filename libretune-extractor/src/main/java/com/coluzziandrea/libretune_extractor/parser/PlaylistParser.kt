@@ -95,19 +95,23 @@ class PlaylistParser {
                                     if (songArtists.isEmpty()) {
                                         songArtists = artists
                                     }
+                                    var album = it.album
+                                    if (album == null && albumType != PlaylistType.PLAYLIST) {
+                                        album = Playlist(
+                                            name = playlistName,
+                                            id = browseId,
+                                            type = albumType,
+                                            images = playlistImages,
+                                            artists = artists
+                                        )
+                                    }
                                     songs.add(
                                         Song(
                                             id = it.id,
                                             artists = songArtists,
                                             playlistId = it.playlistId,
                                             title = it.title,
-                                            album = Playlist(
-                                                name = playlistName,
-                                                id = browseId,
-                                                type = albumType,
-                                                images = playlistImages,
-                                                artists = artists
-                                            ),
+                                            album = album,
                                             images = images
                                         )
                                     )

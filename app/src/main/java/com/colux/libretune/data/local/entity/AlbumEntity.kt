@@ -10,5 +10,6 @@ data class AlbumEntity(
     @PrimaryKey val albumId: String,
     val name: String,
     val images: List<ImageAttribute>,
-    val type: AlbumType
+    val type: AlbumType,
+    val updateTimestamp: Long? = null
 )

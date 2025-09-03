@@ -14,4 +14,15 @@ interface SongDao {
 
     @Query("SELECT * FROM songs WHERE albumId = :albumId")
     suspend fun getSongsByAlbumId(albumId: String): List<SongEntity>
+
+
+    @Query(
+        """
+        SELECT * FROM songs 
+        WHERE songId IN (
+            SELECT songId FROM playlist_song_cross_ref WHERE playlistId = :playlistId
+        )
+    """
+    )
+    suspend fun getSongsInPlaylist(playlistId: String): List<SongEntity>
 }

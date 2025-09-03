@@ -16,4 +16,5 @@ data class ArtistDetails(
     fun getImageUrlForBanner(): String? {
         return images.maxByOrNull { it.width ?: 0 }?.url
     }
+
 }

@@ -9,5 +9,5 @@ data class ArtistEntity(
     val name: String,
     val description: String? = null,
     val images: List<ImageAttribute>,
-    val updateTimestamp: Long
+    val updateTimestamp: Long? = null
 )

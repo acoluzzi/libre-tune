@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -38,102 +40,126 @@ fun PlaylistDetailScreen(
     viewModel: PlaylistDetailViewModel = hiltViewModel()
 ) {
 
+    val uiState by viewModel.uiState.collectAsState()
 
-    val details by viewModel.playlistDetails.collectAsState()
     val scrollState = rememberLazyListState()
 
     val imageHeight = 300.dp
     val imageHeightPx = with(LocalDensity.current) { imageHeight.toPx() }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // We only show the content when details are loaded
-        details?.let { playlistDetails ->
-            // --- Background Image with Parallax Effect ---
-            AsyncImage(
-                model = playlistDetails.bestImage(),
-                contentDescription = "Playlist Banner",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(imageHeight)
-                    // 1. Clip the image so it doesn't draw outside its bounds when moved
-                    .clipToBounds()
-                    .graphicsLayer {
-                        // 2. Move the image up at half the scroll speed
-                        translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
 
-                        // 3. Fade the image out as it scrolls
-                        alpha = 1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
-                    }
-            )
 
-            // --- Scrollable Song List ---
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
-                state = scrollState
-            ) {
-                // 1. A transparent spacer that pushes the song list below the image
-                item {
-                    Spacer(modifier = Modifier.height(300.dp))
-                }
+    when (val state = uiState) {
+        is PlaylistUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
 
-                // 2. Playlist Title and Artist
-                item {
-                    Column(
+        is PlaylistUiState.Success -> {
+
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                // We only show the content when details are loaded
+                state.details.let { playlistDetails ->
+                    // --- Background Image with Parallax Effect ---
+                    AsyncImage(
+                        model = playlistDetails.bestImage(),
+                        contentDescription = "Playlist Banner",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
-                    ) {
-                        Text(playlistDetails.name, style = MaterialTheme.typography.headlineLarge)
+                            .height(imageHeight)
+                            // 1. Clip the image so it doesn't draw outside its bounds when moved
+                            .clipToBounds()
+                            .graphicsLayer {
+                                // 2. Move the image up at half the scroll speed
+                                translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
 
-                        if (playlistDetails.getArtistNames().isNotEmpty()) {
-                            Text(
-                                playlistDetails.getArtistNames(),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-
-                        }
-                    }
-
-                }
-
-                // 3. The list of songs
-                itemsIndexed(playlistDetails.songs) { index, song ->
-                    SongItem(
-                        song = song,
-                        onClick = {
-                            playerViewModel.playPlaylist(
-                                playlistDetails.songs,
-                                index
-                            )
-                        }
+                                // 3. Fade the image out as it scrolls
+                                alpha =
+                                    1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
+                            }
                     )
-                }
 
+                    // --- Scrollable Song List ---
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        state = scrollState
+                    ) {
+                        // 1. A transparent spacer that pushes the song list below the image
+                        item {
+                            Spacer(modifier = Modifier.height(300.dp))
+                        }
 
-                if (playlistDetails.relatedPlaylists.isNotEmpty()) {
-                    item {
-                        PlaylistCarousel(
-                            title = "You may Also Like",
-                            playlists = playlistDetails.relatedPlaylists,
-                            onItemClick = { index ->
-                                navController.navigate(
-                                    Screen.PlaylistDetail.createRoute(
-                                        playlistDetails.relatedPlaylists[index].id
+                        // 2. Playlist Title and Artist
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    playlistDetails.name,
+                                    style = MaterialTheme.typography.headlineLarge
+                                )
+
+                                if (playlistDetails.getArtistNames().isNotEmpty()) {
+                                    Text(
+                                        playlistDetails.getArtistNames(),
+                                        style = MaterialTheme.typography.titleMedium
                                     )
+
+                                }
+                            }
+
+                        }
+
+                        // 3. The list of songs
+                        itemsIndexed(playlistDetails.songs) { index, song ->
+                            SongItem(
+                                song = song,
+                                onClick = {
+                                    playerViewModel.playPlaylist(
+                                        playlistDetails.songs,
+                                        index
+                                    )
+                                }
+                            )
+                        }
+
+
+                        if (playlistDetails.relatedPlaylists.isNotEmpty()) {
+                            item {
+                                PlaylistCarousel(
+                                    title = "You may Also Like",
+                                    playlists = playlistDetails.relatedPlaylists,
+                                    onItemClick = { index ->
+                                        navController.navigate(
+                                            Screen.PlaylistDetail.createRoute(
+                                                playlistDetails.relatedPlaylists[index].id
+                                            )
+                                        )
+                                    }
                                 )
                             }
-                        )
+                        }
+
+
+                        item {
+                            Spacer(modifier = Modifier.height(64.dp))
+                        }
                     }
-                }
-
-
-                item {
-                    Spacer(modifier = Modifier.height(64.dp))
                 }
             }
         }
+
+        is PlaylistUiState.Error -> {
+            Text("Could not load artist details: ${state.message}")
+        }
     }
+
+
 }

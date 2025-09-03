@@ -42,6 +42,14 @@ class AlbumPageScrapingTests {
             playlistDetails?.songs?.get(0)?.playlistId
         )
         assertEquals(
+            "OLAK5uy_lqcFZTOPHGwcnP0nYMzNuY0IES0fl7Fe4",
+            playlistDetails?.songs?.get(0)?.album?.id
+        )
+        assertEquals(
+            "Abbey Road (Super Deluxe Edition)",
+            playlistDetails?.songs?.get(0)?.album?.name
+        )
+        assertEquals(
             "https://lh3.googleusercontent.com/g8bzAg2zxvdnm7ismLMYLA9-9azb4y6VP2uOF56A2G2rpsqLHT6mrJWXRKq_VttXQZ-o-jmVgTFIVgdj=w60-h60-l90-rj",
             playlistDetails?.songs?.get(0)?.images?.firstOrNull()?.url
         )

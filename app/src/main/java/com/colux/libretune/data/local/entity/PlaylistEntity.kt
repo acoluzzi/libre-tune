@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class PlaylistEntity(
     @PrimaryKey val playlistId: String,
     val name: String,
+    val images: List<ImageAttribute>,
     val isLocal: Boolean,
-    val updateTimestamp: Long = System.currentTimeMillis()
+    val updateTimestamp: Long? = null
 )

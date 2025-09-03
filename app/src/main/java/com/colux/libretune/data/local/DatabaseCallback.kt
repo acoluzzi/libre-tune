@@ -21,10 +21,11 @@ class DatabaseCallback(
             val likedSongsPlaylist = PlaylistEntity(
                 playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
                 name = DatabaseConstants.LIKED_SONGS_PLAYLIST_NAME,
+                images = emptyList(), // TODO
                 isLocal = true // It's a local, user-specific playlist,
             )
             // Use the DAO to insert the default playlist
-            playlistDao.get().insertPlaylist(likedSongsPlaylist)
+            playlistDao.get().upsert(likedSongsPlaylist)
         }
     }
 }

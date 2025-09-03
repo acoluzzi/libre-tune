@@ -26,7 +26,7 @@ class LibreTuneExtractor @Inject constructor(
 
     suspend fun playlist(playlistId: String): PlaylistDetails? {
         return client.browse(playlistId).let {
-            PlaylistParser.from(it)
+            PlaylistParser.from(it, playlistId)
         }
     }
 

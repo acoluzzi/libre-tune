@@ -13,13 +13,13 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 class PlaylistParser {
 
     companion object {
-        fun from(browseDataObject: BrowseData): PlaylistDetails {
+        fun from(browseDataObject: BrowseData, browseId: String): PlaylistDetails {
             var playlistName = ""
             val artists = mutableListOf<Artist>()
             val songs = mutableListOf<Song>()
             val relatedPlaylists = mutableListOf<Playlist>()
             val playlistImages = mutableListOf<Image>()
-            val albumType = PlaylistType.PLAYLIST
+            var albumType = PlaylistType.PLAYLIST
 
 
             val header =
@@ -39,7 +39,7 @@ class PlaylistParser {
                         }
                     }
 
-                val albumType =
+                albumType =
                     header.musicResponsiveHeaderRenderer.subtitle.runs.firstOrNull()?.text?.let { subtitle ->
                         when {
                             subtitle.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
@@ -94,9 +94,16 @@ class PlaylistParser {
                                     songs.add(
                                         Song(
                                             id = it.id,
-                                            artists = it.artists,
+                                            artists = artists,
                                             playlistId = it.playlistId,
                                             title = it.title,
+                                            album = Playlist(
+                                                name = playlistName,
+                                                id = browseId,
+                                                type = albumType,
+                                                images = playlistImages,
+                                                artists = artists
+                                            ),
                                             images = images
                                         )
                                     )

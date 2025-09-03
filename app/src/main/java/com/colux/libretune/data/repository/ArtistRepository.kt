@@ -34,7 +34,7 @@ class ArtistRepository @Inject constructor(
     private val logger = Logger.getLogger("ArtistRepository")
 
     // Define how long the cache should be valid (e.g., 60 minutes)
-    private val cacheTtlMillis = TimeUnit.SECONDS.toMillis(1) //TODO
+    private val cacheTtlMillis = TimeUnit.MINUTES.toMillis(60)
 
     fun getArtistDetails(artistId: String): Flow<ArtistDetails?> {
 
@@ -61,7 +61,7 @@ class ArtistRepository @Inject constructor(
         val songsWithAlbumsAndArtistsFlow: Flow<List<SongWithAlbumAndArtists>> =
             songsFlow.mapNotNull { songs ->
                 songs.map { song ->
-                    val songAlbum = db.albumDao().getAlbum(song.songId).firstOrNull()
+                    val songAlbum = db.albumDao().getAlbumById(song.albumId ?: "")
 
                     val albumArtists = songAlbum?.albumId?.let {
                         db.artistDao().getArtistsByAlbumId(it)
@@ -133,9 +133,12 @@ class ArtistRepository @Inject constructor(
         // Always fetch if there's no data
         if (cachedArtist == null) return true
 
+        val lastUpdate = cachedArtist.updateTimestamp ?: 0
+        if (lastUpdate == 0L) return true
+
         // Fetch if the data is older than our TTL
         val isStale =
-            (System.currentTimeMillis() - cachedArtist.updateTimestamp) > cacheTtlMillis
+            (System.currentTimeMillis() - lastUpdate) > cacheTtlMillis
         return isStale
     }
 
@@ -213,17 +216,17 @@ class ArtistRepository @Inject constructor(
                 logger.info { "Start DB transaction" }
 
                 logger.info { "Inserting artist with ID: ${artistEntity.artistId}" }
-                db.artistDao().insertArtist(artistEntity)
+                db.artistDao().upsert(artistEntity)
 
 
                 logger.info { "Inserting  artists with IDs: ${artistsEntities.joinToString(", ") { it.artistId }}" }
-                db.artistDao().insertArtists(artistsEntities)
+                db.artistDao().upsertAll(artistsEntities)
 
 
                 logger.info {
                     "Inserting  albums with IDs: ${albumEntities.joinToString(", ") { it.albumId }}"
                 }
-                db.albumDao().insertAlbums(albumEntities)
+                db.albumDao().upsertAll(albumEntities)
 
 
                 logger.info {

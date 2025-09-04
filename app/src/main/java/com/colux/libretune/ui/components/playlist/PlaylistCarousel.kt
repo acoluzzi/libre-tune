@@ -24,9 +24,12 @@ fun PlaylistCarousel(
     title: String,
     playlists: List<Playlist>,
     onItemClick: (itemIndex: Int) -> Unit,
-    onViewAllClick: (() -> Unit)? = null
+    onViewAllClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,

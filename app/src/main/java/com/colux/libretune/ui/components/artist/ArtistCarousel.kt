@@ -3,7 +3,8 @@ package com.colux.libretune.ui.components.artist
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -27,9 +28,12 @@ import com.colux.libretune.data.model.Artist
 fun ArtistCarousel(
     title: String,
     artists: List<Artist>,
-    onItemClick: (String) -> Unit
+    onItemClick: (String) -> Unit,
+    modifier: Modifier
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
@@ -51,8 +55,9 @@ fun ArtistCarousel(
                         model = artist.bestImageForCarousel(),
                         contentDescription = artist.name,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape), // Circular image for artists
+                            .fillMaxWidth()        // Fills the 120.dp width of the parent
+                            .aspectRatio(1f)     // Makes the height equal to the width (a square)
+                            .clip(CircleShape),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.height(8.dp))

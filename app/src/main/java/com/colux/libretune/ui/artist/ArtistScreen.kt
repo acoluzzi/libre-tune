@@ -146,7 +146,7 @@ fun ArtistScreen(
                 if (state.details!!.albums.isNotEmpty()) {
                     item {
                         PlaylistCarousel(
-                            title = "Albums",
+                            title = "Albums", modifier = Modifier.height(220.dp),
                             playlists = state.details.albums,
                             onItemClick = { index ->
                                 navController.navigate(
@@ -163,7 +163,7 @@ fun ArtistScreen(
                 if (state.details.singlesAndEPs.isNotEmpty()) {
                     item {
                         PlaylistCarousel(
-                            title = "Singles & EPs",
+                            title = "Singles & EPs", modifier = Modifier.height(220.dp),
                             playlists = state.details.singlesAndEPs,
                             onItemClick = { index ->
                                 navController.navigate(
@@ -180,6 +180,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Playlists by ${state.details.name}",
+                            modifier = Modifier.height(220.dp),
                             playlists = state.details.playlists,
                             onItemClick = { index ->
                                 navController.navigate(
@@ -196,7 +197,7 @@ fun ArtistScreen(
                     item {
                         PlaylistCarousel(
                             title = "Featuring ${state.details.name}",
-                            playlists = state.details.featuring,
+                            playlists = state.details.featuring, modifier = Modifier.height(220.dp),
                             onItemClick = { index ->
                                 navController.navigate(
                                     Screen.PlaylistDetail.createRoute(
@@ -213,6 +214,7 @@ fun ArtistScreen(
                         ArtistCarousel(
                             title = "Similar Artists",
                             artists = state.details.similarArtists,
+                            modifier = Modifier.height(200.dp),
                             onItemClick = { artistId ->
                                 navController.navigate(Screen.Artist.createRoute(artistId))
                             }

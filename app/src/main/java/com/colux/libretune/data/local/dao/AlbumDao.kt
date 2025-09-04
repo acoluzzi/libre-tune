@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.join.AlbumRelatedCrossRef
 import kotlinx.coroutines.flow.Flow
 import java.util.logging.Logger
 
@@ -74,6 +75,19 @@ interface AlbumDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkAlbumToArtists(crossRefs: List<AlbumArtistCrossRef>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun linkAlbumsToRelatedAlbums(crossRefs: List<AlbumRelatedCrossRef>)
+
+
+    @Query(
+        """
+        SELECT * FROM albums
+        WHERE albumId IN (
+            SELECT albumId FROM album_related_cross_ref WHERE parentAlbumId = :albumId
+        ) 
+    """
+    )
+    fun getRelatedAlbumsForAlbum(albumId: String): Flow<List<AlbumEntity>>
 
     @Query(
         """

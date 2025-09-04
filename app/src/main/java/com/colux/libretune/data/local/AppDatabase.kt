@@ -14,9 +14,11 @@ import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.entity.SearchQueryEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.join.AlbumRelatedCrossRef
 import com.colux.libretune.data.local.join.ArtistArtistCrossRef
 import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
+import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 
 @Database(
@@ -28,6 +30,8 @@ import com.colux.libretune.data.local.join.PlaylistSongCrossRef
         AlbumArtistCrossRef::class,
         SearchQueryEntity::class,
         ArtistPlaylistCrossRef::class,
+        PlaylistRelatedCrossRef::class,
+        AlbumRelatedCrossRef::class,
         ArtistFeaturedPlaylistCrossRef::class,
         PlaylistSongCrossRef::class], version = 1
 )

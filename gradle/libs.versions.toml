@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.2"
 coilCompose = "2.7.0"
 converterMoshi = "3.0.0"
 coreKtxVersion = "1.17.0"

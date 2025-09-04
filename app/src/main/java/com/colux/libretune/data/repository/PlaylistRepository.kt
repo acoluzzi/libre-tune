@@ -8,9 +8,13 @@ import com.colux.libretune.data.local.entity.ArtistEntity
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.join.AlbumRelatedCrossRef
+import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
+import com.colux.libretune.data.local.mapper.toPlaylistEntity
+import com.colux.libretune.data.local.wrapper.AlbumWithArtists
 import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.PlaylistType
@@ -46,6 +50,37 @@ class PlaylistRepository @Inject constructor(
 
         val playlistFlow: Flow<PlaylistEntity?> = db.playlistDao().getPlaylist(id)
         val albumFlow: Flow<AlbumEntity?> = db.albumDao().getAlbum(id)
+
+        val relatedPlaylistsFlow: Flow<List<PlaylistEntity>> =
+            playlistFlow.flatMapLatest { playlist ->
+                if (playlist == null) {
+                    flowOf(emptyList()) // Emit an empty list if there's no playlist
+                } else {
+                    db.playlistDao().getRelatedPlaylistsForPlaylist(playlist.playlistId)
+                }
+            }
+
+        val relatedAlbumsFlow: Flow<List<AlbumWithArtists>> =
+            albumFlow.flatMapLatest { album ->
+                if (album == null) {
+                    flowOf(emptyList()) // Emit an empty list if there's no album
+                } else {
+                    db.albumDao().getRelatedAlbumsForAlbum(album.albumId)
+                }
+            }.map { albums ->
+                albums.map { album ->
+                    val albumArtists =
+                        db.artistDao().getArtistsByAlbumId(album.albumId).firstOrNull()
+                    AlbumWithArtists(
+                        album,
+                        albumArtists ?: emptyList()
+                    )
+                }
+            }
+
+        val relatedFlow = combine(relatedPlaylistsFlow, relatedAlbumsFlow) { playlists, albums ->
+            (playlists).map { it.toDataModel() } + albums.map { it.toDataModel() }
+        }
 
         logger.info { "building albumArtistsFlow $id" }
         val albumArtistsFlow: Flow<List<ArtistEntity>> = albumFlow.flatMapLatest { album ->
@@ -93,13 +128,15 @@ class PlaylistRepository @Inject constructor(
             }
 
 
+
         logger.info { "building combined Flow $id" }
         return combine(
             playlistFlow,
             albumFlow,
             songsWithAlbumsAndArtistsFlow,
-            albumArtistsFlow
-        ) { playlist, album, songs, artists ->
+            albumArtistsFlow,
+            relatedFlow
+        ) { playlist, album, songs, artists, related ->
 
             logger.info { "Combining flows" }
             if (playlist == null && album == null) return@combine null
@@ -121,7 +158,7 @@ class PlaylistRepository @Inject constructor(
                 } ?: PlaylistType.PLAYLIST,
                 artists = artists.map { it.toDataModel() },
                 songs = songs.map { it.toDataModel() },
-                relatedPlaylists = emptyList()
+                relatedPlaylists = related
             )
         }
     }
@@ -166,6 +203,8 @@ class PlaylistRepository @Inject constructor(
             val playlistEntities = mutableListOf<PlaylistEntity>()
             val albumArtistLinks = mutableListOf<AlbumArtistCrossRef>()
             val playlistSongsLinks = mutableListOf<PlaylistSongCrossRef>()
+            val playlistRelatedLinks = mutableListOf<PlaylistRelatedCrossRef>()
+            val albumsRelatedLinks = mutableListOf<AlbumRelatedCrossRef>()
 
 
             // --- MAPPING LOGIC ---
@@ -182,6 +221,21 @@ class PlaylistRepository @Inject constructor(
                             type = if (remoteDetails.type == PlaylistType.ALBUM) AlbumType.ALBUM else AlbumType.SINGLE_EP,
                             updateTimestamp = System.currentTimeMillis()
                         )
+                    )
+
+                    albumEntities.addAll(
+                        remoteDetails.relatedPlaylists.map {
+                            it.toEntity()
+                        }
+                    )
+
+                    albumsRelatedLinks.addAll(
+                        remoteDetails.relatedPlaylists.map { related ->
+                            AlbumRelatedCrossRef(
+                                parentAlbumId = playlistId,
+                                relatedAlbumId = related.id
+                            )
+                        }
                     )
                 }
 
@@ -200,11 +254,26 @@ class PlaylistRepository @Inject constructor(
                         )
                     )
 
+                    playlistEntities.addAll(
+                        remoteDetails.relatedPlaylists.map {
+                            it.toPlaylistEntity()
+                        }
+                    )
+
                     playlistSongsLinks.addAll(
                         remoteDetails.songs.map { song ->
                             PlaylistSongCrossRef(
                                 playlistId = playlistId,
                                 songId = song.id
+                            )
+                        }
+                    )
+
+                    playlistRelatedLinks.addAll(
+                        remoteDetails.relatedPlaylists.map { related ->
+                            PlaylistRelatedCrossRef(
+                                parentPlaylistId = playlistId,
+                                relatedPlaylistId = related.id
                             )
                         }
                     )
@@ -276,16 +345,7 @@ class PlaylistRepository @Inject constructor(
                     }
                     db.albumDao().upsertAll(albumEntities)
                 }
-
-                logger.info {
-                    "Inserting songs with IDs: ${songEntities.joinToString(", ") { it.songId }} and albums IDs: ${
-                        songEntities.joinToString(
-                            ", "
-                        ) { it.albumId ?: "N/A" }
-                    }"
-                }
-                val songAlbumIds = songEntities.mapNotNull { it.albumId }.distinct()
-                logger.info { "Song albums IDs :$songAlbumIds" }
+                
                 db.songDao().insertSongs(songEntities)
 
                 db.albumDao().linkAlbumToArtists(albumArtistLinks)
@@ -295,6 +355,16 @@ class PlaylistRepository @Inject constructor(
                     playlistSongsLinks.forEach { link ->
                         db.playlistDao().addSongToPlaylist(link)
                     }
+                }
+
+                if (playlistRelatedLinks.isNotEmpty()) {
+                    logger.info { "Inserting playlist-related links for playlist ID: $playlistId" }
+                    db.playlistDao().linkPlaylistsToRelatedPlaylists(playlistRelatedLinks)
+                }
+
+                if (albumsRelatedLinks.isNotEmpty()) {
+                    logger.info { "Inserting album-related links for album ID: $playlistId" }
+                    db.albumDao().linkAlbumsToRelatedAlbums(albumsRelatedLinks)
                 }
 
                 logger.info { "End DB Transaction" }

@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
+import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import kotlinx.coroutines.flow.Flow
 
@@ -87,12 +88,26 @@ interface PlaylistDao {
     fun getPlaylistsForArtist(artistId: String): Flow<List<PlaylistEntity>>
 
 
+    @Query(
+        """
+        SELECT * FROM playlists
+        WHERE playlistId IN (
+            SELECT playlistId FROM playlist_related_cross_ref WHERE parentPlaylistId = :playlistId
+        ) 
+    """
+    )
+    fun getRelatedPlaylistsForPlaylist(playlistId: String): Flow<List<PlaylistEntity>>
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkPlaylistToArtists(crossRefs: List<ArtistPlaylistCrossRef>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkFeaturingPlaylistToArtists(crossRefs: List<ArtistFeaturedPlaylistCrossRef>)
 
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun linkPlaylistsToRelatedPlaylists(crossRefs: List<PlaylistRelatedCrossRef>)
 
     /**
      * Adds a song to a playlist by inserting an entry into the join table.

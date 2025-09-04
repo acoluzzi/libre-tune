@@ -66,6 +66,9 @@ interface PlaylistDao {
     suspend fun getPlaylistsByIds(playlistIds: List<String>): List<PlaylistEntity>
 
 
+    @Query("SELECT EXISTS(SELECT 1 FROM playlist_song_cross_ref WHERE playlistId = :playlistId AND songId = :songId)")
+    fun isSongInPlaylist(playlistId: String, songId: String): Flow<Boolean>
+    
     @Query(
         """
         SELECT * FROM playlists

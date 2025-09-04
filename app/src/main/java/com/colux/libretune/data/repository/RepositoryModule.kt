@@ -40,8 +40,9 @@ class RepositoryModule {
     @Provides
     fun provideSongRepositoryImpl(
         remote: YouTubeExtractionRepository,
+        db: AppDatabase
     ): SongRepository {
-        return SongRepository(remote)
+        return SongRepository(remote, db)
     }
 
 }

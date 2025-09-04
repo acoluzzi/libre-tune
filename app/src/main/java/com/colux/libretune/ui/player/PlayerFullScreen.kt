@@ -13,10 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,8 +54,8 @@ fun PlayerFullScreen(
 
     // This flow depends on the current song's ID.
     // We handle the initial null case for currentSong.
-//    val isLiked by playerViewModel.isCurrentSongLiked(currentSong?.id ?: "")
-//        .collectAsState(initial = false)
+    val isLiked by playerViewModel.isCurrentSongLiked(currentSong?.id ?: "")
+        .collectAsState(initial = false)
 
     var sliderPosition by remember(currentPosition) { mutableFloatStateOf(currentPosition.toFloat()) }
     var isUserSeeking by remember { mutableStateOf(false) }
@@ -131,13 +133,13 @@ fun PlayerFullScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Like/Unlike Button
-//                IconButton(onClick = { playerViewModel.onLikeClick(song, isLiked) }) {
-//                    Icon(
-//                        imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-//                        contentDescription = "Like Song",
-//                        tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-//                    )
-//                }
+                IconButton(onClick = { playerViewModel.onLikeClick(song, isLiked) }) {
+                    Icon(
+                        imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Like Song",
+                        tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 IconButton(onClick = { playerViewModel.playPreviousSong() }) {
                     Icon(

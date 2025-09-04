@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.colux.libretune.data.local.dao.SongDao
 import com.colux.libretune.data.model.Song
+import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.service.PlaybackService
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val likedSongDao: SongDao,
+    private val songRepository: SongRepository,
 ) : ViewModel() {
 
     private var mediaController: MediaController? = null
@@ -141,13 +142,17 @@ class PlayerViewModel @Inject constructor(
 
 
     // --- Liked Songs Logic (can remain in ViewModel) ---
-//    fun isCurrentSongLiked(songId: String): Flow<Boolean> = likedSongDao.isLiked(songId)
-//    fun onLikeClick(song: Song, isLiked: Boolean) {
-//        viewModelScope.launch {
-//            val entity = LikedSongEntity.from(song)
-//            if (isLiked) likedSongDao.unlikeSong(entity) else likedSongDao.likeSong(entity)
-//        }
-//    }
+    fun isCurrentSongLiked(songId: String): Flow<Boolean> = songRepository.isSongLiked(songId)
+
+    fun onLikeClick(song: Song, isLiked: Boolean) {
+        viewModelScope.launch {
+            if (isLiked) {
+                songRepository.unlikeSong(song)
+            } else {
+                songRepository.likeSong(song)
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()

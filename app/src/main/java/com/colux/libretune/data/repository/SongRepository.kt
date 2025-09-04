@@ -1,14 +1,113 @@
 package com.colux.libretune.data.repository
 
+import androidx.room.withTransaction
+import com.colux.libretune.data.local.AppDatabase
+import com.colux.libretune.data.local.DatabaseConstants
+import com.colux.libretune.data.local.entity.PlaylistEntity
+import com.colux.libretune.data.local.entity.SongEntity
+import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.join.PlaylistSongCrossRef
+import com.colux.libretune.data.local.mapper.toDataModel
+import com.colux.libretune.data.local.mapper.toEntity
+import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
+import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SongRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
+    private val db: AppDatabase,
 ) {
     suspend fun getSongUrlById(id: String): String? {
         return remote.getSongUrlById(id)
+    }
+
+
+    fun isSongLiked(id: String): Flow<Boolean> {
+        return db.playlistDao().isSongInPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, id)
+    }
+
+    suspend fun unlikeSong(song: Song) {
+        val join = PlaylistSongCrossRef(
+            playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
+            songId = song.id
+        )
+        db.playlistDao().removeSongFromPlaylist(join)
+    }
+
+    suspend fun likeSong(song: Song) {
+
+        val albumEntity = song.album?.toEntity()
+        val artistsEntities = song.artists.map { it.toEntity() }
+        val songEntity = song.toEntity()
+
+        val albumArtistsLinks = song.album?.let { album ->
+            artistsEntities.map { artistEntity ->
+                // Assuming you have an AlbumArtistCrossRef entity to represent the many-to-many relationship
+                AlbumArtistCrossRef(
+                    albumId = album.id,
+                    artistId = artistEntity.artistId
+                )
+            }
+        } ?: emptyList()
+
+        db.withTransaction {
+            db.artistDao().upsertAll(artistsEntities)
+
+            if (albumEntity != null) {
+                db.albumDao().upsert(albumEntity)
+            }
+
+            db.songDao().insertSong(songEntity)
+
+
+            if (albumArtistsLinks.isNotEmpty()) {
+                db.albumDao().linkAlbumToArtists(albumArtistsLinks)
+            }
+
+            val join = PlaylistSongCrossRef(
+                playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
+                songId = song.id
+            )
+            db.playlistDao().addSongToPlaylist(join)
+        }
+    }
+
+    fun getLikedSongs(): Flow<List<Song>> {
+
+        val playlistFlow: Flow<PlaylistEntity?> =
+            db.playlistDao().getPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID)
+
+
+        val playlistSongsFlow: Flow<List<SongEntity>> = playlistFlow.map { playlist ->
+            if (playlist == null) return@map emptyList()
+            db.songDao().getSongsInPlaylist(playlist.playlistId)
+        }
+
+        val likedSongs: Flow<List<Song>> =
+            playlistSongsFlow.map { songs ->
+                songs.map { song ->
+                    val songAlbum = db.albumDao().getAlbumById(song.albumId ?: "")
+
+                    val albumArtists = songAlbum?.albumId?.let {
+                        db.artistDao().getArtistsByAlbumId(it)
+                            .firstOrNull() ?: emptyList()
+                    } ?: emptyList()
+
+                    SongWithAlbumAndArtists(
+                        song,
+                        songAlbum,
+                        albumArtists
+                    ).toDataModel()
+                }
+            }
+
+
+        return likedSongs
     }
 }

@@ -39,6 +39,7 @@ newpipeExtractor = "0.24.8"
 newpipeextractorVersion = "v0.27.0"
 okhttp = "5.1.0"
 okhttpVersion = "5.1.0"
+paletteKtx = "1.0.0"
 retrofit = "3.0.0"
 foundationLayout = "1.9.0"
 roomRuntime = "2.7.2"
@@ -55,6 +56,7 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Ui" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version.ref = "paletteKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }

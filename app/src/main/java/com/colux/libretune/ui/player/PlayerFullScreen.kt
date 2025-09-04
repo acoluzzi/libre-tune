@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
@@ -52,6 +54,8 @@ fun PlayerFullScreen(
     val totalDuration by playerViewModel.totalDuration.collectAsState()
     val repeatMode by playerViewModel.repeatMode.collectAsState()
 
+    val dynamicColor by playerViewModel.dynamicPrimaryColor.collectAsState()
+
     // This flow depends on the current song's ID.
     // We handle the initial null case for currentSong.
     val isLiked by playerViewModel.isCurrentSongLiked(currentSong?.id ?: "")
@@ -67,8 +71,8 @@ fun PlayerFullScreen(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.surface
+                            dynamicColor ?: MaterialTheme.colorScheme.primary, // Use dynamic color
+                            MaterialTheme.colorScheme.background // Fade to black
                         )
                     )
                 )
@@ -112,8 +116,13 @@ fun PlayerFullScreen(
                         playerViewModel.seekToPosition(sliderPosition.toLong())
                         isUserSeeking = false
                     },
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = Color.White,
+                        inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                    ),
                     valueRange = 0f..(totalDuration.toFloat().coerceAtLeast(0f)),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 Row(
                     modifier = Modifier
@@ -137,7 +146,7 @@ fun PlayerFullScreen(
                     Icon(
                         imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like Song",
-                        tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
 

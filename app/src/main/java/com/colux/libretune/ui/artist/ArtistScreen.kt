@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +49,9 @@ fun ArtistScreen(
         is ArtistUiState.Success -> {
             // Your existing LazyColumn UI goes here.
             // You can access the data via 'state.details'
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()) {
                 // Artist Banner
                 item {
                     Box(modifier = Modifier.height(200.dp)) {

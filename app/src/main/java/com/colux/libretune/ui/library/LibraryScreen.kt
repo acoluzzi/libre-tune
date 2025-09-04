@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +23,9 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val likedSongs by viewModel.likedSongs.collectAsState()
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+    LazyColumn(modifier = Modifier
+        .fillMaxSize()
+        .statusBarsPadding()) {
         item {
             Text(
                 text = "Liked Songs",

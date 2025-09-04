@@ -1,52 +1,56 @@
 package com.colux.libretune.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import android.app.Activity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+val ModernPurple = Color(0xFF7F52FF)
+val AbsoluteBlack = Color(0xFF000000)
+val White = Color(0xFFFFFFFF) // Add White color here for consistency
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+// Create one color scheme that will be used for both light and dark system themes.
+private val BaseColorScheme = darkColorScheme(
+    primary = ModernPurple, // Default primary for the app
+    background = AbsoluteBlack,
+    surface = AbsoluteBlack,
+    surfaceVariant = Color(0xFF1E1E1E), // A slightly lighter black for cards/bars
+    onPrimary = White,
+    onBackground = White,
+    onSurface = White,
+    onSurfaceVariant = White,
+    // Add other colors as needed to match your design
 )
 
 @Composable
 fun LibreTuneTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // This parameter will override the primary color if provided.
+    // If null, it uses the default `BaseColorScheme.primary` (ModernPurple).
+    dynamicPrimaryColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val colorScheme = if (dynamicPrimaryColor != null) {
+        // Create a new color scheme for the player components
+        BaseColorScheme.copy(
+            primary = dynamicPrimaryColor
+        )
+    } else {
+        // Use the base color scheme for the rest of the app
+        BaseColorScheme
+    }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = Color.Transparent.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        }
     }
 
     MaterialTheme(

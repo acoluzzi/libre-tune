@@ -2,19 +2,26 @@ package com.colux.libretune.ui.player
 
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.drawable.BitmapDrawable
+import androidx.compose.ui.graphics.Color
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.service.PlaybackService
+import com.colux.libretune.ui.theme.White
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.logging.Logger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,6 +37,9 @@ class PlayerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val songRepository: SongRepository,
 ) : ViewModel() {
+
+
+    val logger = Logger.getLogger(PlayerViewModel::class.java.name)
 
     private var mediaController: MediaController? = null
     private lateinit var controllerFuture: ListenableFuture<MediaController>
@@ -51,6 +62,13 @@ class PlayerViewModel @Inject constructor(
     val repeatMode: StateFlow<Int> = _repeatMode.asStateFlow()
 
     private var progressTrackingJob: Job? = null
+
+    private val _dynamicPrimaryColor = MutableStateFlow<Color?>(null)
+    val dynamicPrimaryColor: StateFlow<Color?> = _dynamicPrimaryColor.asStateFlow()
+
+    // This provides the "onPrimary" color for player elements like text/icons
+    val playerOnPrimaryColor: StateFlow<Color> = MutableStateFlow(White).asStateFlow()
+
 
     init {
         initializeController()
@@ -82,6 +100,11 @@ class PlayerViewModel @Inject constructor(
             _currentSong.value = _currentPlaylist.value.find {
                 it.id == controller.currentMediaItem?.mediaId
             }
+            _currentSong.value?.let {
+                logger.info { "Extracting main color from the song" }
+                extractColorFromSong(it)
+            }
+
             _totalDuration.value = controller.duration.coerceAtLeast(0L)
             _repeatMode.value = controller.repeatMode
 
@@ -150,6 +173,29 @@ class PlayerViewModel @Inject constructor(
                 songRepository.unlikeSong(song)
             } else {
                 songRepository.likeSong(song)
+            }
+        }
+    }
+
+    private fun extractColorFromSong(song: Song) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val imageLoader = ImageLoader(context)
+                val request = ImageRequest.Builder(context)
+                    .data(song.getBestImageUrl())
+                    .allowHardware(false)
+                    .build()
+                val image = (imageLoader.execute(request).drawable as? BitmapDrawable)?.bitmap
+                    ?: return@launch
+
+                val vibrantSwatch = Palette.from(image).generate().vibrantSwatch
+
+                // Set the dynamic primary color, or null if no vibrant swatch found
+                _dynamicPrimaryColor.value = vibrantSwatch?.rgb?.let { Color(it) }
+
+            } catch (e: Exception) {
+                _dynamicPrimaryColor.value = null // Reset to null on error to use default theme
+                e.printStackTrace()
             }
         }
     }

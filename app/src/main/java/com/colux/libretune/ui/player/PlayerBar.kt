@@ -1,6 +1,7 @@
 package com.colux.libretune.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -95,13 +96,15 @@ fun PlayerBar(
                     song?.title ?: "",
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
-                    color = contentColor
+                    color = contentColor,
+                    modifier = Modifier.basicMarquee()
                 )
                 Text(
                     song?.getArtistNames() ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
-                    color = contentColor
+                    color = contentColor,
+                    modifier = Modifier.basicMarquee()
                 )
             }
 

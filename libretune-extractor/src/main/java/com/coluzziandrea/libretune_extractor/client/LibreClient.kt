@@ -63,7 +63,7 @@ class LibreClient(
         return res
     }
 
-    suspend fun browse(browseId: String): BrowseData {
+    suspend fun browse(browseId: String, params: String? = null): BrowseData {
         val res = client.post("$BASE_URL/browse?prettyPrint=false") {
             contentType(ContentType.Application.Json)
 
@@ -72,7 +72,8 @@ class LibreClient(
             setBody(
                 BrowseRequest(
                     browseId = browseId,
-                    context = getContext()
+                    context = getContext(),
+                    params
                 )
             )
         }.body<BrowseData>()

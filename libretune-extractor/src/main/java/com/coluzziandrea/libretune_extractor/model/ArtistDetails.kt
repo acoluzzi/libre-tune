@@ -6,10 +6,11 @@ data class ArtistDetails(
     val description: String?,
     val images: List<Image>,
     val topSongs: List<Song>,
-    val topSongsPlaylist: Playlist?,
     val albums: List<Playlist>,
     val singlesAndEp: List<Playlist>,
     val discographyId: String?,
+    val discographyAlbumsParam: String?,
+    val discographySinglesParam: String?,
     val featuring: List<Playlist>,
     val playlists: List<Playlist>,
     val similarArtists: List<Artist>

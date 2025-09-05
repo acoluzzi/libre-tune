@@ -16,5 +16,6 @@ data class BrowseEndpointSupportedConfig(
 @Serializable
 data class BrowseEndpoint(
     val browseId: String,
+    val params: String? = null,
     val browseEndpointContextSupportedConfigs: BrowseEndpointSupportedConfig
 )

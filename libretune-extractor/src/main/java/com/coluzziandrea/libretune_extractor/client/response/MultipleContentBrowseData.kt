@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MultipleContentBrowseData(
-    val contents: List<BrowseDataContents>,
+    val contents: List<BrowseDataContents>? = null,
 )

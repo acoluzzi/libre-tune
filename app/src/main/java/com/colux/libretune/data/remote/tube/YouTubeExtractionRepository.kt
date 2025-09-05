@@ -10,6 +10,7 @@ import com.colux.libretune.data.remote.tube.mapper.toAlbum
 import com.colux.libretune.data.remote.tube.mapper.toArtist
 import com.colux.libretune.data.remote.tube.mapper.toDataModel
 import com.colux.libretune.data.remote.tube.mapper.toPlaylist
+import com.colux.libretune.data.remote.tube.mapper.toPlaylists
 import com.colux.libretune.data.remote.tube.mapper.toSong
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
@@ -148,8 +149,21 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
-    suspend fun getArtistItemContinuation(id: String): List<Playlist> {
-        TODO("Not yet implemented")
+    suspend fun discography(id: String, param: String? = null): List<Playlist> {
+        return withContext(Dispatchers.IO) {
+            try {
+                libreTuneExtractor.discography(id, param).let {
+                    if (it != null) {
+                        return@withContext it.toPlaylists()
+                    } else {
+                        emptyList()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
     }
 
     suspend fun getPlaylistDetails(id: String): PlaylistDetails? {

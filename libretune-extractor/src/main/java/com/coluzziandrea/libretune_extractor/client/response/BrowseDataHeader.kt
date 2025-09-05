@@ -20,5 +20,5 @@ data class MusicImmersiveHeaderRenderer(
 
 @Serializable
 data class BrowseDataHeader(
-    val musicImmersiveHeaderRenderer: MusicImmersiveHeaderRenderer
+    val musicImmersiveHeaderRenderer: MusicImmersiveHeaderRenderer? = null
 )

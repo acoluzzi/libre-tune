@@ -23,7 +23,8 @@ fun getAlbum(flexColumns: List<FlexColumn>): Playlist? {
             return Playlist(
                 id = albumId,
                 name = it.text,
-                images = emptyList()
+                images = emptyList(),
+                releaseYear = -1
             )
         }
     return null

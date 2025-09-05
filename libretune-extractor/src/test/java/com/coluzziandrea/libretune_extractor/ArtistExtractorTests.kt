@@ -16,6 +16,18 @@ import org.junit.runner.RunWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArtistPageScrapingTests {
 
+    @Test
+    fun `scrapeArtistPage should correctly parse eminem HTML`() = runTest {
+        val scraper =
+            LibreTuneExtractor(provideMockClient(TestUtil.readFileFromResources("eminemArtist.json")))
+
+        // Act: Call the method with any channel ID (it won't be used)
+        val artistDetails = scraper.artist("any_id")
+
+        assertEquals("MPADUCedvOgsKFzcK3hA5taf3KoQ", artistDetails?.discographyId)
+        assertEquals("ggMIegYIARoCAQI%3D", artistDetails?.discographyAlbumsParam)
+        assertEquals("ggMIegYIAhoCAQI%3D", artistDetails?.discographySinglesParam)
+    }
 
     @Test
     fun `scrapeArtistPage should correctly parse beatles HTML`() = runTest {

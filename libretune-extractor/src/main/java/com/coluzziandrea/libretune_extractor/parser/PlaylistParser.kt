@@ -8,6 +8,7 @@ import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
 import com.coluzziandrea.libretune_extractor.model.PlaylistType
 import com.coluzziandrea.libretune_extractor.model.Song
+import com.coluzziandrea.libretune_extractor.parser.mapper.toPlaylist
 import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
 class PlaylistParser {
@@ -102,7 +103,8 @@ class PlaylistParser {
                                             id = browseId,
                                             type = albumType,
                                             images = playlistImages,
-                                            artists = artists
+                                            artists = artists,
+                                            releaseYear = -1
                                         )
                                     }
                                     songs.add(
@@ -127,9 +129,9 @@ class PlaylistParser {
                     if (headerText == "Releases for you") {
 
                         val currentPlaylists =
-                            content.musicCarouselShelfRenderer.contents.map(Playlist.Companion::from)
-                                .filter { it != null }
-                                .map { it!! }
+                            content.musicCarouselShelfRenderer.contents.mapNotNull {
+                                it.musicTwoRowItemRenderer?.toPlaylist()
+                            }
 
                         relatedPlaylists.addAll(currentPlaylists)
                     }

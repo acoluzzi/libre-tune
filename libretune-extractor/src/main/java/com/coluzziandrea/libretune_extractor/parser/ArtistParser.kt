@@ -9,6 +9,7 @@ import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.PlaylistType
 import com.coluzziandrea.libretune_extractor.model.Song
+import com.coluzziandrea.libretune_extractor.parser.mapper.toPlaylist
 import com.coluzziandrea.libretune_extractor.parser.mapper.toSong
 
 class ArtistParser {
@@ -22,8 +23,11 @@ class ArtistParser {
             val playlists = mutableListOf<Playlist>()
             val similarArtists = mutableListOf<Artist>()
 
-            var topSongsPlaylist: Playlist? = null
-            var discographyId: String? = null
+            var albumDiscographyId: String? = null
+            var singlesDiscographyId: String? = null
+
+            var discographyAlbumsParam: String? = null
+            var discographySinglesParam: String? = null
 
             val artistName = browseDataObject.microformat?.microformatDataRenderer?.title
             val description = browseDataObject.microformat?.microformatDataRenderer?.description
@@ -55,13 +59,6 @@ class ArtistParser {
                                     }
                                 }
 
-                                if (content.musicShelfRenderer.bottomEndpoint != null && content.musicShelfRenderer.bottomEndpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
-                                    topSongsPlaylist = Playlist(
-                                        id = content.musicShelfRenderer.bottomEndpoint.browseEndpoint.browseId,
-                                        name = "Top songs",
-                                        images = emptyList()
-                                    )
-                                }
                             }
                         }
 
@@ -79,9 +76,9 @@ class ArtistParser {
                             ) {
 
                                 val currentPlaylists =
-                                    content.musicCarouselShelfRenderer.contents.map(Playlist.Companion::from)
-                                        .filter { it != null }
-                                        .map { it!! }
+                                    content.musicCarouselShelfRenderer.contents.mapNotNull {
+                                        it.musicTwoRowItemRenderer?.toPlaylist()
+                                    }
 
 
                                 when (headerText) {
@@ -109,10 +106,18 @@ class ArtistParser {
                                                 )
                                             }
                                         })
-                                        discographyId =
+                                        albumDiscographyId =
                                             content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
                                                 if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
                                                     endpoint.browseEndpoint.browseId
+                                                } else {
+                                                    null
+                                                }
+                                            }
+                                        discographyAlbumsParam =
+                                            content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
+                                                if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
+                                                    endpoint.browseEndpoint.params
                                                 } else {
                                                     null
                                                 }
@@ -143,10 +148,18 @@ class ArtistParser {
                                                 )
                                             }
                                         })
-                                        discographyId =
+                                        singlesDiscographyId =
                                             content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
                                                 if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
                                                     endpoint.browseEndpoint.browseId
+                                                } else {
+                                                    null
+                                                }
+                                            }
+                                        discographySinglesParam =
+                                            content.musicCarouselShelfRenderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.let { endpoint ->
+                                                if (endpoint is NavigationEndpoint.BrowseNavigationEndpoint) {
+                                                    endpoint.browseEndpoint.params
                                                 } else {
                                                     null
                                                 }
@@ -199,10 +212,11 @@ class ArtistParser {
                 albums = albums,
                 similarArtists = similarArtists,
                 singlesAndEp = singlesEp,
-                discographyId = discographyId,
+                discographyId = albumDiscographyId ?: singlesDiscographyId,
                 featuring = featuring,
                 playlists = playlists,
-                topSongsPlaylist = topSongsPlaylist,
+                discographyAlbumsParam = discographyAlbumsParam,
+                discographySinglesParam = discographySinglesParam
             )
         }
 

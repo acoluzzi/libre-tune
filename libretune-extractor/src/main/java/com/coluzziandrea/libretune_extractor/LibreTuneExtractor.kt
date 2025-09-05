@@ -2,12 +2,14 @@ package com.coluzziandrea.libretune_extractor
 
 import com.coluzziandrea.libretune_extractor.client.LibreClient
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
+import com.coluzziandrea.libretune_extractor.model.Discography
 import com.coluzziandrea.libretune_extractor.model.PlaylistDetails
 import com.coluzziandrea.libretune_extractor.model.SearchResult
 import com.coluzziandrea.libretune_extractor.model.SearchSuggestion
 import com.coluzziandrea.libretune_extractor.parser.ArtistParser
 import com.coluzziandrea.libretune_extractor.parser.PlaylistParser
 import com.coluzziandrea.libretune_extractor.parser.SearchResultParser
+import com.coluzziandrea.libretune_extractor.parser.mapper.toDiscography
 import com.coluzziandrea.libretune_extractor.parser.toSearchSuggestions
 import io.ktor.client.HttpClient
 import java.net.URLEncoder
@@ -47,6 +49,10 @@ class LibreTuneExtractor @Inject constructor(
     suspend fun searchSuggestions(query: String): List<SearchSuggestion> {
         return client.searchSuggestions(URLEncoder.encode(query, StandardCharsets.UTF_8.name()))
             .toSearchSuggestions()
+    }
+
+    suspend fun discography(id: String, params: String? = null): Discography? {
+        return client.browse(id, params).toDiscography()
     }
 
 

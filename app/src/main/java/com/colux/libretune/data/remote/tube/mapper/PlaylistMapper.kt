@@ -14,6 +14,7 @@ fun ExtractorPlaylist.toDataModel(albumType: PlaylistType = PlaylistType.PLAYLIS
         name = this.name,
         images = this.images.map { it.toDataModel() },
         artists = this.artists?.map { it.toDataModel() } ?: emptyList(),
+        releaseYear = this.releaseYear,
         type = when (this.type) {
             ExtractorPlaylistType.ALBUM -> PlaylistType.ALBUM
             ExtractorPlaylistType.SINGLE_EP -> PlaylistType.SINGLE_EP

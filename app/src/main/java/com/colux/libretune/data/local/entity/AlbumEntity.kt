@@ -11,5 +11,6 @@ data class AlbumEntity(
     val name: String,
     val images: List<ImageAttribute>,
     val type: AlbumType,
+    val releaseYear: Int,
     val updateTimestamp: Long? = null
 )

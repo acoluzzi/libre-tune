@@ -3,7 +3,6 @@ package com.colux.libretune.ui.artist
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -11,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -124,81 +122,40 @@ fun ArtistScreen(
                             }
                         )
                     }
+                }
 
-                    if (state.details.topSongs.size == 5 && state.details?.topSongPlaylist != null) {
-                        item {
-                            TextButton(
-                                onClick = {
-                                    // Navigate to the PlaylistDetailScreen using the uploads ID
-                                    state.details?.topSongPlaylist.let { playlist ->
-                                        if (playlist != null) {
-                                            navController.navigate(
-                                                Screen.PlaylistDetail.createRoute(
-                                                    playlist.id
-                                                )
-                                            )
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("More")
+                val allReleases = (state.details.albums + state.details.singlesAndEPs)
+                    .sortedByDescending { it.releaseYear }
+                    .take(10)
+
+                if (allReleases.isNotEmpty()) {
+                    item {
+                        PlaylistCarousel(
+                            title = "Releases",
+                            playlists = allReleases,
+                            onItemClick = { index ->
+                                navController.navigate(
+                                    Screen.PlaylistDetail.createRoute(
+                                        allReleases[index].id
+                                    )
+                                )
+                            },
+                            onViewAllClick = if (allReleases.size >= 10) {
+                                {
+                                    navController.navigate(
+                                        Screen.Discography.createRoute(artistId)
+                                    )
+                                }
+                            } else {
+                                null
                             }
-                        }
-                    }
-                }
 
 
-                // Similar Artists Carousel
-                if (state.details!!.albums.isNotEmpty()) {
-                    item {
-                        PlaylistCarousel(
-                            title = "Albums", modifier = Modifier.height(220.dp),
-                            playlists = state.details.albums,
-                            onItemClick = { index ->
-                                navController.navigate(
-                                    Screen.PlaylistDetail.createRoute(
-                                        state.details.albums[index].id
-                                    )
-                                )
-                            },
-
-                            )
-                    }
-                }
-
-                if (state.details.singlesAndEPs.isNotEmpty()) {
-                    item {
-                        PlaylistCarousel(
-                            title = "Singles & EPs", modifier = Modifier.height(220.dp),
-                            playlists = state.details.singlesAndEPs,
-                            onItemClick = { index ->
-                                navController.navigate(
-                                    Screen.PlaylistDetail.createRoute(
-                                        state.details.singlesAndEPs[index].id
-                                    )
-                                )
-                            },
                         )
                     }
                 }
 
-                if (state.details.playlists.isNotEmpty()) {
-                    item {
-                        PlaylistCarousel(
-                            title = "Playlists by ${state.details.name}",
-                            modifier = Modifier.height(220.dp),
-                            playlists = state.details.playlists,
-                            onItemClick = { index ->
-                                navController.navigate(
-                                    Screen.PlaylistDetail.createRoute(
-                                        state.details.playlists[index].id
-                                    )
-                                )
-                            }
-                        )
-                    }
-                }
+
 
                 if (state.details.featuring.isNotEmpty()) {
                     item {

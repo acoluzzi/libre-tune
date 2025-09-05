@@ -32,7 +32,6 @@ fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
         images = images.map { image ->
             image.toDataModel()
         },
-        topSongPlaylist = topSongsPlaylist?.toDataModel(),
         topSongs = topSongs.map {
             it.toDataModel()
         },
@@ -50,6 +49,9 @@ fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
         },
         similarArtists = similarArtists.map {
             it.toDataModel()
-        }
+        },
+        discographyId = discographyId,
+        discographyAlbumsParam = discographyAlbumsParam,
+        discographySinglesParam = discographySinglesParam
     )
 }

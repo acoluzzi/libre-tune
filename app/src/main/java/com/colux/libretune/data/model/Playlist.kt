@@ -11,7 +11,8 @@ data class Playlist(
     val name: String,
     val images: List<Image>,
     val artists: List<Artist>,
-    val type: PlaylistType = PlaylistType.PLAYLIST
+    val type: PlaylistType = PlaylistType.PLAYLIST,
+    val releaseYear: Int? = null
 ) : Parcelable {
     fun bestImageUrlForCarousel(): String? {
         return images.minByOrNull { it.width ?: 0 }?.url

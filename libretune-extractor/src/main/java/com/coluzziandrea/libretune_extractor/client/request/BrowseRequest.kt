@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BrowseRequest(
     val browseId: String,
-    val context: Context
+    val context: Context,
+    val params: String? = null
 )

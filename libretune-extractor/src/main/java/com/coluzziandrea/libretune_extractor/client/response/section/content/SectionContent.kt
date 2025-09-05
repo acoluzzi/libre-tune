@@ -44,6 +44,11 @@ sealed interface SectionContent {
     ) : SectionContent
 
     @Serializable
+    data class GridContent(
+        val gridRenderer: GridRenderer
+    ) : SectionContent
+
+    @Serializable
     class EmptyContent : SectionContent
 
 }

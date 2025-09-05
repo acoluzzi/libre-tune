@@ -23,6 +23,9 @@ object SectionContentSerializer :
             "musicCardShelfRenderer" in element.jsonObject -> SectionContent.MusicCardShelfContent.serializer()
 
             "searchSuggestionRenderer" in element.jsonObject -> SectionContent.SearchSuggestionContent.serializer()
+
+            "gridRenderer" in element.jsonObject -> SectionContent.GridContent.serializer()
+
             // Default case
             else -> SectionContent.EmptyContent.serializer()
         }

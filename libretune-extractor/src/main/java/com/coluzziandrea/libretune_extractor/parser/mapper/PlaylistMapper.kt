@@ -45,10 +45,27 @@ fun MusicCardShelfRenderer.toPlaylist(): Playlist? {
             )
         }
 
+    val typeStr = subtitle?.runs?.firstOrNull()?.text
+
+    val playlistType = when {
+        typeStr?.contains(
+            "Album",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.ALBUM
+
+        typeStr?.contains("Single", ignoreCase = true) == true || typeStr?.contains(
+            "EP",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE_EP
+
+        else -> com.coluzziandrea.libretune_extractor.model.PlaylistType.PLAYLIST
+    }
 
     return Playlist(
         id = id,
         name = name,
+        type = playlistType,
+        releaseYear = -1,
         images = images,
         artists = artists
     )
@@ -95,10 +112,36 @@ fun MusicResponsiveListItemRenderer.toPlaylist(): Playlist? {
         )
     }
 
+    val typeStr =
+        flexColumns.lastOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+
+    val releaseYearStr =
+        flexColumns.lastOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.lastOrNull()?.text
+
+    val playlistType = when {
+        typeStr?.contains(
+            "Album",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.ALBUM
+
+        typeStr?.contains("Single", ignoreCase = true) == true || typeStr?.contains(
+            "EP",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE_EP
+
+        else -> com.coluzziandrea.libretune_extractor.model.PlaylistType.PLAYLIST
+    }
+
     return Playlist(
         id = id,
         name = name,
         images = images,
-        artists = artists
+        artists = artists,
+        type = playlistType,
+        releaseYear = if (releaseYearStr != null && releaseYearStr.all { it.isDigit() }) {
+            releaseYearStr.toInt()
+        } else {
+            -1
+        },
     )
 }

@@ -9,7 +9,7 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toMusicItem
 fun MultipleContentBrowseData.toSearchSuggestions(): List<SearchSuggestion> {
 
     val searchSuggestions = mutableListOf<SearchSuggestion>()
-    contents.forEach { suggestionContent ->
+    contents?.forEach { suggestionContent ->
         suggestionContent.searchSuggestionsSectionRenderer?.contents?.forEach { rendererContent ->
 
             if (rendererContent is SectionContent.SearchSuggestionContent) {

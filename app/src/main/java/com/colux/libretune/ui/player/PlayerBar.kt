@@ -89,7 +89,7 @@ fun PlayerBar(
                 modifier = Modifier
                     .width(8.dp)
             )
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     song?.title ?: "",
@@ -109,7 +109,7 @@ fun PlayerBar(
                 Icon(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Like Song",
-                    tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                    tint = contentColor
                 )
             }
 

@@ -9,5 +9,8 @@ data class ArtistEntity(
     val name: String,
     val description: String? = null,
     val images: List<ImageAttribute>,
+    val discographyId: String? = null,
+    val albumsParams: String? = null,
+    val singlesEpsParams: String? = null,
     val updateTimestamp: Long? = null
 )

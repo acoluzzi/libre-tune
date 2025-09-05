@@ -4,40 +4,43 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.Playlist
-import com.colux.libretune.data.repository.ArtistRepository
+import com.colux.libretune.data.repository.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DiscographyViewModel @Inject constructor(
-    private val repository: ArtistRepository,
+    private val repository: AlbumRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val discographyId: String = savedStateHandle.get<String>("discographyId")!!
+    private val artistId: String = savedStateHandle.get<String>("artistId")!!
 
-    private val _albums = MutableStateFlow<List<Playlist>>(listOf())
-    val albums = _albums.asStateFlow()
-
-    private val _singlesEp = MutableStateFlow<List<Playlist>>(listOf())
-    val singlesEp = _singlesEp.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading = _isLoading.asStateFlow()
+    val uiState: StateFlow<DiscographyUiState> =
+        repository.getArtistDiscography(artistId)
+            .map { list ->
+                DiscographyUiState.Success(list)
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = DiscographyUiState.Loading
+            )
 
     init {
-        fetchDetails()
-    }
-
-    private fun fetchDetails() {
         viewModelScope.launch {
-            _isLoading.value = true
-//            val (albumsRes, singlesEpRes) = repository.getArtistDiscography(discographyId)
-//            _albums.value = albumsRes
-//            _singlesEp.value = singlesEpRes
-            _isLoading.value = false
+            repository.refreshArtistDiscography(artistId)
         }
     }
+}
+
+
+sealed interface DiscographyUiState {
+    data object Loading : DiscographyUiState
+    data class Success(val albums: List<Playlist>) : DiscographyUiState
+    data class Error(val message: String) : DiscographyUiState
 }

@@ -540,6 +540,15 @@ fun ArtistSearchResultItem(artist: Artist, onClick: () -> Unit) {
                 .clip(CircleShape) // Artists often have circular profile images
         )
         Spacer(modifier = Modifier.width(16.dp))
-        Text(text = artist.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+        Column {
+            Text(text = artist.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+            Text(
+                text = "Artist",
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1
+            )
+        }
+
+
     }
 }

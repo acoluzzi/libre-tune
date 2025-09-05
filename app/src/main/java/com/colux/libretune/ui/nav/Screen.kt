@@ -40,11 +40,11 @@ sealed class Screen(
 
     data object Discography :
         Screen(
-            "discography/{discographyId}",
+            "discography/{artistId}",
             "Discography",
             Icons.Default.Album,
             Icons.Default.Album
         ) {
-        fun createRoute(discographyId: String) = "discography/$discographyId"
+        fun createRoute(artistId: String) = "discography/$artistId"
     }
 }

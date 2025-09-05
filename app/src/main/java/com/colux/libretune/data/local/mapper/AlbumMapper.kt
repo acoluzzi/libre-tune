@@ -24,6 +24,7 @@ fun Playlist.toEntity(albumType: AlbumType = AlbumType.ALBUM): AlbumEntity {
         albumId = this.id,
         name = this.name,
         images = this.images.map { it.toEntity() },
+        releaseYear = this.releaseYear ?: 0,
         type = when (this.type) {
             PlaylistType.ALBUM -> AlbumType.ALBUM
             PlaylistType.SINGLE_EP -> AlbumType.SINGLE_EP
@@ -56,6 +57,7 @@ fun AlbumWithArtists.toDataModel(): Playlist {
     return Playlist(
         id = this.albumEntity.albumId,
         name = this.albumEntity.name,
+        releaseYear = this.albumEntity.releaseYear,
         images = this.albumEntity.images.map { it.toDataModel() },
         artists = this.artists.map { it.toDataModel() },
         type = when (this.albumEntity.type) {

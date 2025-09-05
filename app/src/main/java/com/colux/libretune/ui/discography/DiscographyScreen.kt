@@ -1,15 +1,22 @@
 package com.colux.libretune.ui.discography
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -22,73 +29,159 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.colux.libretune.ui.components.album.ArtistAlbum
+import coil.compose.AsyncImage
+import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.PlaylistType
 import com.colux.libretune.ui.nav.Screen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscographyScreen(
-    discographyId: String,
+    artistId: String,
     navController: NavHostController,
     viewModel: DiscographyViewModel = hiltViewModel()
 ) {
-    val albums by viewModel.albums.collectAsState()
-    val singlesEp by viewModel.singlesEp.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    var selectedFilter by remember { mutableStateOf("Albums") }
+    val uiState by viewModel.uiState.collectAsState()
 
-
-    if (isLoading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+    when (val state = uiState) {
+        is DiscographyUiState.Loading -> {
+            DiscographyScreenSkeleton()
         }
-    } else if (albums.isNotEmpty() || singlesEp.isNotEmpty()) {
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Text("Discography", style = MaterialTheme.typography.headlineLarge)
+        is DiscographyUiState.Success -> {
+            DiscographyContent(
+                allReleases = state.albums,
+                navController = navController
+            )
+        }
 
-            // --- Filter Chips ---
-            Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                FilterChip(
-                    selected = selectedFilter == "Albums",
-                    onClick = { selectedFilter = "Albums" },
-                    label = { Text("Albums") }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                FilterChip(
-                    selected = selectedFilter == "Singles & EPs",
-                    onClick = { selectedFilter = "Singles & EPs" },
-                    label = { Text("Singles & EPs") }
-                )
-            }
-
-            // --- Content List ---
-            val contentToShow = if (selectedFilter == "Albums") {
-                albums
-            } else {
-                singlesEp
-            }
-
-            LazyColumn {
-                items(contentToShow) { playlist ->
-                    ArtistAlbum(
-                        playlist = playlist,
-                        onClick = {
-                            navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id))
-                        }
-                    )
-                }
+        is DiscographyUiState.Error -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Error: ${state.message}")
             }
         }
-    } else {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No discography available", style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DiscographyContent(
+    allReleases: List<Playlist>,
+    navController: NavHostController
+) {
+    // 1. State for the currently selected filter chip.
+    var selectedFilter by remember { mutableStateOf(PlaylistType.ALBUM) }
+
+    // 2. Filter and sort the list based on the selected chip.
+    // This derived state will automatically re-calculate when the filter changes.
+    val filteredAndSortedList = remember(selectedFilter, allReleases) {
+        allReleases
+            .filter { it.type == selectedFilter }
+            .sortedByDescending { it.releaseYear }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        // --- Header (You can add artist name here if needed) ---
+        Text(
+            text = "Releases",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        // --- 3. Filter Chips ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = selectedFilter == PlaylistType.ALBUM,
+                onClick = { selectedFilter = PlaylistType.ALBUM },
+                label = { Text("Albums") }
+            )
+            FilterChip(
+                selected = selectedFilter == PlaylistType.SINGLE_EP,
+                onClick = { selectedFilter = PlaylistType.SINGLE_EP },
+                label = { Text("Singles & EPs") }
+            )
+        }
+
+        // --- 4. Content List ---
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp) // Space for mini-player
+        ) {
+            items(filteredAndSortedList) { playlist ->
+                AlbumListItem(
+                    playlist = playlist,
+                    onClick = {
+                        navController.navigate(Screen.PlaylistDetail.createRoute(playlist.id))
+                    }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
+            }
+        }
+
+
+    }
+}
+
+/**
+ * A reusable composable for displaying an album/playlist in a list.
+ */
+@Composable
+fun AlbumListItem(
+    playlist: Playlist,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = playlist.images.firstOrNull()?.url,
+            contentDescription = "Album art for ${playlist.name}",
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column {
+            Text(
+                text = playlist.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = playlist.releaseYear?.toString() ?: "",
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
 
     }
-
 }

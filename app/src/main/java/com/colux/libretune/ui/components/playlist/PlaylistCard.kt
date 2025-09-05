@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.PlaylistType
 
 @Composable
 fun PlaylistCard(playlist: Playlist, onSongClick: () -> Unit) {
@@ -44,5 +45,14 @@ fun PlaylistCard(playlist: Playlist, onSongClick: () -> Unit) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
+
+        if (playlist.type != PlaylistType.PLAYLIST && playlist.releaseYear != null) {
+            Text(
+                text = playlist.releaseYear.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }

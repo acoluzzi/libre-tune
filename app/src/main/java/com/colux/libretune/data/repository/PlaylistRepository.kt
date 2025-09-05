@@ -219,6 +219,7 @@ class PlaylistRepository @Inject constructor(
                                 it.toEntity()
                             },
                             type = if (remoteDetails.type == PlaylistType.ALBUM) AlbumType.ALBUM else AlbumType.SINGLE_EP,
+                            releaseYear = 0, // TODO: Extract release year if available
                             updateTimestamp = System.currentTimeMillis()
                         )
                     )
@@ -345,7 +346,7 @@ class PlaylistRepository @Inject constructor(
                     }
                     db.albumDao().upsertAll(albumEntities)
                 }
-                
+
                 db.songDao().insertSongs(songEntities)
 
                 db.albumDao().linkAlbumToArtists(albumArtistLinks)

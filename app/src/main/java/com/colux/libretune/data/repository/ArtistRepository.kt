@@ -201,9 +201,13 @@ class ArtistRepository @Inject constructor(
             val artistEntity = ArtistEntity(
                 artistId = artistId,
                 name = remoteDetails.name,
+                description = remoteDetails.description,
                 images = remoteDetails.images.map {
                     it.toEntity()
                 },
+                discographyId = remoteDetails.discographyId,
+                albumsParams = remoteDetails.discographyAlbumsParam,
+                singlesEpsParams = remoteDetails.discographySinglesParam,
                 updateTimestamp = System.currentTimeMillis()
             )
 

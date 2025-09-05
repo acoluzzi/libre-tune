@@ -1,8 +1,12 @@
 package com.coluzziandrea.libretune_extractor.parser.mapper
 
+import com.coluzziandrea.libretune_extractor.client.response.section.content.MusicTwoRowsItemRenderer
 import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
 import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.MusicNode
+import com.coluzziandrea.libretune_extractor.model.Playlist
+import com.coluzziandrea.libretune_extractor.model.PlaylistType
 
 fun SectionContent.MusicResponsiveListItemContent.extractAlbumInfo(): MusicNode? {
 
@@ -24,4 +28,49 @@ fun SectionContent.MusicResponsiveListItemContent.extractAlbumInfo(): MusicNode?
         }
     return null
 
+}
+
+
+fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
+
+    val id =
+        (navigationEndpoint as? NavigationEndpoint.BrowseNavigationEndpoint)?.browseEndpoint?.browseId
+
+
+    val name =
+        title.runs.firstOrNull()?.text
+
+    if (id == null || name == null || id.isEmpty() || name.isEmpty()) {
+        return null
+    }
+
+    val images = thumbnailRenderer.musicThumbnailRenderer.thumbnail.thumbnails.map {
+        Image(
+            url = it.url,
+            width = it.width,
+            height = it.height
+        )
+    }
+
+    val playlistTypeStr = subtitle.runs.firstOrNull()?.text ?: ""
+    val releaseYearStr = subtitle.runs.getOrNull(2)?.text ?: ""
+
+
+    val playlistType = when {
+        playlistTypeStr.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
+        playlistTypeStr.contains("Single", ignoreCase = true) || playlistTypeStr.contains(
+            "EP",
+            ignoreCase = true
+        ) -> PlaylistType.SINGLE_EP
+
+        else -> PlaylistType.PLAYLIST
+    }
+
+    return Playlist(
+        id = id,
+        name = name,
+        images = images,
+        type = playlistType,
+        releaseYear = releaseYearStr.toIntOrNull() ?: -1,
+    )
 }

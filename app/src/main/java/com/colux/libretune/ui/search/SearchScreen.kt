@@ -30,12 +30,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +64,7 @@ import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.album.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
+import com.colux.libretune.ui.components.song.SongMenu
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 
@@ -78,8 +82,8 @@ object DummyData {
     )
     val artists = listOf(queen, ledZeppelin)
     val playlists = listOf(
-        Playlist("p1", "Rock Classics", imageList, listOf(queen, ledZeppelin)),
-        Playlist("p2", "70s Hits", imageList, listOf(ledZeppelin))
+        Playlist("p1", "Rock Classics", imageList, listOf(queen, ledZeppelin), isLocal = false),
+        Playlist("p2", "70s Hits", imageList, listOf(ledZeppelin), isLocal = false)
     )
     val genres = listOf(
         "Rock", "Pop", "Hip Hop", "Jazz", "Classical", "Electronic"
@@ -87,6 +91,7 @@ object DummyData {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostController) {
     val searchViewModel: SearchViewModel = hiltViewModel()
@@ -95,6 +100,10 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
+    // --- State for the Bottom Sheet ---
+    val sheetState = rememberModalBottomSheetState()
+    // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
+    var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
 
     Column(
@@ -227,11 +236,30 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                     is SearchUiState.Results -> SearchResultsList(
                         results = state.results,
                         navController = navController,
-                        playerViewModel = playerViewModel
+                        playerViewModel = playerViewModel,
+                        onSongMenuClick = { song -> selectedSongForMenu = song }
                     )
                     // Suggestions state is ignored when not focused
                     is SearchUiState.Suggestions -> ExplorePanel(genres = DummyData.genres)
                 }
+
+                if (selectedSongForMenu != null) {
+                    ModalBottomSheet(
+                        onDismissRequest = { selectedSongForMenu = null },
+                        sheetState = sheetState
+                    ) {
+                        // We can reuse the menu from the full-screen player
+                        SongMenu(
+                            song = selectedSongForMenu!!,
+                            onClose = {
+                                selectedSongForMenu = null
+                            },
+                            navController = navController,
+                            playerViewModel = playerViewModel,
+                        )
+                    }
+                }
+
             }
 
 
@@ -383,7 +411,8 @@ fun EntitySuggestionItem(suggestion: SearchSuggestion.EntitySuggestion, onClick:
 fun SearchResultsList(
     results: SearchResult,
     navController: NavHostController,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    onSongMenuClick: (Song) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 64.dp)) {
 
@@ -418,7 +447,9 @@ fun SearchResultsList(
                 SongItem(
                     song = song,
                     playerViewModel = playerViewModel,
-                    navController = navController,
+                    onMoreClick = {
+                        onSongMenuClick(song)
+                    },
                     onClick = {
                         playerViewModel.playPlaylist(
                             results.topSongs,
@@ -444,7 +475,9 @@ fun SearchResultsList(
                 SongItem(
                     song = song,
                     playerViewModel = playerViewModel,
-                    navController = navController,
+                    onMoreClick = {
+                        onSongMenuClick(song)
+                    },
                     onClick = {
                         playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
                     })
@@ -520,6 +553,8 @@ fun SearchResultsList(
             }
         }
     }
+
+
 }
 
 

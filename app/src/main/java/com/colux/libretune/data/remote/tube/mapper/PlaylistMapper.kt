@@ -19,12 +19,13 @@ fun ExtractorPlaylist.toDataModel(albumType: PlaylistType = PlaylistType.PLAYLIS
             ExtractorPlaylistType.ALBUM -> PlaylistType.ALBUM
             ExtractorPlaylistType.SINGLE_EP -> PlaylistType.SINGLE_EP
             else -> albumType
-        }
+        },
+        isLocal = false
     )
 }
 
 
-fun ExtractorPlaylistDetails.toDataModel(): PlaylistDetails {
+fun ExtractorPlaylistDetails.toDataModel(id: String): PlaylistDetails {
     return PlaylistDetails(
         name = this.name,
         images = this.images.map { it.toDataModel() },
@@ -35,7 +36,9 @@ fun ExtractorPlaylistDetails.toDataModel(): PlaylistDetails {
             else -> PlaylistType.PLAYLIST
         },
         songs = this.songs.map { it.toDataModel() },
-        relatedPlaylists = this.relatedPlaylists.map { it.toDataModel() }
+        relatedPlaylists = this.relatedPlaylists.map { it.toDataModel() },
+        isLocal = false,
+        id = id
     )
 }
 

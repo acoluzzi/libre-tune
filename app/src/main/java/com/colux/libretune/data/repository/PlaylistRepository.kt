@@ -15,9 +15,11 @@ import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.local.mapper.toPlaylistEntity
 import com.colux.libretune.data.local.wrapper.AlbumWithArtists
+import com.colux.libretune.data.local.wrapper.PlaylistWithSongsEntity
 import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.PlaylistType
+import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -32,6 +34,7 @@ import java.util.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 @Singleton
 class PlaylistRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
@@ -42,6 +45,43 @@ class PlaylistRepository @Inject constructor(
 
     // Define how long the cache should be valid (e.g., 60 minutes)
     private val cacheTtlMillis = TimeUnit.MINUTES.toMillis(60)
+
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getLocalPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>> {
+        val playlistFlow: Flow<List<PlaylistWithSongsEntity>> = db.playlistDao().getLocalPlaylists()
+
+        return playlistFlow.map { playlists ->
+            playlists.map { (playlist, songs) ->
+                PlaylistWithSongs(
+                    playlist = playlist.toDataModel(),
+                    songs = songs.map { song ->
+                        val songAlbum = song.albumId?.let { db.albumDao().getAlbumById(it) }
+                        val albumArtists = songAlbum?.albumId?.let {
+                            db.artistDao().getArtistsByAlbumId(it).firstOrNull() ?: emptyList()
+                        } ?: emptyList()
+
+                        SongWithAlbumAndArtists(
+                            song,
+                            songAlbum,
+                            albumArtists
+                        ).toDataModel()
+                    }
+                )
+            }
+        }
+    }
+
+    suspend fun createNewPlaylist(name: String) {
+        val newPlaylist = PlaylistEntity(
+            playlistId = "local-${System.currentTimeMillis()}",
+            name = name,
+            images = emptyList(),
+            isLocal = true,
+            updateTimestamp = System.currentTimeMillis()
+        )
+        db.playlistDao().insert(newPlaylist)
+    }
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -158,7 +198,9 @@ class PlaylistRepository @Inject constructor(
                 } ?: PlaylistType.PLAYLIST,
                 artists = artists.map { it.toDataModel() },
                 songs = songs.map { it.toDataModel() },
-                relatedPlaylists = related
+                relatedPlaylists = related,
+                isLocal = playlist?.isLocal ?: false,
+                id = playlist?.playlistId ?: album?.albumId ?: "unknown"
             )
         }
     }
@@ -171,6 +213,11 @@ class PlaylistRepository @Inject constructor(
 
         // Always fetch if there's no data
         if (cachedPlaylistObj == null && cachedAlbumObj == null) return true
+
+        if (cachedPlaylistObj?.isLocal == true) {
+            logger.info { "Playlist $id is local, skipping remote fetch." }
+            return false
+        }
 
         val lastUpdate = cachedPlaylistObj?.updateTimestamp ?: cachedAlbumObj?.updateTimestamp ?: 0
         if (lastUpdate == 0L) return true
@@ -376,5 +423,6 @@ class PlaylistRepository @Inject constructor(
             e.printStackTrace()
         }
     }
+
 
 }

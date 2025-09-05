@@ -11,12 +11,13 @@ import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
+import com.colux.libretune.data.local.wrapper.PlaylistWithSongsEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun _insert(playlist: PlaylistEntity)
+    suspend fun insert(playlist: PlaylistEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun _insertAll(playlists: List<PlaylistEntity>)
@@ -31,7 +32,7 @@ interface PlaylistDao {
         if (existingPlaylist == null || (playlist.updateTimestamp
                 ?: 0L) >= (existingPlaylist.updateTimestamp ?: 0L)
         ) {
-            _insert(playlist)
+            insert(playlist)
         }
     }
 
@@ -59,6 +60,10 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     fun getPlaylist(id: String): Flow<PlaylistEntity?>
 
+
+    @Query("SELECT * FROM playlists where isLocal = 1")
+    fun getLocalPlaylists(): Flow<List<PlaylistWithSongsEntity>>
+
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     suspend fun getPlaylistById(id: String): PlaylistEntity?
 
@@ -68,7 +73,7 @@ interface PlaylistDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM playlist_song_cross_ref WHERE playlistId = :playlistId AND songId = :songId)")
     fun isSongInPlaylist(playlistId: String, songId: String): Flow<Boolean>
-    
+
     @Query(
         """
         SELECT * FROM playlists
@@ -117,6 +122,15 @@ interface PlaylistDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addSongToPlaylist(join: PlaylistSongCrossRef)
+
+    @Query(
+        """
+       DELETE FROM playlist_song_cross_ref 
+          WHERE songId = :songId 
+            AND playlistId IN (SELECT playlistId FROM playlists WHERE isLocal = 1)
+    """
+    )
+    suspend fun removeSongFromAllLocalPlaylists(songId: String)
 
 
     /**

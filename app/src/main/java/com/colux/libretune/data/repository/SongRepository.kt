@@ -27,6 +27,24 @@ class SongRepository @Inject constructor(
         return remote.getSongUrlById(id)
     }
 
+    fun getSongById(id: String): Flow<Song?> {
+        return db.songDao().getSongById(id).map { songEntity ->
+            songEntity?.let { song ->
+                val songAlbum = db.albumDao().getAlbumById(song.albumId ?: "")
+
+                val albumArtists = songAlbum?.albumId?.let {
+                    db.artistDao().getArtistsByAlbumId(it)
+                        .firstOrNull() ?: emptyList()
+                } ?: emptyList()
+
+                SongWithAlbumAndArtists(
+                    song,
+                    songAlbum,
+                    albumArtists
+                ).toDataModel()
+            }
+        }
+    }
 
     fun isSongLiked(id: String): Flow<Boolean> {
         return db.playlistDao().isSongInPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, id)
@@ -41,7 +59,10 @@ class SongRepository @Inject constructor(
     }
 
     suspend fun likeSong(song: Song) {
+        _addSongToPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, song)
+    }
 
+    private suspend fun _addSongToPlaylist(playlistId: String, song: Song) {
         val albumEntity = song.album?.toEntity()
         val artistsEntities = song.artists.map { it.toEntity() }
         val songEntity = song.toEntity()
@@ -71,11 +92,23 @@ class SongRepository @Inject constructor(
             }
 
             val join = PlaylistSongCrossRef(
-                playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
+                playlistId = playlistId,
                 songId = song.id
             )
             db.playlistDao().addSongToPlaylist(join)
         }
+    }
+
+    suspend fun removeSongFromAllPlaylists(songId: String) {
+        db.playlistDao().removeSongFromAllLocalPlaylists(songId)
+    }
+
+    suspend fun removeSongFromPlaylist(playlistId: String, songId: String) {
+        db.playlistDao().removeSongFromPlaylist(PlaylistSongCrossRef(playlistId, songId))
+    }
+
+    suspend fun addSongToPlaylist(playlistId: String, song: Song) {
+        _addSongToPlaylist(playlistId, song)
     }
 
     fun getLikedSongs(): Flow<List<Song>> {

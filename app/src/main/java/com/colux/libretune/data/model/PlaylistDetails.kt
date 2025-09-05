@@ -1,7 +1,9 @@
 package com.colux.libretune.data.model
 
 data class PlaylistDetails(
+    val id: String,
     val name: String,
+    val isLocal: Boolean,
     val type: PlaylistType,
     val images: List<Image>,
     val artists: List<Artist>,

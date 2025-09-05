@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.colux.libretune.data.local.entity.SongEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
@@ -17,6 +18,9 @@ interface SongDao {
 
     @Query("SELECT * FROM songs WHERE albumId = :albumId")
     suspend fun getSongsByAlbumId(albumId: String): List<SongEntity>
+
+    @Query("SELECT * FROM songs WHERE songId = :id")
+    fun getSongById(id: String): Flow<SongEntity?>
 
 
     @Query(

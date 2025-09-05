@@ -36,6 +36,7 @@ class RepositoryModule {
         return PlaylistRepository(remote, db)
     }
 
+
     @Provides
     fun provideAlbumRepositoryImpl(
         remote: YouTubeExtractionRepository,

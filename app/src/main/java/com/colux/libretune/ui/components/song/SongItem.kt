@@ -1,7 +1,8 @@
 package com.colux.libretune.ui.components.song
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.player.PlayerViewModel
@@ -31,7 +35,7 @@ import com.colux.libretune.ui.player.PlayerViewModel
 fun SongItem(
     song: Song, onClick: () -> Unit,
     playerViewModel: PlayerViewModel,
-    navController: NavHostController
+    onMoreClick: () -> Unit,
 ) {
 
     val selectedSong by playerViewModel.currentSong.collectAsState()
@@ -51,9 +55,12 @@ fun SongItem(
         modifier = Modifier
             .background(backgroundColor)
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .combinedClickable(
+                onClick = onClick, // Action for a regular tap
+                onLongClick = onMoreClick // Action for a long press
+            )
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(56.dp)) {
             AsyncImage(
@@ -68,13 +75,26 @@ fun SongItem(
                 NowPlayingIndicator(isCurrentlyPlaying)
             }
         }
+
         Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(text = song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = song.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1,
+                modifier = Modifier.basicMarquee()
+            )
             Text(
                 text = song.getArtistNames(),
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 1
+                maxLines = 1,
+                modifier = Modifier.basicMarquee()
+            )
+        }
+
+        IconButton(onClick = onMoreClick, modifier = Modifier.width(24.dp)) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "More options for ${song.title}"
             )
         }
     }

@@ -12,11 +12,17 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -26,12 +32,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.colux.libretune.R
+import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.song.SongItem
+import com.colux.libretune.ui.components.song.SongMenu
+import com.colux.libretune.ui.library.PlaylistImageCollage
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.search.SongItemSkeleton
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailScreen(
     playlistId: String,
@@ -46,6 +57,12 @@ fun PlaylistDetailScreen(
 
     val imageHeight = 300.dp
     val imageHeightPx = with(LocalDensity.current) { imageHeight.toPx() }
+
+    // --- State for the Bottom Sheet ---
+    val sheetState = rememberModalBottomSheetState()
+    // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
+    var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
+
 
 
 
@@ -64,25 +81,62 @@ fun PlaylistDetailScreen(
             ) {
                 // We only show the content when details are loaded
                 state.details.let { playlistDetails ->
-                    // --- Background Image with Parallax Effect ---
-                    AsyncImage(
-                        model = playlistDetails.bestImage(),
-                        contentDescription = "Playlist Banner",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(imageHeight)
-                            // 1. Clip the image so it doesn't draw outside its bounds when moved
-                            .clipToBounds()
-                            .graphicsLayer {
-                                // 2. Move the image up at half the scroll speed
-                                translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
 
-                                // 3. Fade the image out as it scrolls
-                                alpha =
-                                    1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
-                            }
-                    )
+                    val showCollage = playlistDetails.isLocal && playlistDetails.songs.isNotEmpty()
+
+                    // 2. Conditionally display either the collage or a single image
+                    if (showCollage) {
+                        val imageUrls = remember(playlistDetails.id) {
+                            playlistDetails.songs.shuffled().take(4)
+                                .mapNotNull { it.getBestImageUrl() }
+                        }
+
+                        PlaylistImageCollage(
+                            imageUrls = imageUrls,
+                            // Use a modifier to set the size, not a separate parameter
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(imageHeight)
+                                .clipToBounds()
+                                .graphicsLayer {
+                                    // Apply parallax effect to the whole collage
+                                    translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
+                                    alpha =
+                                        1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
+                                },
+                            size = imageHeight
+                        )
+                    } else {
+                        val useDefaultImage =
+                            playlistDetails.isLocal && playlistDetails.songs.isEmpty()
+
+                        val imageModel = if (useDefaultImage) {
+                            R.drawable.default_playlist_image // Your local drawable
+                        } else {
+                            playlistDetails.bestImage() // The remote URL
+                        }
+
+                        // --- Background Image with Parallax Effect ---
+                        AsyncImage(
+                            model = imageModel,
+                            contentDescription = "Playlist Banner",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(imageHeight)
+                                // 1. Clip the image so it doesn't draw outside its bounds when moved
+                                .clipToBounds()
+                                .graphicsLayer {
+                                    // 2. Move the image up at half the scroll speed
+                                    translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
+
+                                    // 3. Fade the image out as it scrolls
+                                    alpha =
+                                        1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
+                                }
+                        )
+                    }
+
 
                     // --- Scrollable Song List ---
                     LazyColumn(
@@ -125,21 +179,32 @@ fun PlaylistDetailScreen(
                                 SongItem(
                                     song = song,
                                     playerViewModel = playerViewModel,
-                                    navController = navController,
                                     onClick = {
                                         playerViewModel.playPlaylist(
                                             playlistDetails.songs,
                                             index
                                         )
+                                    }, onMoreClick = {
+                                        selectedSongForMenu = song
                                     }
                                 )
                             }
                         } else {
-                            item {
-                                repeat(10) {
-                                    SongItemSkeleton()
+                            if (playlistDetails.isLocal) {
+                                item {
+                                    Text(
+                                        "This playlist is empty. Add songs from your library or online sources.",
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            } else {
+                                item {
+                                    repeat(10) {
+                                        SongItemSkeleton()
+                                    }
                                 }
                             }
+
                         }
 
 
@@ -171,6 +236,23 @@ fun PlaylistDetailScreen(
 
         is PlaylistUiState.Error -> {
             Text("Could not load artist details: ${state.message}")
+        }
+    }
+
+    if (selectedSongForMenu != null) {
+        ModalBottomSheet(
+            onDismissRequest = { selectedSongForMenu = null },
+            sheetState = sheetState
+        ) {
+            // We can reuse the menu from the full-screen player
+            SongMenu(
+                song = selectedSongForMenu!!,
+                onClose = {
+                    selectedSongForMenu = null
+                },
+                navController = navController,
+                playerViewModel = playerViewModel,
+            )
         }
     }
 

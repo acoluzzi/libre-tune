@@ -14,7 +14,8 @@ fun AlbumEntity.toDataModel(artistEntity: List<ArtistEntity>?): Playlist {
         id = this.albumId,
         name = this.name,
         images = this.images.map { it.toDataModel() },
-        artists = artistEntity?.map { it.toDataModel() } ?: emptyList()
+        artists = artistEntity?.map { it.toDataModel() } ?: emptyList(),
+        isLocal = false
     )
 }
 
@@ -48,7 +49,8 @@ fun PlaylistEntity.toDataModel(): Playlist {
         name = this.name,
         images = this.images.map { it.toDataModel() },
         artists = emptyList(),
-        type = PlaylistType.PLAYLIST
+        type = PlaylistType.PLAYLIST,
+        isLocal = this.isLocal
     )
 }
 
@@ -63,6 +65,7 @@ fun AlbumWithArtists.toDataModel(): Playlist {
         type = when (this.albumEntity.type) {
             AlbumType.ALBUM -> PlaylistType.ALBUM
             AlbumType.SINGLE_EP -> PlaylistType.SINGLE_EP
-        }
+        },
+        isLocal = false
     )
 }

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.outlined.Home
@@ -46,5 +47,15 @@ sealed class Screen(
             Icons.Default.Album
         ) {
         fun createRoute(artistId: String) = "discography/$artistId"
+    }
+
+    data object AddToPlaylist :
+        Screen(
+            "add_to_playlist/{songId}",
+            "Add to Playlist",
+            Icons.Default.PlaylistAdd,
+            Icons.Default.PlaylistAdd
+        ) {
+        fun createRoute(songId: String) = "add_to_playlist/$songId"
     }
 }

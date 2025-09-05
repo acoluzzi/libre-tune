@@ -129,4 +129,5 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
             }
         }
     }
+
 }

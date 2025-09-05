@@ -29,6 +29,13 @@ import javax.inject.Inject
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaSessionService() {
 
+    companion object {
+        const val NOTIFICATION_ID = 888
+        const val CHANNEL_ID = "music_channel_01"
+        val COMMAND_PLAY_PLAYLIST_WITH_FETCH =
+            SessionCommand("PLAY_PLAYLIST_WITH_FETCH", Bundle.EMPTY)
+    }
+
     @Inject
     lateinit var musicRepository: SongRepository
 
@@ -38,10 +45,6 @@ class PlaybackService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
     private var backgroundFetchJob: Job? = null
 
-    companion object {
-        val COMMAND_PLAY_PLAYLIST_WITH_FETCH =
-            SessionCommand("PLAY_PLAYLIST_WITH_FETCH", Bundle.EMPTY)
-    }
 
     private val mediaSessionCallback = object : MediaSession.Callback {
 
@@ -128,6 +131,7 @@ class PlaybackService : MediaSessionService() {
                 PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
             }
 
+
         // 2. Build the MediaSession with the PendingIntent.
         mediaSession = pendingIntent?.let {
             MediaSession.Builder(this, exoPlayer)
@@ -135,13 +139,19 @@ class PlaybackService : MediaSessionService() {
                 .setSessionActivity(it)
         } // This sets the tap action
             ?.build()
+
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider(
+                this,
+                { NOTIFICATION_ID },
+                CHANNEL_ID,
+                R.string.music_channel_name,
+            )
+                .apply {
+                    setSmallIcon(R.drawable.ic_notification)
+                })
     }
 
-    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        super.onUpdateNotification(session, startInForegroundRequired)
-        val notificationBuilder = DefaultMediaNotificationProvider.Builder(this).build()
-        notificationBuilder.setSmallIcon(R.drawable.ic_notification)
-    }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         return mediaSession

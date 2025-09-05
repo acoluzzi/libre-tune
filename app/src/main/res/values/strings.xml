@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LibreTune</string>
+    <string name="music_channel_name">Music Service</string>
 </resources>

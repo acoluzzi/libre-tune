@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
@@ -34,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -94,9 +97,11 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
 
 
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .statusBarsPadding()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
         // --- Search Input Field ---
         OutlinedTextField(
             value = query,
@@ -116,20 +121,51 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = {
                 searchViewModel.submitSearch(query)
-                focusManager.clearFocus() // Hide keyboard and unfocus
+                focusManager.clearFocus()
             }),
-            // The clearable icon
+
+            // 1. Add the leading search icon
+            leadingIcon = {
+                Icon(Icons.Default.Search, contentDescription = "Search Icon")
+            },
+
+            // 2. Add the clearable trailing icon
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = {
                         query = ""
                         searchViewModel.onQueryChange("")
+                        focusManager.clearFocus()
                     }) {
                         Icon(Icons.Default.Clear, contentDescription = "Clear search")
                     }
                 }
-            }
+            },
+
+            // 3. Customize the colors
+            colors = TextFieldDefaults.colors(
+                // Use surfaceVariant for a "less black" background
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+
+                // Use onSurfaceVariant for a "more gray" text color
+                focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+
+                // Customize other colors for a polished look
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                focusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
+
 
         // --- Main Content Area ---
         Box(modifier = Modifier.fillMaxSize()) {

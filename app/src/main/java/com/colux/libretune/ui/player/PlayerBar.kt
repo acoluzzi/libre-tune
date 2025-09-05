@@ -1,6 +1,7 @@
 package com.colux.libretune.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,14 +12,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,17 +32,24 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
-import com.colux.libretune.data.model.Song
 
 @Composable
 fun PlayerBar(
-    song: Song,
-    isPlaying: Boolean,
-    onPlayPauseClick: () -> Unit,
-    modifier: Modifier = Modifier, currentPosition: Long,
-    totalDuration: Long,
-    dynamicColor: Color
+    modifier: Modifier = Modifier,
+    playerViewModel: PlayerViewModel
 ) {
+
+
+    val isPlaying by playerViewModel.isPlaying.collectAsState()
+    val song by playerViewModel.currentSong.collectAsState()
+
+    val dynamicPrimaryColor by playerViewModel.dynamicPrimaryColor.collectAsState()
+    val currentPosition by playerViewModel.currentPosition.collectAsState()
+    val totalDuration by playerViewModel.totalDuration.collectAsState() // Corrected variable name
+    val isLiked by playerViewModel.isCurrentSongLiked(song?.id ?: "")
+        .collectAsState(initial = false)
+
+    val dynamicColor = dynamicPrimaryColor ?: MaterialTheme.colorScheme.surfaceVariant
     val progress = if (totalDuration > 0) {
         currentPosition.toFloat() / totalDuration.toFloat()
     } else {
@@ -63,32 +75,45 @@ fun PlayerBar(
                 .fillMaxWidth()
                 .background(dynamicColor) // This will be your dark gray
                 .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             AsyncImage(
-                model = song.images.firstOrNull()?.url,
+                model = song?.images?.firstOrNull()?.url,
                 contentDescription = "Song thumbnail",
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(4.dp))
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(
+                modifier = Modifier
+                    .width(8.dp)
+            )
+            
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    song.title,
+                    song?.title ?: "",
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     color = contentColor
                 )
                 Text(
-                    song.getArtistNames(),
+                    song?.getArtistNames() ?: "",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     color = contentColor
                 )
             }
-            Spacer(Modifier.width(8.dp))
-            IconButton(onClick = onPlayPauseClick) {
+
+            IconButton(onClick = { song?.let { playerViewModel.onLikeClick(it, isLiked) } }) {
+                Icon(
+                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Like Song",
+                    tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            IconButton(onClick = { playerViewModel.onPlayPauseClick() }) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = "Play/Pause",
@@ -102,7 +127,7 @@ fun PlayerBar(
             progress = { progress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(2.dp),
+                .height(3.dp),
             // Explicitly set the color to White, if you want it always white
             color = Color.White, // Progress color is always white
             trackColor = Color.White.copy(alpha = 0.3f)

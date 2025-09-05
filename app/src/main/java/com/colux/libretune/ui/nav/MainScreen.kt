@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,13 +45,6 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
 
     // Collect state from the PlayerViewModel
     val currentSong by playerViewModel.currentSong.collectAsState()
-    val isPlaying by playerViewModel.isPlaying.collectAsState()
-
-
-    val dynamicPrimaryColor by playerViewModel.dynamicPrimaryColor.collectAsState()
-    val currentPosition by playerViewModel.currentPosition.collectAsState()
-    val totalDuration by playerViewModel.totalDuration.collectAsState() // Corrected variable name
-    val playerOnPrimaryColor by playerViewModel.playerOnPrimaryColor.collectAsState()
 
 
     // Main layout component
@@ -114,16 +106,10 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
 
             if (currentSong != null) {
                 PlayerBar(
-                    song = currentSong!!,
-                    isPlaying = isPlaying,
-                    currentPosition = currentPosition,
-                    totalDuration = totalDuration,
-                    // Pass the dynamic color as a parameter
-                    dynamicColor = dynamicPrimaryColor ?: MaterialTheme.colorScheme.surfaceVariant,
-                    onPlayPauseClick = { playerViewModel.onPlayPauseClick() },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .clickable { showBottomSheet = true }
+                        .clickable { showBottomSheet = true },
+                    playerViewModel = playerViewModel
                 )
             }
         }

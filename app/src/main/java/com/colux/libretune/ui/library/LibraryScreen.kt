@@ -23,9 +23,11 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val likedSongs by viewModel.likedSongs.collectAsState()
 
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .statusBarsPadding()) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
         item {
             Text(
                 text = "Liked Songs",
@@ -45,7 +47,7 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
 
 
         item {
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

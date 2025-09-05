@@ -57,9 +57,11 @@ fun PlaylistDetailScreen(
         is PlaylistUiState.Success -> {
 
 
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
                 // We only show the content when details are loaded
                 state.details.let { playlistDetails ->
                     // --- Background Image with Parallax Effect ---
@@ -158,7 +160,7 @@ fun PlaylistDetailScreen(
 
 
                         item {
-                            Spacer(modifier = Modifier.height(64.dp))
+                            Spacer(modifier = Modifier.height(80.dp))
                         }
                     }
                 }

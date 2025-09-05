@@ -1,17 +1,21 @@
 package com.colux.libretune.service
 
+import android.app.PendingIntent
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import com.colux.libretune.R
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.SongRepository
+import com.colux.libretune.ui.MainActivity
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -115,10 +119,28 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        // Pass the callback when building the session
-        mediaSession = MediaSession.Builder(this, exoPlayer)
-            .setCallback(mediaSessionCallback)
-            .build()
+
+        // 1. Create the PendingIntent that opens your MainActivity.
+        val pendingIntent =
+            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+                // Add the MainActivity class explicitly for clarity and robustness
+                sessionIntent.setClass(this, MainActivity::class.java)
+                PendingIntent.getActivity(this, 0, sessionIntent, PendingIntent.FLAG_IMMUTABLE)
+            }
+
+        // 2. Build the MediaSession with the PendingIntent.
+        mediaSession = pendingIntent?.let {
+            MediaSession.Builder(this, exoPlayer)
+                .setCallback(mediaSessionCallback)
+                .setSessionActivity(it)
+        } // This sets the tap action
+            ?.build()
+    }
+
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        super.onUpdateNotification(session, startInForegroundRequired)
+        val notificationBuilder = DefaultMediaNotificationProvider.Builder(this).build()
+        notificationBuilder.setSmallIcon(R.drawable.ic_notification)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {

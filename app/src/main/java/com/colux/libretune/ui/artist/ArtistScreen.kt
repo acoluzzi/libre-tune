@@ -49,9 +49,11 @@ fun ArtistScreen(
         is ArtistUiState.Success -> {
             // Your existing LazyColumn UI goes here.
             // You can access the data via 'state.details'
-            LazyColumn(modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
                 // Artist Banner
                 item {
                     Box(modifier = Modifier.height(200.dp)) {
@@ -227,7 +229,7 @@ fun ArtistScreen(
 
 
                 item {
-                    Spacer(modifier = Modifier.height(64.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
 

@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-val ModernPurple = Color(0xFF7F52FF)
+val ModernPurple = Color(0xffcc57de)
 val AbsoluteBlack = Color(0xFF000000)
 val White = Color(0xFFFFFFFF) // Add White color here for consistency
 

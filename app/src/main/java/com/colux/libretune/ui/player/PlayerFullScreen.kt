@@ -2,6 +2,7 @@ package com.colux.libretune.ui.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,24 +14,32 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
+import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlaylistAddCircle
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -46,17 +55,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.colux.libretune.data.model.Song
+import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.util.TimeUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerFullScreen(
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    navController: NavHostController,
+    onDismiss: () -> Unit
 ) {
     // 1. Collect all the necessary state directly from the ViewModel.
     val currentSong by playerViewModel.currentSong.collectAsState()
@@ -66,6 +82,9 @@ fun PlayerFullScreen(
     val repeatMode by playerViewModel.repeatMode.collectAsState()
 
     val dynamicColor by playerViewModel.dynamicPrimaryColor.collectAsState()
+
+    var showOptionsMenu by remember { mutableStateOf(false) }
+
 
     // This flow depends on the current song's ID.
     // We handle the initial null case for currentSong.
@@ -137,7 +156,7 @@ fun PlayerFullScreen(
                         tint = if (isLiked) MaterialTheme.colorScheme.primary else Color.White
                     )
                 }
-                IconButton(onClick = { /* TODO: Open options modal */ }) {
+                IconButton(onClick = { showOptionsMenu = true }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More options",
@@ -196,13 +215,11 @@ fun PlayerFullScreen(
                 ) {
                     Text(
                         text = TimeUtils.formatDuration(if (isUserSeeking) sliderPosition.toLong() else currentPosition),
-                        // FIX: Smaller style and grayer color
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = TimeUtils.formatDuration(totalDuration),
-                        // FIX: Smaller style and grayer color
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -271,6 +288,113 @@ fun PlayerFullScreen(
             }
 
             Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        if (showOptionsMenu) {
+            ModalBottomSheet(onDismissRequest = { showOptionsMenu = false }) {
+                Column {
+                    MenuHeader(song = currentSong!!)
+                    HorizontalDivider(
+                        Modifier,
+                        DividerDefaults.Thickness,
+                        DividerDefaults.color
+                    ) // A nice visual separator
+
+                    MenuOptionItem(
+                        text = "Go to artist",
+                        icon = Icons.Default.Person,
+                        onClick = {
+                            onDismiss()
+                            // Navigate to the first artist of the song
+                            song.artists.firstOrNull()?.let { artist ->
+                                navController.navigate(Screen.Artist.createRoute(artist.id))
+                                showOptionsMenu = false
+                            }
+                        }
+                    )
+                    MenuOptionItem(
+                        text = "Go to album",
+                        icon = Icons.Default.Album,
+                        onClick = {
+                            onDismiss()
+                            // Navigate to the song's album
+                            song.album?.let { album ->
+                                navController.navigate(Screen.PlaylistDetail.createRoute(album.id))
+                                showOptionsMenu = false
+                            }
+                        }
+                    )
+                    MenuOptionItem(
+                        text = "Add to playlist",
+                        icon = Icons.Default.PlaylistAddCircle,
+                        onClick = { /* TODO: Implement "Add to playlist" screen */ }
+                    )
+                    MenuOptionItem(
+                        text = "Start radio",
+                        icon = Icons.Default.Radio,
+                        onClick = { /* TODO: Implement "Start radio" logic */ }
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun MenuOptionItem(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = icon, contentDescription = text)
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+
+@Composable
+fun MenuHeader(song: Song) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = song.getBestImageUrl(),
+            contentDescription = "Song thumbnail",
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(4.dp))
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = song.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            val subtitle = buildString {
+                append(song.getArtistNames())
+                song.album?.name?.let { append(" • $it") }
+            }
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -123,7 +123,9 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
             modifier = Modifier.fillMaxSize()
         ) {
             currentSong?.let {
-                PlayerFullScreen(playerViewModel)
+                PlayerFullScreen(
+                    playerViewModel, navController = navController,
+                    onDismiss = { showBottomSheet = false })
             }
         }
     }

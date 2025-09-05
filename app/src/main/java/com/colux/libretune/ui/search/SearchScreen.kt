@@ -415,9 +415,16 @@ fun SearchResultsList(
             }
 
             items(results.topSongs) { song ->
-                SongItem(song = song, onClick = {
-                    playerViewModel.playPlaylist(results.topSongs, results.topSongs.indexOf(song))
-                })
+                SongItem(
+                    song = song,
+                    playerViewModel = playerViewModel,
+                    navController = navController,
+                    onClick = {
+                        playerViewModel.playPlaylist(
+                            results.topSongs,
+                            results.topSongs.indexOf(song)
+                        )
+                    })
             }
 
 
@@ -434,9 +441,13 @@ fun SearchResultsList(
                 )
             }
             items(results.songs) { song ->
-                SongItem(song = song, onClick = {
-                    playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
-                })
+                SongItem(
+                    song = song,
+                    playerViewModel = playerViewModel,
+                    navController = navController,
+                    onClick = {
+                        playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
+                    })
             }
         }
 

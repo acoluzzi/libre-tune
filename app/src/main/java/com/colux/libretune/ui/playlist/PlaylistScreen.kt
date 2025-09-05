@@ -124,6 +124,8 @@ fun PlaylistDetailScreen(
                             itemsIndexed(playlistDetails.songs) { index, song ->
                                 SongItem(
                                     song = song,
+                                    playerViewModel = playerViewModel,
+                                    navController = navController,
                                     onClick = {
                                         playerViewModel.playPlaylist(
                                             playlistDetails.songs,

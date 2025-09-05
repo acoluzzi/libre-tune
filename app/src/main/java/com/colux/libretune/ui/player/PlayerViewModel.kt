@@ -16,7 +16,6 @@ import coil.request.ImageRequest
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.service.PlaybackService
-import com.colux.libretune.ui.theme.White
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,9 +64,6 @@ class PlayerViewModel @Inject constructor(
 
     private val _dynamicPrimaryColor = MutableStateFlow<Color?>(null)
     val dynamicPrimaryColor: StateFlow<Color?> = _dynamicPrimaryColor.asStateFlow()
-
-    // This provides the "onPrimary" color for player elements like text/icons
-    val playerOnPrimaryColor: StateFlow<Color> = MutableStateFlow(White).asStateFlow()
 
 
     init {

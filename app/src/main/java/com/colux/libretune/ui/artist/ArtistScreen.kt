@@ -114,6 +114,8 @@ fun ArtistScreen(
                     items(state.details.topSongs) { song ->
                         SongItem(
                             song = song,
+                            playerViewModel = playerViewModel,
+                            navController = navController,
                             onClick = {
                                 playerViewModel.playPlaylist(
                                     state.details.topSongs,

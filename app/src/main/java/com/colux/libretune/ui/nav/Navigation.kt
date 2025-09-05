@@ -76,7 +76,7 @@ fun Navigation(
         }
 
         navigation(startDestination = "library_screen", route = Screen.Library.route) {
-            composable("library_screen") { LibraryScreen(playerViewModel) }
+            composable("library_screen") { LibraryScreen(playerViewModel, navController) }
         }
 
 

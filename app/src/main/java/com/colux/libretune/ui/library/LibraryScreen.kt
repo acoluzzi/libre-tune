@@ -15,11 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.player.PlayerViewModel
 
 @Composable
-fun LibraryScreen(playerViewModel: PlayerViewModel) {
+fun LibraryScreen(playerViewModel: PlayerViewModel, navController: NavHostController) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val likedSongs by viewModel.likedSongs.collectAsState()
 
@@ -37,12 +38,15 @@ fun LibraryScreen(playerViewModel: PlayerViewModel) {
         }
         items(likedSongs) { song ->
             // You can reuse your SearchResultItem or create a new one
-            SongItem(song = song, onClick = {
-                playerViewModel.playPlaylist(
-                    likedSongs,
-                    likedSongs.indexOf(song)
-                )
-            })
+            SongItem(
+                song = song,
+                playerViewModel = playerViewModel, navController = navController,
+                onClick = {
+                    playerViewModel.playPlaylist(
+                        likedSongs,
+                        likedSongs.indexOf(song)
+                    )
+                })
         }
 
 

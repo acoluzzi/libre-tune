@@ -77,8 +77,8 @@ object DummyData {
     private val ledZeppelin = Artist("a2", "Led Zeppelin", imageList)
 
     val songs = listOf(
-        Song("s1", "Bohemian Rhapsody", listOf(queen), null, imageList),
-        Song("s2", "Stairway to Heaven", listOf(ledZeppelin), null, imageList)
+        Song("s1", "Bohemian Rhapsody", listOf(queen), null, 12313123, imageList),
+        Song("s2", "Stairway to Heaven", listOf(ledZeppelin), null, 123123123, imageList)
     )
     val artists = listOf(queen, ledZeppelin)
     val playlists = listOf(

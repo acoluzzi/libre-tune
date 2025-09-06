@@ -115,6 +115,7 @@ class PlaylistParser {
                                     songs.add(
                                         Song(
                                             id = it.id,
+                                            views = it.views,
                                             artists = songArtists,
                                             playlistId = it.playlistId,
                                             title = it.title,

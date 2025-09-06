@@ -7,6 +7,8 @@ data class Song(
     val album: Playlist? = null,
     val playlistId: String?,
     val images: List<Image>,
+    val views: Long,
+    val durationMs: Long? = null
 ) {
     val title: String
         get() = node.name
@@ -21,6 +23,7 @@ data class Song(
         album: Playlist? = null,
         playlistId: String?,
         images: List<Image>,
+        views: Long,
     ) : this(
         node = MusicNode(
             id = id,
@@ -29,7 +32,8 @@ data class Song(
         artists = artists,
         album = album,
         playlistId = playlistId,
-        images = images
+        images = images,
+        views = views,
     )
 
 }

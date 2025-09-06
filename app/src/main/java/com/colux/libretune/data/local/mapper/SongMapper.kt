@@ -12,7 +12,8 @@ fun Song.toEntity(): SongEntity {
             it.toEntity()
         },
         albumId = album?.id,
-        updateTimestamp = System.currentTimeMillis()
+        updateTimestamp = System.currentTimeMillis(),
+        views = this.views
     )
 }
 
@@ -27,6 +28,7 @@ fun SongWithAlbumAndArtists.toDataModel(): Song {
         album = this.albumEntity?.toDataModel(this.artists),
         artists = this.artists.map {
             it.toDataModel()
-        }
+        },
+        views = this.songEntity.views
     )
 }

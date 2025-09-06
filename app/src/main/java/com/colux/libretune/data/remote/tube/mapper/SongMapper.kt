@@ -10,7 +10,8 @@ fun ExtractorSong.toDataModel(): DataModelSong {
         title = this.title,
         artists = this.artists.map { it.toDataModel() },
         album = this.album.let { it?.toDataModel() },
-        images = this.images.map { it.toDataModel() }
+        images = this.images.map { it.toDataModel() },
+        views = this.views,
     )
 }
 

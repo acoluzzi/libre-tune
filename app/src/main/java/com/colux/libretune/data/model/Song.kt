@@ -9,6 +9,7 @@ data class Song(
     val title: String,
     val artists: List<Artist>,
     val album: Playlist? = null,
+    val views: Long,
     val images: List<Image>
 ) : Parcelable {
 

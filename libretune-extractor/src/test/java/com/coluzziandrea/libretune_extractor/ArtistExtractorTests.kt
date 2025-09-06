@@ -54,6 +54,7 @@ class ArtistPageScrapingTests {
         assert(artistDetails?.topSongs?.isNotEmpty() == true)
         assertEquals(5, artistDetails?.topSongs?.size)
         assertEquals("Let It Be (Remastered 2009)", artistDetails?.topSongs?.get(0)?.title)
+        assertEquals(383000000, artistDetails?.topSongs?.get(0)?.views)
         assertEquals("The Beatles", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
         assertEquals("QDYfEBY9NM4", artistDetails?.topSongs?.get(0)?.id)
         assertEquals(
@@ -147,6 +148,7 @@ class ArtistPageScrapingTests {
         assert(artistDetails?.topSongs?.isNotEmpty() == true)
         assertEquals(5, artistDetails?.topSongs?.size)
         assertEquals("Thunderstruck", artistDetails?.topSongs?.get(0)?.title)
+        assertEquals(2200000000, artistDetails?.topSongs?.get(0)?.views)
         assertEquals("AC/DC", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
         assertEquals("lhg9bYNLvOg", artistDetails?.topSongs?.get(0)?.id)
         assertEquals(
@@ -233,6 +235,7 @@ class ArtistPageScrapingTests {
         assert(artistDetails?.topSongs?.isNotEmpty() == true)
         assertEquals(5, artistDetails?.topSongs?.size)
         assertEquals("Nothing Else Matters", artistDetails?.topSongs?.get(0)?.title)
+        assertEquals(2100000000, artistDetails?.topSongs?.get(0)?.views)
         assertEquals("Metallica", artistDetails?.topSongs?.get(0)?.artists?.get(0)?.name)
         assertEquals("pTYIf2pkxzQ", artistDetails?.topSongs?.get(0)?.id)
         assertEquals(

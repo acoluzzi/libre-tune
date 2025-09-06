@@ -22,5 +22,6 @@ data class SongEntity(
     val title: String,
     val albumId: String?,
     val images: List<ImageAttribute>,
+    val views: Long,
     val updateTimestamp: Long
 )

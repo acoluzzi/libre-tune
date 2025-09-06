@@ -7,6 +7,7 @@ import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.Playlist
 import com.coluzziandrea.libretune_extractor.model.Song
+import com.coluzziandrea.libretune_extractor.parser.util.toSuffixedLong
 
 fun getAlbum(flexColumns: List<FlexColumn>): Playlist? {
     val albumFlexColumn = flexColumns.find {
@@ -28,6 +29,27 @@ fun getAlbum(flexColumns: List<FlexColumn>): Playlist? {
             )
         }
     return null
+}
+
+fun getViews(flexColumns: List<FlexColumn>): Long {
+    val viewsFlexColumn = flexColumns.find {
+        it.musicResponsiveListItemFlexColumnRenderer.text.runs?.any { run ->
+            run.navigationEndpoint == null && run.text.contains("plays", ignoreCase = true)
+        } == true
+    }
+
+    viewsFlexColumn?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.filter {
+        it.navigationEndpoint == null && it.text.contains(
+            "plays",
+            ignoreCase = true
+        )
+    }
+        ?.forEach {
+            return it.text.replace("plays", "", ignoreCase = true).replace(",", "").trim()
+                .toSuffixedLong()
+                ?: 0L
+        }
+    return 0L
 }
 
 
@@ -73,6 +95,7 @@ fun MusicResponsiveListItemRenderer.toSong(): Song? {
             }
             return Song(
                 id = videoId,
+                views = getViews(flexColumns),
                 playlistId = playlistId,
                 album = album?.copy(
                     artists = artists

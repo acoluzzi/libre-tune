@@ -22,6 +22,7 @@ class PlaylistParser {
             val playlistImages = mutableListOf<Image>()
             var albumType = PlaylistType.PLAYLIST
 
+            var releaseYear = 0
 
             val header =
                 browseDataObject.contents.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
@@ -39,6 +40,10 @@ class PlaylistParser {
                             null
                         }
                     }
+
+                releaseYear =
+                    header.musicResponsiveHeaderRenderer.subtitle.runs.lastOrNull()?.text?.toIntOrNull()
+                        ?: 0
 
                 albumType =
                     header.musicResponsiveHeaderRenderer.subtitle.runs.firstOrNull()?.text?.let { subtitle ->
@@ -144,7 +149,8 @@ class PlaylistParser {
                 images = playlistImages,
                 songs = songs,
                 relatedPlaylists = relatedPlaylists,
-                type = albumType
+                type = albumType,
+                releaseYear = releaseYear
             )
         }
     }

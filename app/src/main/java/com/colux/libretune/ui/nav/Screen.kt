@@ -1,6 +1,7 @@
 package com.colux.libretune.ui.nav
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -58,4 +59,10 @@ sealed class Screen(
         ) {
         fun createRoute(songId: String) = "add_to_playlist/$songId"
     }
+
+    data object CreatePlaylist :
+        Screen("create_playlist", "Create Playlist", Icons.Default.Add, Icons.Default.Add) {
+        fun createRoute() = "create_playlist"
+    }
+
 }

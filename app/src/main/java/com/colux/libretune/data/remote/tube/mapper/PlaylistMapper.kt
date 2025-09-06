@@ -38,7 +38,8 @@ fun ExtractorPlaylistDetails.toDataModel(id: String): PlaylistDetails {
         songs = this.songs.map { it.toDataModel() },
         relatedPlaylists = this.relatedPlaylists.map { it.toDataModel() },
         isLocal = false,
-        id = id
+        id = id,
+        releaseYear = this.releaseYear
     )
 }
 

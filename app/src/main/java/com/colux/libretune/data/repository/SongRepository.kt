@@ -3,8 +3,6 @@ package com.colux.libretune.data.repository
 import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
-import com.colux.libretune.data.local.entity.PlaylistEntity
-import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
@@ -48,6 +46,10 @@ class SongRepository @Inject constructor(
 
     fun isSongLiked(id: String): Flow<Boolean> {
         return db.playlistDao().isSongInPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, id)
+    }
+
+    fun isSongInPlaylist(playlistId: String, songId: String): Flow<Boolean> {
+        return db.playlistDao().isSongInPlaylist(playlistId, songId)
     }
 
     suspend fun unlikeSong(song: Song) {
@@ -111,36 +113,5 @@ class SongRepository @Inject constructor(
         _addSongToPlaylist(playlistId, song)
     }
 
-    fun getLikedSongs(): Flow<List<Song>> {
 
-        val playlistFlow: Flow<PlaylistEntity?> =
-            db.playlistDao().getPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID)
-
-
-        val playlistSongsFlow: Flow<List<SongEntity>> = playlistFlow.map { playlist ->
-            if (playlist == null) return@map emptyList()
-            db.songDao().getSongsInPlaylist(playlist.playlistId)
-        }
-
-        val likedSongs: Flow<List<Song>> =
-            playlistSongsFlow.map { songs ->
-                songs.map { song ->
-                    val songAlbum = db.albumDao().getAlbumById(song.albumId ?: "")
-
-                    val albumArtists = songAlbum?.albumId?.let {
-                        db.artistDao().getArtistsByAlbumId(it)
-                            .firstOrNull() ?: emptyList()
-                    } ?: emptyList()
-
-                    SongWithAlbumAndArtists(
-                        song,
-                        songAlbum,
-                        albumArtists
-                    ).toDataModel()
-                }
-            }
-
-
-        return likedSongs
-    }
 }

@@ -82,7 +82,8 @@ fun PlaylistDetailScreen(
                 // We only show the content when details are loaded
                 state.details.let { playlistDetails ->
 
-                    val showCollage = playlistDetails.isLocal && playlistDetails.songs.isNotEmpty()
+                    val showCollage =
+                        playlistDetails?.isLocal == true && playlistDetails.songs.isNotEmpty()
 
                     // 2. Conditionally display either the collage or a single image
                     if (showCollage) {
@@ -108,12 +109,12 @@ fun PlaylistDetailScreen(
                         )
                     } else {
                         val useDefaultImage =
-                            playlistDetails.isLocal && playlistDetails.songs.isEmpty()
+                            playlistDetails?.isLocal == true && playlistDetails.songs.isEmpty()
 
                         val imageModel = if (useDefaultImage) {
                             R.drawable.default_playlist_image // Your local drawable
                         } else {
-                            playlistDetails.bestImage() // The remote URL
+                            playlistDetails?.bestImage() // The remote URL
                         }
 
                         // --- Background Image with Parallax Effect ---
@@ -157,23 +158,27 @@ fun PlaylistDetailScreen(
                                     .background(MaterialTheme.colorScheme.surface)
                                     .padding(16.dp)
                             ) {
-                                Text(
-                                    playlistDetails.name,
-                                    style = MaterialTheme.typography.headlineLarge
-                                )
-
-                                if (playlistDetails.getArtistNames().isNotEmpty()) {
+                                playlistDetails?.name?.let {
                                     Text(
-                                        playlistDetails.getArtistNames(),
-                                        style = MaterialTheme.typography.titleMedium
+                                        it,
+                                        style = MaterialTheme.typography.headlineLarge
                                     )
+                                }
+
+                                if (playlistDetails?.getArtistNames()?.isNotEmpty() == true) {
+                                    playlistDetails?.getArtistNames()?.let {
+                                        Text(
+                                            it,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                    }
 
                                 }
                             }
 
                         }
 
-                        if (playlistDetails.songs.isNotEmpty()) {
+                        if (playlistDetails?.songs?.isNotEmpty() == true) {
                             // 3. The list of songs
                             itemsIndexed(playlistDetails.songs) { index, song ->
                                 SongItem(
@@ -190,7 +195,7 @@ fun PlaylistDetailScreen(
                                 )
                             }
                         } else {
-                            if (playlistDetails.isLocal) {
+                            if (playlistDetails?.isLocal == true) {
                                 item {
                                     Text(
                                         "This playlist is empty. Add songs from your library or online sources.",
@@ -209,7 +214,7 @@ fun PlaylistDetailScreen(
 
 
 
-                        if (playlistDetails.relatedPlaylists.isNotEmpty()) {
+                        if (playlistDetails?.relatedPlaylists?.isNotEmpty() == true) {
                             item {
                                 PlaylistCarousel(
                                     title = "You may Also Like",
@@ -252,6 +257,9 @@ fun PlaylistDetailScreen(
                 },
                 navController = navController,
                 playerViewModel = playerViewModel,
+                playlistId = uiState.let {
+                    if (it is PlaylistUiState.Success) it.details?.id else null
+                }
             )
         }
     }

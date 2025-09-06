@@ -10,6 +10,7 @@ import androidx.navigation.navigation
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.add_to_playlist.AddToPlaylistScreen
 import com.colux.libretune.ui.artist.ArtistScreen
+import com.colux.libretune.ui.create_playlist.CreatePlaylistScreen
 import com.colux.libretune.ui.discography.DiscographyScreen
 import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
@@ -143,6 +144,10 @@ fun Navigation(
                         navController = navController
                     )
                 }
+            }
+
+            composable(Screen.CreatePlaylist.route) {
+                CreatePlaylistScreen(navController = navController)
             }
         }
 

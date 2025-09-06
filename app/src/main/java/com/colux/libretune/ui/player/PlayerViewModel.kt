@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
 import javax.inject.Inject
@@ -159,6 +160,13 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun isSongInPlaylist(songId: String, playlistId: String? = null): Flow<Boolean> {
+        if (playlistId == null) {
+            return flowOf(false)
+        }
+        return songRepository.isSongInPlaylist(playlistId, songId)
+    }
+
 
     // --- Liked Songs Logic (can remain in ViewModel) ---
     fun isCurrentSongLiked(songId: String): Flow<Boolean> = songRepository.isSongLiked(songId)
@@ -170,6 +178,12 @@ class PlayerViewModel @Inject constructor(
             } else {
                 songRepository.likeSong(song)
             }
+        }
+    }
+
+    fun removeSongFromPlaylist(song: Song, playlistId: String) {
+        viewModelScope.launch {
+            songRepository.removeSongFromPlaylist(playlistId, song.id)
         }
     }
 

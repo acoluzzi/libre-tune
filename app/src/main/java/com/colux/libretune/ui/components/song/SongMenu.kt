@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlaylistAddCircle
+import androidx.compose.material.icons.filled.PlaylistRemove
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -42,8 +43,12 @@ fun SongMenu(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
     onClose: () -> Unit,
+    playlistId: String? = null
 ) {
     val isLiked by playerViewModel.isCurrentSongLiked(song.id)
+        .collectAsState(initial = false)
+
+    val isInPlaylist by playerViewModel.isSongInPlaylist(song.id, playlistId)
         .collectAsState(initial = false)
 
     Column {
@@ -89,14 +94,36 @@ fun SongMenu(
             )
         }
 
-        MenuOptionItem(
-            text = "Add to playlist",
-            icon = Icons.Default.PlaylistAddCircle,
-            onClick = {
-                navController.navigate(Screen.AddToPlaylist.createRoute(song.id))
-                onClose()
-            }
-        )
+        if (isInPlaylist) {
+            MenuOptionItem(
+                text = "Remove from this playlist",
+                icon = Icons.Filled.PlaylistRemove,
+                onClick = {
+                    playlistId?.let { playerViewModel.removeSongFromPlaylist(song, it) }
+                    onClose()
+                }
+            )
+
+            MenuOptionItem(
+                text = "Add to other playlists",
+                icon = Icons.AutoMirrored.Filled.PlaylistAdd,
+                onClick = {
+                    navController.navigate(Screen.AddToPlaylist.createRoute(song.id))
+                    onClose()
+                }
+            )
+        } else {
+            MenuOptionItem(
+                text = "Add to playlist",
+                icon = Icons.AutoMirrored.Filled.PlaylistAdd,
+                onClick = {
+                    navController.navigate(Screen.AddToPlaylist.createRoute(song.id))
+                    onClose()
+                }
+            )
+        }
+
+
         MenuOptionItem(
             text = "Start radio",
             icon = Icons.Default.Radio,

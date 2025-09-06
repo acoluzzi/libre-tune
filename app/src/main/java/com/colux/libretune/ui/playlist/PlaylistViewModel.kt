@@ -21,29 +21,16 @@ class PlaylistDetailViewModel @Inject constructor(
     private val logger = java.util.logging.Logger.getLogger("PlaylistDetailViewModel")
     private val playlistId: String = savedStateHandle.get<String>("playlistId")!!
 
-    // The entire state of the screen can be represented by a single StateFlow.
     val uiState: StateFlow<PlaylistUiState> =
-        // Start with the flow from the repository
         repository.getPlaylistDetails(playlistId)
             .map { details ->
-                logger.info { "Received data from repository: $details" }
-                // Map the result from the repository into our UI state object
-                if (details != null) {
-                    PlaylistUiState.Success(details)
-                } else {
-                    // This case can be hit if the initial DB query is empty
-                    PlaylistUiState.Loading
-                }
+                PlaylistUiState.Success(details)
             }
             .stateIn(
                 scope = viewModelScope,
-                // This is a robust policy that keeps the data for 5 seconds
-                // after the UI goes away, preventing re-fetching on rotation.
                 started = SharingStarted.WhileSubscribed(5000),
-                // The initial state while the flow is starting up.
-                initialValue = PlaylistUiState.Loading
+                initialValue = PlaylistUiState.Loading // This is the ONLY time we use Loading
             )
-
 
     init {
         // Trigger a refresh when the ViewModel is created
@@ -57,6 +44,6 @@ class PlaylistDetailViewModel @Inject constructor(
 
 sealed interface PlaylistUiState {
     data object Loading : PlaylistUiState
-    data class Success(val details: PlaylistDetails) : PlaylistUiState
+    data class Success(val details: PlaylistDetails?) : PlaylistUiState
     data class Error(val message: String) : PlaylistUiState
 }

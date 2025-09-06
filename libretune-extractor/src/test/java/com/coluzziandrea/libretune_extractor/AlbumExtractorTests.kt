@@ -32,6 +32,7 @@ class AlbumPageScrapingTests {
             "https://lh3.googleusercontent.com/g8bzAg2zxvdnm7ismLMYLA9-9azb4y6VP2uOF56A2G2rpsqLHT6mrJWXRKq_VttXQZ-o-jmVgTFIVgdj=w60-h60-l90-rj",
             playlistDetails?.images?.firstOrNull()?.url
         )
+        assertEquals(1969, playlistDetails?.releaseYear)
 
         assertNotNull(playlistDetails?.songs)
         assertEquals(40, playlistDetails?.songs?.size)
@@ -84,6 +85,7 @@ class AlbumPageScrapingTests {
             "https://lh3.googleusercontent.com/jKSy3N15Nd2vF0OG4m10y4A-GgN94CJQIyseGZ0HjJIDUL9dqfY1SI4mqOuJkuUdmaOQ-HRI9q_9BXo=w60-h60-l90-rj",
             playlistDetails?.images?.firstOrNull()?.url
         )
+        assertEquals(2008, playlistDetails?.releaseYear)
 
         assertNotNull(playlistDetails?.songs)
         assertEquals(10, playlistDetails?.songs?.size)
@@ -129,6 +131,8 @@ class AlbumPageScrapingTests {
             "https://lh3.googleusercontent.com/oj-0oUnP5pwhlbGFvX8KJ9VOQjV-I0RErIJ-Fz2XeLXZ0llgSMudPUukkh3pyJUUAs4y-h_pyEreMQ0o=w60-h60-l90-rj",
             playlistDetails?.images?.firstOrNull()?.url
         )
+
+        assertEquals(2025, playlistDetails?.releaseYear)
 
         assertNotNull(playlistDetails?.songs)
         assertEquals(25, playlistDetails?.songs?.size)

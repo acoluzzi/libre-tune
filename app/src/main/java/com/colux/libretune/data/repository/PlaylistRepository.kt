@@ -200,7 +200,8 @@ class PlaylistRepository @Inject constructor(
                 songs = songs.map { it.toDataModel() },
                 relatedPlaylists = related,
                 isLocal = playlist?.isLocal ?: false,
-                id = playlist?.playlistId ?: album?.albumId ?: "unknown"
+                id = playlist?.playlistId ?: album?.albumId ?: "unknown",
+                releaseYear = album?.releaseYear ?: 0
             )
         }
     }
@@ -266,7 +267,7 @@ class PlaylistRepository @Inject constructor(
                                 it.toEntity()
                             },
                             type = if (remoteDetails.type == PlaylistType.ALBUM) AlbumType.ALBUM else AlbumType.SINGLE_EP,
-                            releaseYear = 0, // TODO: Extract release year if available
+                            releaseYear = remoteDetails.releaseYear,
                             updateTimestamp = System.currentTimeMillis()
                         )
                     )

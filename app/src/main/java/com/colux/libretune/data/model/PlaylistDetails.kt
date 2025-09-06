@@ -8,7 +8,8 @@ data class PlaylistDetails(
     val images: List<Image>,
     val artists: List<Artist>,
     val songs: List<Song>,
-    val relatedPlaylists: List<Playlist>
+    val relatedPlaylists: List<Playlist>,
+    val releaseYear: Int
 ) {
     fun bestImage(): String? {
         return images.maxByOrNull { it.width ?: 0 }?.url

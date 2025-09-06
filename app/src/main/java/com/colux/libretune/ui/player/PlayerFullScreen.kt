@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.Player
 import androidx.navigation.NavHostController
@@ -83,6 +85,8 @@ fun PlayerFullScreen(
     var sliderPosition by remember(currentPosition) { mutableFloatStateOf(currentPosition.toFloat()) }
     var isUserSeeking by remember { mutableStateOf(false) }
 
+    val accentColor = dynamicColor ?: MaterialTheme.colorScheme.primary
+
 
 
     currentSong?.let { song ->
@@ -92,8 +96,8 @@ fun PlayerFullScreen(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            dynamicColor ?: MaterialTheme.colorScheme.primary, // Use dynamic color
-                            MaterialTheme.colorScheme.background // Fade to black
+                            accentColor,
+                            MaterialTheme.colorScheme.background
                         )
                     )
                 )
@@ -144,7 +148,7 @@ fun PlayerFullScreen(
                     Icon(
                         imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like Song",
-                        tint = if (isLiked) MaterialTheme.colorScheme.primary else Color.White
+                        tint = if (isLiked) accentColor else Color.White
                     )
                 }
                 IconButton(onClick = { showOptionsMenu = true }) {
@@ -155,6 +159,14 @@ fun PlayerFullScreen(
                     )
                 }
             }
+
+            val sliderColors = SliderDefaults.colors().copy(
+                thumbColor = accentColor,
+                activeTrackColor = accentColor,
+                inactiveTrackColor = accentColor.copy(alpha = 0.3f),
+                inactiveTickColor = Color.Transparent,
+                activeTickColor = Color.Transparent,
+            )
 
             // Seek Bar (we'll make this functional later)
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -175,7 +187,12 @@ fun PlayerFullScreen(
                     thumb = {
                         SliderDefaults.Thumb(
                             interactionSource = remember { MutableInteractionSource() },
-                            modifier = Modifier.size(12.dp)
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .size(16.dp)
+                                .background(accentColor, CircleShape),
+                            thumbSize = DpSize(16.dp, 16.dp),
+                            colors = sliderColors
                         )
                     },
 
@@ -183,20 +200,12 @@ fun PlayerFullScreen(
                     track = { sliderState ->
                         SliderDefaults.Track(
                             sliderState = sliderState,
-                            modifier = Modifier.height(4.dp)
+                            modifier = Modifier.height(4.dp),
+                            colors = sliderColors
                         )
                     },
 
-                    colors = SliderDefaults.colors(
-                        // The thumb (the head) will now use the dynamic theme color.
-                        thumbColor = MaterialTheme.colorScheme.primary,
-
-                        // The track that the thumb has passed over will be white.
-                        activeTrackColor = Color.White,
-
-                        // The rest of the track will be semi-transparent white.
-                        inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                    )
+                    colors = sliderColors
                 )
                 Row(
                     modifier = Modifier
@@ -246,7 +255,7 @@ fun PlayerFullScreen(
                     onClick = { playerViewModel.onPlayPauseClick() },
                     modifier = Modifier.size(72.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = accentColor
                     )
                 ) {
                     Icon(
@@ -273,7 +282,7 @@ fun PlayerFullScreen(
                         imageVector = repeatIcon,
                         contentDescription = "Repeat",
                         modifier = Modifier.size(32.dp),
-                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) MaterialTheme.colorScheme.primary else Color.White
+                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) accentColor else Color.White
                     )
                 }
             }

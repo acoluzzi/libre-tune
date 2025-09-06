@@ -46,18 +46,22 @@ fun SongItem(
     val isCurrentlyPlaying = isSelectedSong && selectedSongIsPlaying
 
     val backgroundColor = if (isSelectedSong) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
     } else {
         MaterialTheme.colorScheme.surface
     }
 
+    val itemShape = RoundedCornerShape(12.dp)
+
     Row(
         modifier = Modifier
-            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
+            .clip(itemShape)
+            .background(backgroundColor, shape = itemShape)
             .combinedClickable(
-                onClick = onClick, // Action for a regular tap
-                onLongClick = onMoreClick // Action for a long press
+                onClick = onClick,
+                onLongClick = onMoreClick
             )
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,15 +17,7 @@ class LibraryViewModel @Inject constructor(val playlistRepository: PlaylistRepos
 
     // This flow now gets ALL playlists with their associated songs.
     val playlists: StateFlow<List<PlaylistWithSongs>> =
-        playlistRepository.getLocalPlaylistsWithSongs()
+        playlistRepository.getSavedPlaylistsWithSongs()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /**
-     * Creates and inserts a new, empty, user-created playlist.
-     */
-    fun createNewPlaylist(name: String) {
-        viewModelScope.launch {
-            playlistRepository.createNewPlaylist(name)
-        }
-    }
 }

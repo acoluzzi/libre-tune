@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -92,6 +93,10 @@ fun PlaylistDetailScreen(
         initial = false
     )
 
+    val isSaved by viewModel.isPlaylistSaved.collectAsState(
+        initial = false
+    )
+
     when (val state = uiState) {
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
@@ -141,6 +146,10 @@ fun PlaylistDetailScreen(
                                     isPlaying = isPlaying,
                                     onShuffleClick = {
                                         playerViewModel.shufflePlayPlaylist(playlistDetails)
+                                    },
+                                    isSaved = isSaved,
+                                    onLikeToggle = {
+                                        viewModel.togglePlaylistSavedStatus()
                                     }
                                 )
                             }
@@ -259,8 +268,10 @@ fun PlaylistDetailScreen(
 fun PlaylistHeader(
     details: PlaylistDetails,
     isPlaying: Boolean,
+    isSaved: Boolean,
     onPlayPauseClick: () -> Unit,
-    onShuffleClick: () -> Unit
+    onShuffleClick: () -> Unit,
+    onLikeToggle: () -> Unit
 ) {
 
 
@@ -347,8 +358,12 @@ fun PlaylistHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Left-aligned buttons
-            IconButton(onClick = { /* TODO: Like playlist */ }) {
-                Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Like Playlist")
+            IconButton(onClick = { onLikeToggle() }) {
+                Icon(
+                    if (isSaved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    contentDescription = "Like Playlist"
+                )
             }
             IconButton(onClick = { /* TODO: Show menu */ }) {
                 Icon(Icons.Default.MoreVert, contentDescription = "More options")

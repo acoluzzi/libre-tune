@@ -65,6 +65,19 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists where isLocal = 1")
     fun getLocalPlaylists(): Flow<List<PlaylistWithSongsEntity>>
 
+    @Query(
+        """
+        SELECT * 
+        FROM playlists p 
+        WHERE p.playlistId IN (
+            SELECT DISTINCT playlistId 
+            FROM library 
+            WHERE type = 'PLAYLIST'
+        ) OR p.isLocal = 1
+    """
+    )
+    fun getSavedPlaylists(): Flow<List<PlaylistWithSongsEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkAlbumToArtists(crossRefs: List<PlaylistArtistCrossRef>)
 

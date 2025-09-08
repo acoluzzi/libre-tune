@@ -18,8 +18,16 @@ class PlaylistDetailViewModel @Inject constructor(
     private val repository: PlaylistRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+
     private val logger = java.util.logging.Logger.getLogger("PlaylistDetailViewModel")
     private val playlistId: String = savedStateHandle.get<String>("playlistId")!!
+
+    val isPlaylistSaved = repository.isPlaylistSaved(playlistId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
 
     val uiState: StateFlow<PlaylistUiState> =
         repository.getPlaylistDetails(playlistId)
@@ -37,6 +45,19 @@ class PlaylistDetailViewModel @Inject constructor(
         viewModelScope.launch {
             repository.refreshPlaylistDetails(playlistId)
         }
+    }
+
+    fun togglePlaylistSavedStatus() {
+        viewModelScope.launch {
+            if (!isPlaylistSaved.value) {
+                repository.savePlaylist(playlistId)
+                logger.info("Removed playlist $playlistId from library")
+            } else {
+                repository.unsavePlaylist(playlistId)
+                logger.info("Added playlist $playlistId to library")
+            }
+        }
+
     }
 
 

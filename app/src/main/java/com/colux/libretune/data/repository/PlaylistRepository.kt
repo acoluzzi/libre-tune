@@ -4,6 +4,8 @@ import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
+import com.colux.libretune.data.local.entity.LibraryEntity
+import com.colux.libretune.data.local.entity.LibraryItemType
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
@@ -46,8 +48,8 @@ class PlaylistRepository @Inject constructor(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getLocalPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>> {
-        val playlistFlow: Flow<List<PlaylistWithSongsEntity>> = db.playlistDao().getLocalPlaylists()
+    fun getSavedPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>> {
+        val playlistFlow: Flow<List<PlaylistWithSongsEntity>> = db.playlistDao().getSavedPlaylists()
 
         return playlistFlow.map { playlists ->
             playlists.map { (playlist, songs) ->
@@ -194,6 +196,32 @@ class PlaylistRepository @Inject constructor(
         val isStale =
             (System.currentTimeMillis() - lastUpdate) > cacheTtlMillis
         return isStale
+    }
+
+    suspend fun savePlaylist(playlistId: String) {
+        db.libraryDao().insert(
+            LibraryEntity(
+                id = playlistId,
+                type = LibraryItemType.PLAYLIST,
+                playlistId = playlistId,
+                addedAtTimestamp = System.currentTimeMillis()
+            )
+        )
+    }
+
+    fun isPlaylistSaved(playlistId: String): Flow<Boolean> {
+        return db.libraryDao().isItemInLibrary(playlistId, LibraryItemType.PLAYLIST)
+    }
+
+    suspend fun unsavePlaylist(playlistId: String) {
+        db.libraryDao().delete(
+            LibraryEntity(
+                id = playlistId,
+                type = LibraryItemType.PLAYLIST,
+                playlistId = playlistId,
+                addedAtTimestamp = System.currentTimeMillis()
+            )
+        )
     }
 
     suspend fun refreshPlaylistDetails(id: String) {

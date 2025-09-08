@@ -3,6 +3,7 @@ package com.colux.libretune.data.local
 import androidx.room.TypeConverter
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ImageAttribute
+import com.colux.libretune.data.local.entity.LibraryItemType
 import kotlinx.serialization.json.Json
 
 class Converters {
@@ -22,4 +23,11 @@ class Converters {
 
     @TypeConverter
     fun toAlbumType(name: String): AlbumType = AlbumType.valueOf(name)
+
+
+    @TypeConverter
+    fun fromLibraryType(type: LibraryItemType): String = type.name
+
+    @TypeConverter
+    fun toLibraryType(name: String): LibraryItemType = LibraryItemType.valueOf(name)
 }

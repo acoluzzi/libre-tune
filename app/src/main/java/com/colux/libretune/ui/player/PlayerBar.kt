@@ -112,7 +112,7 @@ fun PlayerBar(
                 Icon(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Like Song",
-                    tint = contentColor
+                    tint = if (isLiked) MaterialTheme.colorScheme.primary else contentColor
                 )
             }
 

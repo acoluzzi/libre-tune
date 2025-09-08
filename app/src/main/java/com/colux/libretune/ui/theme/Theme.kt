@@ -10,13 +10,13 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-val ModernPurple = Color(0xffcc57de)
+val Green = Color(0xff1DB954)
 val AbsoluteBlack = Color(0xFF000000)
 val White = Color(0xFFFFFFFF) // Add White color here for consistency
 
 // Create one color scheme that will be used for both light and dark system themes.
 private val BaseColorScheme = darkColorScheme(
-    primary = ModernPurple, // Default primary for the app
+    primary = Green, // Default primary for the app
     background = AbsoluteBlack,
     surface = AbsoluteBlack,
     surfaceVariant = Color(0xFF1E1E1E), // A slightly lighter black for cards/bars
@@ -29,20 +29,8 @@ private val BaseColorScheme = darkColorScheme(
 
 @Composable
 fun LibreTuneTheme(
-    // This parameter will override the primary color if provided.
-    // If null, it uses the default `BaseColorScheme.primary` (ModernPurple).
-    dynamicPrimaryColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (dynamicPrimaryColor != null) {
-        // Create a new color scheme for the player components
-        BaseColorScheme.copy(
-            primary = dynamicPrimaryColor
-        )
-    } else {
-        // Use the base color scheme for the rest of the app
-        BaseColorScheme
-    }
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -54,7 +42,7 @@ fun LibreTuneTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = BaseColorScheme,
         typography = Typography,
         content = content
     )

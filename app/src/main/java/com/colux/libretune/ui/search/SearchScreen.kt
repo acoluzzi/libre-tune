@@ -455,7 +455,10 @@ fun SearchResultsList(
                             results.topSongs,
                             results.topSongs.indexOf(song)
                         )
-                    })
+                    },
+                    isInPlaylist = false,
+                    navController = navController
+                )
             }
 
 
@@ -478,6 +481,8 @@ fun SearchResultsList(
                     onMoreClick = {
                         onSongMenuClick(song)
                     },
+                    isInPlaylist = false,
+                    navController = navController,
                     onClick = {
                         playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
                     })

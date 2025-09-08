@@ -1,4 +1,4 @@
-package com.colux.libretune.data.local.wrapper
+package com.colux.libretune.data.model.wrapper
 
 import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.entity.ArtistEntity

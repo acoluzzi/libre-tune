@@ -6,8 +6,8 @@ import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
-import com.colux.libretune.data.local.wrapper.AlbumWithArtists
 import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.wrapper.AlbumWithArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

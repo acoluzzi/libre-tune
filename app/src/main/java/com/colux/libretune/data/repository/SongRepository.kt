@@ -3,12 +3,13 @@ package com.colux.libretune.data.repository
 import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
+import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
 import com.colux.libretune.data.local.join.AlbumArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
-import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.Song
+import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -42,6 +43,19 @@ class SongRepository @Inject constructor(
                 ).toDataModel()
             }
         }
+    }
+
+    fun getSavedSongIds(): Flow<List<String>> {
+        return db.songDao().getSavedSongIds()
+    }
+
+    suspend fun logSongPlayed(song: Song) {
+        db.historyDao().insertHistory(
+            PlaybackHistoryEntity(
+                songId = song.id,
+                playedAtTimestamp = System.currentTimeMillis()
+            )
+        )
     }
 
     fun isSongLiked(id: String): Flow<Boolean> {

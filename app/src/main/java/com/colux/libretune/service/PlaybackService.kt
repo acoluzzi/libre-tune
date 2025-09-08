@@ -37,13 +37,15 @@ class PlaybackService : MediaSessionService() {
     }
 
     @Inject
-    lateinit var musicRepository: SongRepository
+    lateinit var songRepository: SongRepository
 
     @Inject
     lateinit var exoPlayer: ExoPlayer
 
     private var mediaSession: MediaSession? = null
     private var backgroundFetchJob: Job? = null
+
+    val logger = java.util.logging.Logger.getLogger("PlaybackService")
 
 
     private val mediaSessionCallback = object : MediaSession.Callback {
@@ -86,7 +88,7 @@ class PlaybackService : MediaSessionService() {
                 backgroundFetchJob = CoroutineScope(Dispatchers.Main).launch {
                     // 4. Fetch the URL for the song that needs to start playing NOW.
                     val startingSong = playlist[startingIndex]
-                    val songUrl = musicRepository.getSongUrlById(startingSong.id)
+                    val songUrl = songRepository.getSongUrlById(startingSong.id)
 
                     if (songUrl != null) {
                         // 5. Create a real MediaItem with the fetched URL.
@@ -99,13 +101,17 @@ class PlaybackService : MediaSessionService() {
 
                         // 7. NOW that the first song is ready, prepare and play.
                         exoPlayer.prepare()
+
+                        logger.info { "Playing ${startingSong.title}" }
                         exoPlayer.play()
+
+                        songRepository.logSongPlayed(startingSong)
                     }
 
                     // 8. Continue fetching the rest of the playlist in the background.
                     playlist.forEachIndexed { index, song ->
                         if (index == startingIndex) return@forEachIndexed
-                        val songUrl = musicRepository.getSongUrlById(song.id)
+                        val songUrl = songRepository.getSongUrlById(song.id)
                         if (songUrl != null) {
                             val realItem = placeholderMediaItems[index].buildUpon()
                                 .setUri(songUrl)

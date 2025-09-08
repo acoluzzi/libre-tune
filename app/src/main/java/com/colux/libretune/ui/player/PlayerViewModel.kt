@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
 import javax.inject.Inject
@@ -66,6 +67,13 @@ class PlayerViewModel @Inject constructor(
     private val _dynamicPrimaryColor = MutableStateFlow<Color?>(null)
     val dynamicPrimaryColor: StateFlow<Color?> = _dynamicPrimaryColor.asStateFlow()
 
+
+    val savedSongIds: StateFlow<List<String>> = songRepository.getSavedSongIds()
+        .stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     init {
         initializeController()

@@ -31,7 +31,7 @@ fun Navigation(
 
         navigation(startDestination = "home_screen", route = Screen.Home.route) {
             composable("home_screen") {
-                HomeScreen(onSongClick = onSongClick)
+                HomeScreen(navController = navController, onSongClick = onSongClick)
             }
         }
 

@@ -1,8 +1,8 @@
 package com.colux.libretune.data.local.mapper
 
 import com.colux.libretune.data.local.entity.SongEntity
-import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.Song
+import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 
 fun Song.toEntity(): SongEntity {
     return SongEntity(

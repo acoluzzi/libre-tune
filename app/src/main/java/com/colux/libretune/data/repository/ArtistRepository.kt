@@ -14,9 +14,9 @@ import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.local.mapper.toPlaylistEntity
-import com.colux.libretune.data.local.wrapper.AlbumWithArtists
-import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.model.ArtistDetails
+import com.colux.libretune.data.model.wrapper.AlbumWithArtists
+import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

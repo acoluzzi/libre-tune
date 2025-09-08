@@ -47,6 +47,7 @@ fun ArtistScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+
     // --- State for the Bottom Sheet ---
     val sheetState = rememberModalBottomSheetState()
     // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
@@ -134,9 +135,11 @@ fun ArtistScreen(
                             },
                             onMoreClick = {
                                 selectedSongForMenu = song
-                            }
+                            },
+                            navController = navController,
+                            isInPlaylist = false,
 
-                        )
+                            )
                     }
                 }
 

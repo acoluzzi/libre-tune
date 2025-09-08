@@ -148,7 +148,7 @@ fun PlayerFullScreen(
                     Icon(
                         imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Like Song",
-                        tint = if (isLiked) accentColor else Color.White
+                        tint = if (isLiked) MaterialTheme.colorScheme.primary else Color.White
                     )
                 }
                 IconButton(onClick = { showOptionsMenu = true }) {
@@ -161,9 +161,9 @@ fun PlayerFullScreen(
             }
 
             val sliderColors = SliderDefaults.colors().copy(
-                thumbColor = accentColor,
-                activeTrackColor = accentColor,
-                inactiveTrackColor = accentColor.copy(alpha = 0.3f),
+                thumbColor = Color.White,
+                activeTrackColor = Color.White,
+                inactiveTrackColor = Color.White.copy(alpha = 0.4f),
                 inactiveTickColor = Color.Transparent,
                 activeTickColor = Color.Transparent,
             )
@@ -190,7 +190,7 @@ fun PlayerFullScreen(
                             modifier = Modifier
                                 .padding(0.dp)
                                 .size(16.dp)
-                                .background(accentColor, CircleShape),
+                                .background(Color.White, CircleShape),
                             thumbSize = DpSize(16.dp, 16.dp),
                             colors = sliderColors
                         )
@@ -216,12 +216,12 @@ fun PlayerFullScreen(
                     Text(
                         text = TimeUtils.formatDuration(if (isUserSeeking) sliderPosition.toLong() else currentPosition),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
                         text = TimeUtils.formatDuration(totalDuration),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -255,7 +255,7 @@ fun PlayerFullScreen(
                     onClick = { playerViewModel.onPlayPauseClick() },
                     modifier = Modifier.size(72.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = accentColor
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Icon(
@@ -282,7 +282,7 @@ fun PlayerFullScreen(
                         imageVector = repeatIcon,
                         contentDescription = "Repeat",
                         modifier = Modifier.size(32.dp),
-                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) accentColor else Color.White
+                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) MaterialTheme.colorScheme.primary else Color.White
                     )
                 }
             }

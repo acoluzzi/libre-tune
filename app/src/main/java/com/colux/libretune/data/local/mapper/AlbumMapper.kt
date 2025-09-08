@@ -4,9 +4,9 @@ import com.colux.libretune.data.local.entity.AlbumEntity
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
 import com.colux.libretune.data.local.entity.PlaylistEntity
-import com.colux.libretune.data.local.wrapper.AlbumWithArtists
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistType
+import com.colux.libretune.data.model.wrapper.AlbumWithArtists
 
 
 fun AlbumEntity.toDataModel(artistEntity: List<ArtistEntity>?): Playlist {

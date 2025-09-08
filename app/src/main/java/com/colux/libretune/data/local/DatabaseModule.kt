@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.colux.libretune.data.local.dao.AlbumDao
 import com.colux.libretune.data.local.dao.ArtistDao
+import com.colux.libretune.data.local.dao.HistoryDao
 import com.colux.libretune.data.local.dao.PlaylistDao
 import com.colux.libretune.data.local.dao.SearchQueryDao
 import dagger.Module
@@ -42,6 +43,12 @@ object DatabaseModule {
     @Singleton
     fun provideAlbumDao(database: AppDatabase): AlbumDao {
         return database.albumDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHistoryDao(database: AppDatabase): HistoryDao {
+        return database.historyDao()
     }
 
     @Provides

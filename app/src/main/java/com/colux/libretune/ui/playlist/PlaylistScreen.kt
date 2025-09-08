@@ -64,8 +64,6 @@ fun PlaylistDetailScreen(
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
 
-
-
     when (val state = uiState) {
         is PlaylistUiState.Loading -> {
             PlaylistDetailSkeleton()
@@ -191,7 +189,9 @@ fun PlaylistDetailScreen(
                                         )
                                     }, onMoreClick = {
                                         selectedSongForMenu = song
-                                    }
+                                    },
+                                    isInPlaylist = playlistDetails.isLocal,
+                                    navController = navController
                                 )
                             }
                         } else {

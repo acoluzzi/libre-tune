@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -79,8 +80,8 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
                                 launchSingleTop = true
                             }
                         }, colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color.White,
-                            selectedTextColor = Color.White,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
                             unselectedIconColor = Color.White.copy(alpha = 0.5f),
                             unselectedTextColor = Color.White.copy(alpha = 0.5f),
                             indicatorColor = Color.Transparent // Hide the selection indicator

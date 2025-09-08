@@ -32,4 +32,8 @@ interface SongDao {
     """
     )
     suspend fun getSongsInPlaylist(playlistId: String): List<SongEntity>
+
+
+    @Query("SELECT DISTINCT songId FROM playlist_song_cross_ref")
+    fun getSavedSongIds(): Flow<List<String>>
 }

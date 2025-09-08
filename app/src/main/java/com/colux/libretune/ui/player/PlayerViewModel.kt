@@ -13,6 +13,7 @@ import androidx.media3.session.SessionToken
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.service.PlaybackService
@@ -52,6 +53,9 @@ class PlayerViewModel @Inject constructor(
     val currentSong: StateFlow<Song?> = _currentSong.asStateFlow()
 
     private val _currentPlaylist = MutableStateFlow<List<Song>>(emptyList())
+
+    private val _currentPlaylistId = MutableStateFlow<String?>(null)
+    val currentPlaylistId: StateFlow<String?> = _currentPlaylistId.asStateFlow()
 
     private val _totalDuration = MutableStateFlow(0L)
     val totalDuration: StateFlow<Long> = _totalDuration.asStateFlow()
@@ -140,6 +144,22 @@ class PlayerViewModel @Inject constructor(
         )
         _currentPlaylist.value = playlist
         mediaController?.sendCustomCommand(PlaybackService.COMMAND_PLAY_PLAYLIST_WITH_FETCH, args)
+    }
+
+    fun playPlaylist(playlistDetails: PlaylistDetails) {
+        playPlaylist(playlistDetails.songs, 0)
+
+        _currentPlaylistId.value = playlistDetails.id
+    }
+
+
+    fun shufflePlayPlaylist(playlistDetails: PlaylistDetails) {
+        playPlaylist(
+            playlistDetails.songs.shuffled(),
+            0
+        )
+
+        _currentPlaylistId.value = playlistDetails.id
     }
 
     private fun startProgressTracking() {

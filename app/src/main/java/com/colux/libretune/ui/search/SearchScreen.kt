@@ -77,8 +77,8 @@ object DummyData {
     private val ledZeppelin = Artist("a2", "Led Zeppelin", imageList)
 
     val songs = listOf(
-        Song("s1", "Bohemian Rhapsody", listOf(queen), null, 12313123, imageList),
-        Song("s2", "Stairway to Heaven", listOf(ledZeppelin), null, 123123123, imageList)
+        Song("s1", "Bohemian Rhapsody", listOf(queen), null, 12313123, 1, imageList),
+        Song("s2", "Stairway to Heaven", listOf(ledZeppelin), null, 123123123, 2, imageList)
     )
     val artists = listOf(queen, ledZeppelin)
     val playlists = listOf(
@@ -456,7 +456,6 @@ fun SearchResultsList(
                             results.topSongs.indexOf(song)
                         )
                     },
-                    isInPlaylist = false,
                     navController = navController
                 )
             }
@@ -481,7 +480,6 @@ fun SearchResultsList(
                     onMoreClick = {
                         onSongMenuClick(song)
                     },
-                    isInPlaylist = false,
                     navController = navController,
                     onClick = {
                         playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))

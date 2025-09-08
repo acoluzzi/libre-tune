@@ -48,12 +48,12 @@ class ArtistParser {
                                     it.text == "Top songs"
                                 } != null) {
 
-                                content.musicShelfRenderer.contents.forEach { shelfItem ->
+                                content.musicShelfRenderer.contents.forEachIndexed { index, shelfItem ->
                                     if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                        shelfItem.musicResponsiveListItemRenderer.toSong()
+                                        shelfItem.musicResponsiveListItemRenderer.toSong(index)
                                             .let { song ->
                                                 if (song != null) {
-                                                    topSongs.add(song)
+                                                    topSongs.add(song.copy(trackNumber = null))
                                                 }
                                             }
                                     }

@@ -137,9 +137,7 @@ fun ArtistScreen(
                                 selectedSongForMenu = song
                             },
                             navController = navController,
-                            isInPlaylist = false,
-
-                            )
+                        )
                     }
                 }
 

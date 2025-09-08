@@ -89,9 +89,9 @@ class PlaylistParser {
                         is SectionContent.MusicPlaylistShelfContent -> content.musicPlaylistShelfRenderer.contents
                         else -> null
                     }
-                    contents?.forEach { shelfContent ->
+                    contents?.forEachIndexed { index, shelfContent ->
                         if (shelfContent is SectionContent.MusicResponsiveListItemContent) {
-                            shelfContent.musicResponsiveListItemRenderer.toSong().let {
+                            shelfContent.musicResponsiveListItemRenderer.toSong(index).let {
                                 if (it != null) {
                                     var images = it.images
                                     if (images.isEmpty()) {

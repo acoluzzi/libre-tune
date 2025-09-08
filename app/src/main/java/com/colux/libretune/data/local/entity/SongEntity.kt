@@ -21,6 +21,7 @@ data class SongEntity(
     @PrimaryKey val songId: String,
     val title: String,
     val albumId: String?,
+    val trackNumber: Int? = null,
     val images: List<ImageAttribute>,
     val views: Long,
     val durationSec: Long? = null,

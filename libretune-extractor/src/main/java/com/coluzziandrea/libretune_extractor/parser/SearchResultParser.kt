@@ -39,7 +39,7 @@ class SearchResultParser {
                             content.musicCardShelfRenderer.contents?.forEach { subItem ->
                                 if (subItem is SectionContent.MusicResponsiveListItemContent) {
                                     val songGenericMusicItem = GenericMusicItem.SongResult(
-                                        song = subItem.musicResponsiveListItemRenderer.toSong()
+                                        song = subItem.musicResponsiveListItemRenderer.toSong(null)
                                     )
                                     genericMusicItems.add(songGenericMusicItem)
                                 }
@@ -67,11 +67,12 @@ class SearchResultParser {
                                 "Songs" -> {
                                     content.musicShelfRenderer.contents.forEach { shelfItem ->
                                         if (shelfItem is SectionContent.MusicResponsiveListItemContent) {
-                                            shelfItem.musicResponsiveListItemRenderer.toSong().let {
-                                                if (it != null) {
-                                                    songs.add(it)
+                                            shelfItem.musicResponsiveListItemRenderer.toSong(null)
+                                                .let {
+                                                    if (it != null) {
+                                                        songs.add(it)
+                                                    }
                                                 }
-                                            }
                                         }
                                     }
                                 }

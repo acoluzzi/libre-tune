@@ -51,9 +51,9 @@ fun SongItem(
     song: Song, onClick: () -> Unit,
     playerViewModel: PlayerViewModel,
     onMoreClick: () -> Unit,
-    isInPlaylist: Boolean,
+    displayingInPlaylistId: String? = null,
+    displayingInLocalPlaylist: Boolean = false,
     navController: NavHostController,
-    trackNumber: Int? = null,
 ) {
 
     val selectedSong by playerViewModel.currentSong.collectAsState()
@@ -83,7 +83,7 @@ fun SongItem(
                     .clip(RoundedCornerShape(4.dp)),
                 contentScale = ContentScale.Crop
             )
-            if (trackNumber != null) {
+            if (song.trackNumber != null && displayingInPlaylistId == song.album?.id) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -93,7 +93,7 @@ fun SongItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = trackNumber.toString(),
+                        text = song.trackNumber.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White
                     )
@@ -131,7 +131,7 @@ fun SongItem(
             )
         }
 
-        if (isSaved && !isInPlaylist) {
+        if (isSaved && displayingInPlaylistId != null && !displayingInLocalPlaylist) {
             Spacer(modifier = Modifier.width(8.dp))
 
             IconButton(onClick = {

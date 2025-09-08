@@ -163,7 +163,9 @@ class PlaylistRepository @Inject constructor(
                     }
                 },
                 artists = artists.map { it.toDataModel() },
-                songs = songs.map { it.toDataModel() },
+                songs = songs.map { it.toDataModel() }.sortedBy {
+                    it.trackNumber ?: Int.MAX_VALUE
+                },
                 relatedPlaylists = related,
                 isLocal = playlist.isLocal ?: false,
                 id = playlist.playlistId,

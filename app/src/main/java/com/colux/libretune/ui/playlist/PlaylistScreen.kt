@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -52,7 +53,6 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.R
 import com.colux.libretune.data.model.PlaylistDetails
-import com.colux.libretune.data.model.PlaylistType
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.song.SongItem
@@ -84,6 +84,14 @@ fun PlaylistDetailScreen(
     // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
+
+    val currentlyPlayedPlaylist by playerViewModel.currentPlaylistId
+        .collectAsState(initial = false)
+
+    val isPlaying by playerViewModel.isPlaying.collectAsState(
+        initial = false
+    )
+
     when (val state = uiState) {
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
@@ -104,7 +112,8 @@ fun PlaylistDetailScreen(
                                         playlistDetails.songs,
                                         0
                                     )
-                                }
+                                },
+                                isPlaying = isPlaying
                             )
                         }
                     }
@@ -120,7 +129,20 @@ fun PlaylistDetailScreen(
                         ) {
                             // Item 0: The main header
                             item {
-                                PlaylistHeader(details = playlistDetails)
+                                PlaylistHeader(
+                                    details = playlistDetails,
+                                    onPlayPauseClick = {
+                                        if (currentlyPlayedPlaylist == playlistDetails.id)
+                                            playerViewModel.onPlayPauseClick()
+                                        else {
+                                            playerViewModel.playPlaylist(playlistDetails)
+                                        }
+                                    },
+                                    isPlaying = isPlaying,
+                                    onShuffleClick = {
+                                        playerViewModel.shufflePlayPlaylist(playlistDetails)
+                                    }
+                                )
                             }
 
 
@@ -135,12 +157,13 @@ fun PlaylistDetailScreen(
                                                 playlistDetails.songs,
                                                 index
                                             )
-                                        }, onMoreClick = {
+                                        },
+                                        onMoreClick = {
                                             selectedSongForMenu = song
                                         },
-                                        isInPlaylist = playlistDetails.isLocal,
+                                        displayingInPlaylistId = playlistDetails.id,
+                                        displayingInLocalPlaylist = playlistDetails.isLocal,
                                         navController = navController,
-                                        trackNumber = if (playlistDetails.type != PlaylistType.PLAYLIST) index + 1 else null
                                     )
                                 }
                             } else {
@@ -185,16 +208,23 @@ fun PlaylistDetailScreen(
                             item { Spacer(modifier = Modifier.height(80.dp)) }
                         }
 
-                        // This is the back arrow that is always visible at the top left,
-                        // overlaid on top of the content.
-                        IconButton(
-                            onClick = { navController.popBackStack() },
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .padding(8.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        if (!showTopBar) {
+                            // This is the back arrow that is always visible at the top left,
+                            // overlaid on top of the content.
+                            IconButton(
+                                onClick = { navController.popBackStack() },
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(8.dp)
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
                         }
+
+
                     }
                 }
             }
@@ -226,7 +256,14 @@ fun PlaylistDetailScreen(
 
 
 @Composable
-fun PlaylistHeader(details: PlaylistDetails) {
+fun PlaylistHeader(
+    details: PlaylistDetails,
+    isPlaying: Boolean,
+    onPlayPauseClick: () -> Unit,
+    onShuffleClick: () -> Unit
+) {
+
+
     Column(modifier = Modifier.padding(16.dp)) {
         // --- Image and Metadata Row ---
         Row(
@@ -320,7 +357,9 @@ fun PlaylistHeader(details: PlaylistDetails) {
             Spacer(modifier = Modifier.weight(1f))
 
             // Right-aligned buttons
-            IconButton(onClick = { /* TODO: Shuffle play */ }) {
+            IconButton(onClick = {
+                onShuffleClick()
+            }) {
                 Icon(
                     Icons.Default.Shuffle,
                     contentDescription = "Shuffle",
@@ -329,11 +368,13 @@ fun PlaylistHeader(details: PlaylistDetails) {
             }
             Spacer(modifier = Modifier.width(8.dp))
             FilledIconButton(
-                onClick = { /* TODO: Play playlist */ },
+                onClick = {
+                    onPlayPauseClick()
+                },
                 modifier = Modifier.size(56.dp)
             ) {
                 Icon(
-                    Icons.Default.PlayArrow,
+                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = "Play",
                     modifier = Modifier.size(32.dp)
                 )
@@ -349,6 +390,7 @@ fun PlaylistHeader(details: PlaylistDetails) {
 @Composable
 fun CollapsingTopAppBar(
     playlistName: String,
+    isPlaying: Boolean,
     onBackClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
@@ -365,7 +407,7 @@ fun CollapsingTopAppBar(
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    Icons.Default.PlayArrow,
+                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = "Play",
                     modifier = Modifier.size(24.dp)
                 )

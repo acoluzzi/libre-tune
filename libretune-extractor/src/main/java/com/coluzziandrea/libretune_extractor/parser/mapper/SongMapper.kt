@@ -53,7 +53,7 @@ fun getViews(flexColumns: List<FlexColumn>): Long {
 }
 
 
-fun MusicResponsiveListItemRenderer.toSong(): Song? {
+fun MusicResponsiveListItemRenderer.toSong(trackNumber: Int? = null): Song? {
     val songItem =
         flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs?.get(
             0
@@ -116,7 +116,8 @@ fun MusicResponsiveListItemRenderer.toSong(): Song? {
                 title = songItem.text,
                 artists = artists,
                 images = images,
-                durationSec = durationSec
+                durationSec = durationSec,
+                trackNumber = if (trackNumber != null) trackNumber + 1 else null
             )
 
         }

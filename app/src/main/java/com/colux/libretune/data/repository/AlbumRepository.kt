@@ -2,8 +2,8 @@ package com.colux.libretune.data.repository
 
 import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
-import com.colux.libretune.data.local.entity.AlbumEntity
-import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.entity.PlaylistEntity
+import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.model.Playlist
@@ -27,8 +27,9 @@ class AlbumRepository @Inject constructor(
     fun getArtistDiscography(artistId: String): Flow<List<Playlist>> {
         logger.info { "Starting getArtistDiscography for $artistId" }
 
-        val albumsFlow: Flow<List<AlbumEntity>> = db.albumDao().getAlbumsByArtistId(artistId)
-        val singlesFlow: Flow<List<AlbumEntity>> = db.albumDao().getSinglesByArtistId(artistId)
+        val albumsFlow: Flow<List<PlaylistEntity>> = db.playlistDao().getAlbumsByArtistId(artistId)
+        val singlesFlow: Flow<List<PlaylistEntity>> =
+            db.playlistDao().getSinglesByArtistId(artistId)
 
         val albumsAndSinglesFlow = combine(albumsFlow, singlesFlow) { albums, singles ->
             albums + singles
@@ -39,7 +40,7 @@ class AlbumRepository @Inject constructor(
             albumsAndSinglesFlow.map { albums ->
                 albums.map { album ->
                     val albumArtists =
-                        db.artistDao().getArtistsByAlbumId(album.albumId).firstOrNull()
+                        db.artistDao().getArtistsByAlbumId(album.playlistId).firstOrNull()
                     AlbumWithArtists(
                         album,
                         albumArtists ?: emptyList()
@@ -71,16 +72,16 @@ class AlbumRepository @Inject constructor(
         }
 
         val artistAlbumLinks = albumEntities.map { album ->
-            AlbumArtistCrossRef(
+            PlaylistArtistCrossRef(
                 artistId = artist.artistId,
-                albumId = album.albumId
+                playlistId = album.playlistId
             )
         }
 
         db.withTransaction {
-            db.albumDao().upsertAll(albumEntities)
+            db.playlistDao().upsertAll(albumEntities)
 
-            db.albumDao().linkAlbumToArtists(artistAlbumLinks)
+            db.playlistDao().linkAlbumToArtists(artistAlbumLinks)
         }
 
     }

@@ -113,14 +113,10 @@ class PlaylistParser {
                                         )
                                     }
                                     songs.add(
-                                        Song(
-                                            id = it.id,
-                                            views = it.views,
+                                        it.copy(
                                             artists = songArtists,
-                                            playlistId = it.playlistId,
-                                            title = it.title,
                                             album = album,
-                                            images = images
+                                            images = images,
                                         )
                                     )
                                 }

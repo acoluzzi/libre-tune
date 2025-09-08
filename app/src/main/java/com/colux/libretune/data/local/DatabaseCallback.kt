@@ -3,6 +3,7 @@ package com.colux.libretune.data.local
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.colux.libretune.data.local.dao.PlaylistDao
+import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -22,7 +23,8 @@ class DatabaseCallback(
                 playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
                 name = DatabaseConstants.LIKED_SONGS_PLAYLIST_NAME,
                 images = emptyList(), // TODO
-                isLocal = true // It's a local, user-specific playlist,
+                isLocal = true, // It's a local, user-specific playlist,
+                type = AlbumType.PLAYLIST
             )
             // Use the DAO to insert the default playlist
             playlistDao.get().upsert(likedSongsPlaylist)

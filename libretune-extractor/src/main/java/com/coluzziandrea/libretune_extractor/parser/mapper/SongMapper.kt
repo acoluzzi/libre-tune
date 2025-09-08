@@ -86,6 +86,19 @@ fun MusicResponsiveListItemRenderer.toSong(): Song? {
             }
         }
 
+    val durationStr =
+        fixedColumns?.firstOrNull()?.musicResponsiveListItemFixedColumnRenderer?.text?.runs?.firstOrNull()?.text
+
+    val durationSec = durationStr?.let {
+        val parts = it.split(":").map { part -> part.toLongOrNull() ?: 0L }
+        when (parts.size) {
+            2 -> parts[0] * 60 + parts[1]
+            3 -> parts[0] * 3600 + parts[1] * 60 + parts[2]
+            else -> 0L
+        }
+    }
+
+
     if (songItem != null) {
         val navigationEndpoint = songItem.navigationEndpoint
         if (navigationEndpoint != null && navigationEndpoint is NavigationEndpoint.WatchNavigationEndpoint) {
@@ -102,7 +115,8 @@ fun MusicResponsiveListItemRenderer.toSong(): Song? {
                 ),
                 title = songItem.text,
                 artists = artists,
-                images = images
+                images = images,
+                durationSec = durationSec
             )
 
         }

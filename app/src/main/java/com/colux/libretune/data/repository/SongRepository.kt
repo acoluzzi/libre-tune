@@ -4,7 +4,7 @@ import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
-import com.colux.libretune.data.local.join.AlbumArtistCrossRef
+import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
@@ -29,9 +29,9 @@ class SongRepository @Inject constructor(
     fun getSongById(id: String): Flow<Song?> {
         return db.songDao().getSongById(id).map { songEntity ->
             songEntity?.let { song ->
-                val songAlbum = db.albumDao().getAlbumById(song.albumId ?: "")
+                val songAlbum = db.playlistDao().getPlaylistById(song.albumId ?: "")
 
-                val albumArtists = songAlbum?.albumId?.let {
+                val albumArtists = songAlbum?.playlistId?.let {
                     db.artistDao().getArtistsByAlbumId(it)
                         .firstOrNull() ?: emptyList()
                 } ?: emptyList()
@@ -46,7 +46,7 @@ class SongRepository @Inject constructor(
     }
 
     fun getSavedSongIds(): Flow<List<String>> {
-        return db.songDao().getSavedSongIds()
+        return db.songDao().getSavedPlaylistSongIds()
     }
 
     suspend fun logSongPlayed(song: Song) {
@@ -86,8 +86,8 @@ class SongRepository @Inject constructor(
         val albumArtistsLinks = song.album?.let { album ->
             artistsEntities.map { artistEntity ->
                 // Assuming you have an AlbumArtistCrossRef entity to represent the many-to-many relationship
-                AlbumArtistCrossRef(
-                    albumId = album.id,
+                PlaylistArtistCrossRef(
+                    playlistId = album.id,
                     artistId = artistEntity.artistId
                 )
             }
@@ -97,14 +97,14 @@ class SongRepository @Inject constructor(
             db.artistDao().upsertAll(artistsEntities)
 
             if (albumEntity != null) {
-                db.albumDao().upsert(albumEntity)
+                db.playlistDao().upsert(albumEntity)
             }
 
             db.songDao().insertSong(songEntity)
 
 
             if (albumArtistsLinks.isNotEmpty()) {
-                db.albumDao().linkAlbumToArtists(albumArtistsLinks)
+                db.playlistDao().linkAlbumToArtists(albumArtistsLinks)
             }
 
             val join = PlaylistSongCrossRef(

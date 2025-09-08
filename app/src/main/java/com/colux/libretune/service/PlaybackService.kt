@@ -88,6 +88,8 @@ class PlaybackService : MediaSessionService() {
                 backgroundFetchJob = CoroutineScope(Dispatchers.Main).launch {
                     // 4. Fetch the URL for the song that needs to start playing NOW.
                     val startingSong = playlist[startingIndex]
+
+                    logger.info { "Fetching URL for starting song: ${startingSong.title}" }
                     val songUrl = songRepository.getSongUrlById(startingSong.id)
 
                     if (songUrl != null) {
@@ -102,20 +104,20 @@ class PlaybackService : MediaSessionService() {
                         // 7. NOW that the first song is ready, prepare and play.
                         exoPlayer.prepare()
 
-                        logger.info { "Playing ${startingSong.title}" }
                         exoPlayer.play()
-
-                        songRepository.logSongPlayed(startingSong)
                     }
 
                     // 8. Continue fetching the rest of the playlist in the background.
                     playlist.forEachIndexed { index, song ->
                         if (index == startingIndex) return@forEachIndexed
+
+                        logger.info { "Fetching URL for remain song: ${song.title}" }
                         val songUrl = songRepository.getSongUrlById(song.id)
                         if (songUrl != null) {
                             val realItem = placeholderMediaItems[index].buildUpon()
                                 .setUri(songUrl)
                                 .build()
+                            logger.info { "Replaced URL for remain song: ${song.title}" }
                             exoPlayer.replaceMediaItem(index, realItem)
                         }
                     }

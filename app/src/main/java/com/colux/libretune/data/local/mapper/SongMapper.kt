@@ -1,6 +1,7 @@
 package com.colux.libretune.data.local.mapper
 
 import com.colux.libretune.data.local.entity.SongEntity
+import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtist
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 
@@ -13,7 +14,8 @@ fun Song.toEntity(): SongEntity {
         },
         albumId = album?.id,
         updateTimestamp = System.currentTimeMillis(),
-        views = this.views
+        views = this.views,
+        durationSec = this.durationSec
     )
 }
 
@@ -29,6 +31,23 @@ fun SongWithAlbumAndArtists.toDataModel(): Song {
         artists = this.artists.map {
             it.toDataModel()
         },
-        views = this.songEntity.views
+        views = this.songEntity.views,
+        durationSec = this.songEntity.durationSec
+    )
+}
+
+fun SongWithAlbumAndArtist.toDataModel(): Song {
+    return Song(
+        id = this.song.songId,
+        title = this.song.title,
+        images = this.song.images.map {
+            it.toDataModel()
+        },
+        album = this.album?.toDataModel(this.artists),
+        artists = this.artists.map {
+            it.toDataModel()
+        },
+        views = this.song.views,
+        durationSec = this.song.durationSec
     )
 }

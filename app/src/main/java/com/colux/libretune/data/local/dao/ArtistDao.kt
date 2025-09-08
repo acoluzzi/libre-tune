@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.ArtistEntity
-import com.colux.libretune.data.local.join.ArtistArtistCrossRef
+import com.colux.libretune.data.local.join.ArtistRelatedCrossRef
 import kotlinx.coroutines.flow.Flow
 import java.util.logging.Logger
 
@@ -61,7 +61,7 @@ interface ArtistDao {
     suspend fun _insertAll(artists: List<ArtistEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun linkSimilarArtists(artistLinks: List<ArtistArtistCrossRef>)
+    suspend fun linkSimilarArtists(artistLinks: List<ArtistRelatedCrossRef>)
 
     // A simple query that just returns the artist.
     @Query("SELECT * FROM artists WHERE artistId = :artistId")
@@ -70,10 +70,10 @@ interface ArtistDao {
 
     @Query(
         """
-        SELECT * FROM artists 
-        WHERE artistId IN (
-            SELECT artistId FROM album_artist_cross_ref WHERE albumId = :albumId
-        )
+        SELECT a.* 
+        FROM artists a join playlist_artist_cross_ref pacr ON a.artistId = pacr.artistId
+        join playlists p ON pacr.playlistId = p.playlistId
+        WHERE p.playlistId = :albumId 
     """
     )
     fun getArtistsByAlbumId(albumId: String): Flow<List<ArtistEntity>>
@@ -91,7 +91,7 @@ interface ArtistDao {
         """
         SELECT * FROM artists 
         WHERE artistId IN (
-            SELECT relatedArtistId FROM artist_artist_cross_ref WHERE parentArtistId = :artistId
+            SELECT relatedArtistId FROM artist_related_cross_ref WHERE parentArtistId = :artistId
         )
     """
     )

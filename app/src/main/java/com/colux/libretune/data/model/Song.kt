@@ -10,7 +10,8 @@ data class Song(
     val artists: List<Artist>,
     val album: Playlist? = null,
     val views: Long,
-    val images: List<Image>
+    val images: List<Image>,
+    val durationSec: Long? = null
 ) : Parcelable {
 
     fun getArtistNames(): String {

@@ -1,38 +1,58 @@
 package com.colux.libretune.ui.playlist
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.R
+import com.colux.libretune.data.model.PlaylistDetails
+import com.colux.libretune.data.model.PlaylistType
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.playlist.PlaylistCarousel
 import com.colux.libretune.ui.components.song.SongItem
@@ -42,6 +62,7 @@ import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.search.SongItemSkeleton
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailScreen(
@@ -50,198 +71,136 @@ fun PlaylistDetailScreen(
     navController: NavHostController,
     viewModel: PlaylistDetailViewModel = hiltViewModel()
 ) {
-
     val uiState by viewModel.uiState.collectAsState()
-
     val scrollState = rememberLazyListState()
 
-    val imageHeight = 300.dp
-    val imageHeightPx = with(LocalDensity.current) { imageHeight.toPx() }
+    // This derived state will be true when the header (item 0) is no longer visible.
+    val showTopBar by remember {
+        derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
+    }
 
     // --- State for the Bottom Sheet ---
     val sheetState = rememberModalBottomSheetState()
     // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
-
     when (val state = uiState) {
-        is PlaylistUiState.Loading -> {
-            PlaylistDetailSkeleton()
-        }
-
+        is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
-
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-            ) {
-                // We only show the content when details are loaded
-                state.details.let { playlistDetails ->
-
-                    val showCollage =
-                        playlistDetails?.isLocal == true && playlistDetails.songs.isNotEmpty()
-
-                    // 2. Conditionally display either the collage or a single image
-                    if (showCollage) {
-                        val imageUrls = remember(playlistDetails.id) {
-                            playlistDetails.songs.shuffled().take(4)
-                                .mapNotNull { it.getBestImageUrl() }
-                        }
-
-                        PlaylistImageCollage(
-                            imageUrls = imageUrls,
-                            // Use a modifier to set the size, not a separate parameter
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(imageHeight)
-                                .clipToBounds()
-                                .graphicsLayer {
-                                    // Apply parallax effect to the whole collage
-                                    translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
-                                    alpha =
-                                        1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
-                                },
-                            size = imageHeight
-                        )
-                    } else {
-                        val useDefaultImage =
-                            playlistDetails?.isLocal == true && playlistDetails.songs.isEmpty()
-
-                        val imageModel = if (useDefaultImage) {
-                            R.drawable.default_playlist_image // Your local drawable
-                        } else {
-                            playlistDetails?.bestImage() // The remote URL
-                        }
-
-                        // --- Background Image with Parallax Effect ---
-                        AsyncImage(
-                            model = imageModel,
-                            contentDescription = "Playlist Banner",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(imageHeight)
-                                // 1. Clip the image so it doesn't draw outside its bounds when moved
-                                .clipToBounds()
-                                .graphicsLayer {
-                                    // 2. Move the image up at half the scroll speed
-                                    translationY = 0.5f * scrollState.firstVisibleItemScrollOffset
-
-                                    // 3. Fade the image out as it scrolls
-                                    alpha =
-                                        1f - (scrollState.firstVisibleItemScrollOffset / imageHeightPx)
-                                }
-                        )
-                    }
-
-
-                    // --- Scrollable Song List ---
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        state = scrollState
-                    ) {
-                        // 1. A transparent spacer that pushes the song list below the image
-                        item {
-                            Spacer(modifier = Modifier.height(300.dp))
-                        }
-
-                        // 2. Playlist Title and Artist
-                        item {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .padding(16.dp)
-                            ) {
-                                playlistDetails?.name?.let {
-                                    Text(
-                                        it,
-                                        style = MaterialTheme.typography.headlineLarge
+            state.details?.let { playlistDetails ->
+                Scaffold(
+                    topBar = {
+                        // The top bar is only visible when showTopBar is true
+                        AnimatedVisibility(
+                            visible = showTopBar,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            CollapsingTopAppBar(
+                                playlistName = playlistDetails.name,
+                                onBackClick = { navController.popBackStack() },
+                                onPlayClick = {
+                                    playerViewModel.playPlaylist(
+                                        playlistDetails.songs,
+                                        0
                                     )
                                 }
-
-                                if (playlistDetails?.getArtistNames()?.isNotEmpty() == true) {
-                                    playlistDetails?.getArtistNames()?.let {
-                                        Text(
-                                            it,
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                    }
-
-                                }
-                            }
-
+                            )
                         }
-
-                        if (playlistDetails?.songs?.isNotEmpty() == true) {
-                            // 3. The list of songs
-                            itemsIndexed(playlistDetails.songs) { index, song ->
-                                SongItem(
-                                    song = song,
-                                    playerViewModel = playerViewModel,
-                                    onClick = {
-                                        playerViewModel.playPlaylist(
-                                            playlistDetails.songs,
-                                            index
-                                        )
-                                    }, onMoreClick = {
-                                        selectedSongForMenu = song
-                                    },
-                                    isInPlaylist = playlistDetails.isLocal,
-                                    navController = navController
-                                )
+                    }
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            state = scrollState
+                        ) {
+                            // Item 0: The main header
+                            item {
+                                PlaylistHeader(details = playlistDetails)
                             }
-                        } else {
-                            if (playlistDetails?.isLocal == true) {
-                                item {
-                                    Text(
-                                        "This playlist is empty. Add songs from your library or online sources.",
-                                        modifier = Modifier.padding(16.dp)
+
+
+                            if (playlistDetails?.songs?.isNotEmpty() == true) {
+                                // The list of songs
+                                itemsIndexed(playlistDetails.songs) { index, song ->
+                                    SongItem(
+                                        song = song,
+                                        playerViewModel = playerViewModel,
+                                        onClick = {
+                                            playerViewModel.playPlaylist(
+                                                playlistDetails.songs,
+                                                index
+                                            )
+                                        }, onMoreClick = {
+                                            selectedSongForMenu = song
+                                        },
+                                        isInPlaylist = playlistDetails.isLocal,
+                                        navController = navController,
+                                        trackNumber = if (playlistDetails.type != PlaylistType.PLAYLIST) index + 1 else null
                                     )
                                 }
                             } else {
-                                item {
-                                    repeat(10) {
-                                        SongItemSkeleton()
+                                if (playlistDetails?.isLocal == true) {
+                                    item {
+                                        Text(
+                                            "This playlist is empty. Add songs from your library or online sources.",
+                                            modifier = Modifier.padding(16.dp)
+                                        )
+                                    }
+                                } else {
+                                    item {
+                                        repeat(10) {
+                                            SongItemSkeleton()
+                                        }
                                     }
                                 }
                             }
 
-                        }
+                            if (playlistDetails?.relatedPlaylists?.isNotEmpty() == true) {
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
 
-
-
-                        if (playlistDetails?.relatedPlaylists?.isNotEmpty() == true) {
-                            item {
-                                PlaylistCarousel(
-                                    title = "You may Also Like",
-                                    playlists = playlistDetails.relatedPlaylists,
-                                    onItemClick = { index ->
-                                        navController.navigate(
-                                            Screen.PlaylistDetail.createRoute(
-                                                playlistDetails.relatedPlaylists[index].id
+                                item {
+                                    PlaylistCarousel(
+                                        title = "You may Also Like",
+                                        playlists = playlistDetails.relatedPlaylists,
+                                        onItemClick = { index ->
+                                            navController.navigate(
+                                                Screen.PlaylistDetail.createRoute(
+                                                    playlistDetails.relatedPlaylists[index].id
+                                                )
                                             )
-                                        )
-                                    }
-                                )
+                                        }
+                                    )
+                                }
                             }
+
+
+                            // Spacer for bottom player
+                            item { Spacer(modifier = Modifier.height(80.dp)) }
                         }
 
-
-                        item {
-                            Spacer(modifier = Modifier.height(80.dp))
+                        // This is the back arrow that is always visible at the top left,
+                        // overlaid on top of the content.
+                        IconButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(8.dp)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
                 }
             }
         }
 
-        is PlaylistUiState.Error -> {
-            Text("Could not load artist details: ${state.message}")
-        }
+        is PlaylistUiState.Error -> Text("Could not load playlist details.")
     }
 
     if (selectedSongForMenu != null) {
@@ -263,6 +222,154 @@ fun PlaylistDetailScreen(
             )
         }
     }
+}
 
 
+@Composable
+fun PlaylistHeader(details: PlaylistDetails) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        // --- Image and Metadata Row ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            val showCollage = details?.isLocal == true && details.songs.isNotEmpty()
+
+            if (showCollage) {
+                val imageUrls = remember(details.id) {
+                    details.songs.shuffled().take(4)
+                        .mapNotNull { it.getBestImageUrl() }
+                }
+                PlaylistImageCollage(
+                    imageUrls = imageUrls,
+                    size = 150.dp
+                )
+            } else {
+                val useDefaultImage =
+                    details.isLocal && details.songs.isEmpty()
+                val imageModel = if (useDefaultImage) {
+                    R.drawable.default_playlist_image // Your local drawable
+                } else {
+                    details.bestImage() // The remote URL
+                }
+
+                AsyncImage(
+                    model = imageModel, // Or your collage logic
+                    contentDescription = "Playlist Art",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+
+
+
+
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                Text(
+                    details.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.basicMarquee(),
+                    maxLines = 2
+                )
+
+                if (details.artists.isNotEmpty()) {
+                    Text(
+                        details.getArtistNames(), style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.basicMarquee(),
+                    )
+                }
+
+                Text(
+                    text = "${details.songs.size} songs" +
+                            if (details.totalDurationSeconds > 0)
+                                " • ${details.getFormattedTotalDuration()}"
+                            else "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+                if (details.releaseYear > 0) {
+                    Text(
+                        "Released in ${details.releaseYear}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // --- Buttons Row ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left-aligned buttons
+            IconButton(onClick = { /* TODO: Like playlist */ }) {
+                Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Like Playlist")
+            }
+            IconButton(onClick = { /* TODO: Show menu */ }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Right-aligned buttons
+            IconButton(onClick = { /* TODO: Shuffle play */ }) {
+                Icon(
+                    Icons.Default.Shuffle,
+                    contentDescription = "Shuffle",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            FilledIconButton(
+                onClick = { /* TODO: Play playlist */ },
+                modifier = Modifier.size(56.dp)
+            ) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = "Play",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The TopAppBar that appears when the user scrolls down.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CollapsingTopAppBar(
+    playlistName: String,
+    onBackClick: () -> Unit,
+    onPlayClick: () -> Unit
+) {
+    TopAppBar(
+        title = { Text(playlistName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        },
+        actions = {
+            FilledIconButton(
+                onClick = onPlayClick,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = "Play",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    )
 }

@@ -9,6 +9,7 @@ data class MusicResponsiveListItemRenderer(
     val thumbnail: Thumbnail? = null,
     val overlay: Overlay? = null,
     val flexColumns: List<FlexColumn>,
+    val fixedColumns: List<FixedColumn>? = null,
     val menu: Menu? = null,
     val navigationEndpoint: NavigationEndpoint? = null,
 )

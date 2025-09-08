@@ -91,9 +91,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     private val playerListener = object : Player.Listener {
-        // This single callback is fired for any and all player state changes.
         override fun onEvents(player: Player, events: Player.Events) {
-            // We just refresh our entire state from the controller.
             updateStateWithController()
         }
     }
@@ -101,17 +99,30 @@ class PlayerViewModel @Inject constructor(
 
     private fun updateStateWithController() {
         mediaController?.let { controller ->
-            _isPlaying.value = controller.isPlaying
-            _currentSong.value = _currentPlaylist.value.find {
-                it.id == controller.currentMediaItem?.mediaId
+
+            val oldSongId = _currentSong.value?.id
+            val newSongId = controller.currentMediaItem?.mediaId
+            val newSong = _currentPlaylist.value.find {
+                it.id == newSongId
             }
-            _currentSong.value?.let {
-                logger.info { "Extracting main color from the song" }
-                extractColorFromSong(it)
+            val isSongChanged = oldSongId != newSongId && newSongId != null
+            val currentPosition = mediaController?.currentPosition?.coerceAtLeast(0L) ?: 0L
+
+            if (isSongChanged) {
+                newSong?.let {
+                    viewModelScope.launch {
+                        logger.info { "Song changed from $oldSongId to $newSongId" }
+                        extractColorFromSong(it)
+                        songRepository.logSongPlayed(it)
+                    }
+                }
             }
 
+            _isPlaying.value = controller.isPlaying
+            _currentSong.value = newSong
             _totalDuration.value = controller.duration.coerceAtLeast(0L)
             _repeatMode.value = controller.repeatMode
+            _currentPosition.value = currentPosition
 
             // Manage the progress tracking based on the latest isPlaying state
             if (controller.isPlaying) {

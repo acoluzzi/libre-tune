@@ -52,7 +52,8 @@ fun SongItem(
     playerViewModel: PlayerViewModel,
     onMoreClick: () -> Unit,
     isInPlaylist: Boolean,
-    navController: NavHostController
+    navController: NavHostController,
+    trackNumber: Int? = null,
 ) {
 
     val selectedSong by playerViewModel.currentSong.collectAsState()
@@ -61,13 +62,11 @@ fun SongItem(
 
     val isSelectedSong = song.id == selectedSong?.id
     val isSaved = savedSongIds.contains(song.id)
-    val itemShape = RoundedCornerShape(12.dp)
 
     Row(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
-            .clip(itemShape)
             .background(MaterialTheme.colorScheme.surface)
             .combinedClickable(
                 onClick = onClick,
@@ -84,6 +83,23 @@ fun SongItem(
                     .clip(RoundedCornerShape(4.dp)),
                 contentScale = ContentScale.Crop
             )
+            if (trackNumber != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Color.Black.copy(alpha = 0.6f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = trackNumber.toString(),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
+                    )
+                }
+            }
+
         }
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -130,6 +146,25 @@ fun SongItem(
 
             Spacer(modifier = Modifier.width(8.dp))
         }
+
+        if (song.durationSec != null) {
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = song.durationSec.let { dur ->
+                    val minutes = dur / 60
+                    val seconds = dur % 60
+                    String.format("%d:%02d", minutes, seconds)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+
+
 
         IconButton(onClick = onMoreClick, modifier = Modifier.width(24.dp)) {
             Icon(

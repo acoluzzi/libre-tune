@@ -37,6 +37,7 @@ class AlbumPageScrapingTests {
         assertNotNull(playlistDetails?.songs)
         assertEquals(40, playlistDetails?.songs?.size)
         assertEquals("Come Together (2019 Mix)", playlistDetails?.songs?.get(0)?.title)
+        assertEquals(261, playlistDetails?.songs?.get(0)?.durationSec)
         assertEquals("45cYwDMibGo", playlistDetails?.songs?.get(0)?.id)
         assertEquals(
             "OLAK5uy_lqcFZTOPHGwcnP0nYMzNuY0IES0fl7Fe4",

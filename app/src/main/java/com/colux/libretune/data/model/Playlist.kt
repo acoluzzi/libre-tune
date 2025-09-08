@@ -16,7 +16,7 @@ data class Playlist(
     val isLocal: Boolean
 ) : Parcelable {
     fun bestImageUrlForCarousel(): String? {
-        return images.minByOrNull { it.width ?: 0 }?.url
+        return images.maxByOrNull { it.width ?: 0 }?.url
     }
 
     fun getArtistNames(): String {

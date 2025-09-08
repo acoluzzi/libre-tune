@@ -13,21 +13,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.colux.libretune.ui.search.SongItemSkeleton
-import com.colux.libretune.ui.search.TitleSkeleton
 import com.colux.libretune.ui.util.shimmerBackground
 
 @Composable
 fun PlaylistDetailSkeleton() {
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .statusBarsPadding()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
         // 1. Banner Skeleton
         BannerSkeleton()
 
         // 2. Title and Subtitle Skeletons
         Spacer(modifier = Modifier.height(16.dp))
-        TitleSkeleton(modifier = Modifier.padding(horizontal = 16.dp))
-        Spacer(modifier = Modifier.height(8.dp))
         // A smaller skeleton for the subtitle
         Box(
             modifier = Modifier
@@ -63,7 +62,7 @@ fun BannerSkeleton() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp) // Match the playlist screen's image height
+            .height(180.dp) // Match the playlist screen's image height
             .shimmerBackground()
     )
 }

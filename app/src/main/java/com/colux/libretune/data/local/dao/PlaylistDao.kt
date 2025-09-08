@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
+import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.wrapper.PlaylistWithSongsEntity
@@ -64,6 +65,9 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists where isLocal = 1")
     fun getLocalPlaylists(): Flow<List<PlaylistWithSongsEntity>>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun linkAlbumToArtists(crossRefs: List<PlaylistArtistCrossRef>)
+
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     suspend fun getPlaylistById(id: String): PlaylistEntity?
 
@@ -88,12 +92,47 @@ interface PlaylistDao {
     @Query(
         """
         SELECT * FROM playlists
-        WHERE playlistId IN (
+        WHERE type = 'PLAYLIST'
+        AND playlistId IN (
             SELECT playlistId FROM artist_playlists_cross_ref WHERE artistId = :artistId
         ) 
     """
     )
     fun getPlaylistsForArtist(artistId: String): Flow<List<PlaylistEntity>>
+
+
+    @Query(
+        """
+        SELECT * FROM playlists
+        WHERE (type = 'ALBUM' OR type = 'SINGLE_EP')
+        AND playlistId IN (
+            SELECT playlistId FROM playlist_artist_cross_ref WHERE artistId = :artistId
+        ) 
+    """
+    )
+    fun getAlbumsAndSinglesByArtistId(artistId: String): Flow<List<PlaylistEntity>>
+
+    @Query(
+        """
+        SELECT * FROM playlists
+        WHERE type = 'ALBUM' 
+        AND playlistId IN (
+            SELECT playlistId FROM playlist_artist_cross_ref WHERE artistId = :artistId
+        ) 
+    """
+    )
+    fun getAlbumsByArtistId(artistId: String): Flow<List<PlaylistEntity>>
+
+    @Query(
+        """
+        SELECT * FROM playlists         
+        WHERE type = 'SINGLE_EP' 
+        AND playlistId IN (
+            SELECT playlistId FROM playlist_artist_cross_ref WHERE artistId = :artistId
+        ) 
+    """
+    )
+    fun getSinglesByArtistId(artistId: String): Flow<List<PlaylistEntity>>
 
 
     @Query(

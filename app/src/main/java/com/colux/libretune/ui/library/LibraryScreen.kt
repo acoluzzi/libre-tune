@@ -126,7 +126,7 @@ fun PlaylistListItem(
                 )
             }
             Text(
-                text = "Playlist • ${playlistWithSongs.songs.size} songs",
+                text = "Playlist • ${playlistWithSongs.songs.size} song" + if (playlistWithSongs.songs.size != 1) "s" else "",
                 style = MaterialTheme.typography.bodyMedium
             )
         }

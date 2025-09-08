@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowLeft
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
@@ -25,6 +23,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -244,7 +244,7 @@ fun PlayerFullScreen(
                 }
                 IconButton(onClick = { playerViewModel.playPreviousSong() }) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowLeft,
+                        Icons.Default.SkipPrevious,
                         contentDescription = "Previous",
                         modifier = Modifier.size(48.dp),
                         tint = Color.White
@@ -267,7 +267,7 @@ fun PlayerFullScreen(
                 }
                 IconButton(onClick = { playerViewModel.playNextSong() }) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowRight,
+                        Icons.Default.SkipNext,
                         contentDescription = "Next",
                         modifier = Modifier.size(48.dp),
                         tint = Color.White

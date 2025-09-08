@@ -18,3 +18,13 @@ data class MusicResponsiveListItemFlexColumnRenderer(
 data class FlexColumn(
     val musicResponsiveListItemFlexColumnRenderer: MusicResponsiveListItemFlexColumnRenderer
 )
+
+@Serializable
+data class MusicResponsiveListItemFixedColumnRenderer(
+    val text: FlexColumnText
+)
+
+@Serializable
+data class FixedColumn(
+    val musicResponsiveListItemFixedColumnRenderer: MusicResponsiveListItemFixedColumnRenderer
+)

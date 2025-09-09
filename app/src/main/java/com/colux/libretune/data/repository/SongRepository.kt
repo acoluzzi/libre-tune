@@ -6,6 +6,7 @@ import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
+import com.colux.libretune.data.local.join.SongArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.model.Song
@@ -105,23 +106,37 @@ class SongRepository @Inject constructor(
         } ?: emptyList()
 
         db.withTransaction {
+            logger.info { "Upserting artist entities: $artistsEntities" }
             db.artistDao().upsertAll(artistsEntities)
 
             if (albumEntity != null) {
+                logger.info { "Upserting album entities: $albumEntity" }
                 db.playlistDao().upsert(albumEntity)
             }
 
+            logger.info { "Inserting song: $songEntity" }
             db.songDao().insertSong(songEntity)
 
 
             if (albumArtistsLinks.isNotEmpty()) {
+                logger.info { "Linking album to artist: $albumArtistsLinks" }
                 db.playlistDao().linkAlbumToArtists(albumArtistsLinks)
             }
+
+            val songArtistLinks = artistsEntities.map { artistEntity ->
+                SongArtistCrossRef(
+                    songId = song.id,
+                    artistId = artistEntity.artistId
+                )
+            }
+            logger.info { "Linking song to artist: $songArtistLinks" }
+            db.songDao().linkSongsToArtists(songArtistLinks)
 
             val join = PlaylistSongCrossRef(
                 playlistId = playlistId,
                 songId = song.id
             )
+            logger.info { "Linking song to playlist: $join" }
             db.playlistDao().addSongToPlaylist(join)
         }
     }

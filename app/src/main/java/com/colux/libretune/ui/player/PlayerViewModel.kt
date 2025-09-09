@@ -217,6 +217,7 @@ class PlayerViewModel @Inject constructor(
 
     fun onLikeClick(song: Song, isLiked: Boolean) {
         viewModelScope.launch {
+            logger.info { "Like clicked on $song, isLiked: $isLiked" }
             if (isLiked) {
                 songRepository.unlikeSong(song)
             } else {

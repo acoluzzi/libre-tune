@@ -45,7 +45,6 @@ import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
-import java.util.logging.Logger
 
 @Composable
 fun SongItem(
@@ -56,9 +55,6 @@ fun SongItem(
     displayingInLocalPlaylist: Boolean = false,
     navController: NavHostController,
 ) {
-
-    val logger = Logger.getLogger("SongItem")
-
 
     val selectedSong by playerViewModel.currentSong.collectAsState()
     val selectedSongIsPlaying by playerViewModel.isPlaying.collectAsState()

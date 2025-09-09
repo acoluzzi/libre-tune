@@ -4,6 +4,8 @@ import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
+import com.colux.libretune.data.local.entity.LibraryEntity
+import com.colux.libretune.data.local.entity.LibraryItemType
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
@@ -104,6 +106,7 @@ class ArtistRepository @Inject constructor(
 
             // 3. Manually "stitch" the data together into the clean UI model.
             ArtistDetails(
+                id = artistId,
                 name = artist.name,
                 description = artist.description,
                 images = artist.images.map { it.toDataModel() },
@@ -318,5 +321,31 @@ class ArtistRepository @Inject constructor(
         }
     }
 
+
+    suspend fun saveArtist(artistId: String) {
+        db.libraryDao().insert(
+            LibraryEntity(
+                id = artistId,
+                type = LibraryItemType.ARTIST,
+                artistId = artistId,
+                addedAtTimestamp = System.currentTimeMillis()
+            )
+        )
+    }
+
+    fun isArtistSaved(artistId: String): Flow<Boolean> {
+        return db.libraryDao().isItemInLibrary(artistId, LibraryItemType.ARTIST)
+    }
+
+    suspend fun unsaveArtist(artistId: String) {
+        db.libraryDao().delete(
+            LibraryEntity(
+                id = artistId,
+                type = LibraryItemType.ARTIST,
+                artistId = artistId,
+                addedAtTimestamp = System.currentTimeMillis()
+            )
+        )
+    }
 
 }

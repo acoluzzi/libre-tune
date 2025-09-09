@@ -25,7 +25,7 @@ fun GenericMusicItem.toArtist(): DataModelArtist? {
 }
 
 
-fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
+fun ExtractorArtistDetails.toDataModel(id: String): ArtistDetails {
     return ArtistDetails(
         name = name,
         description = description,
@@ -52,6 +52,7 @@ fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
         },
         discographyId = discographyId,
         discographyAlbumsParam = discographyAlbumsParam,
-        discographySinglesParam = discographySinglesParam
+        discographySinglesParam = discographySinglesParam,
+        id = id
     )
 }

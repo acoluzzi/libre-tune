@@ -25,26 +25,37 @@ class ArtistViewModel @Inject constructor(
 
     // The entire state of the screen can be represented by a single StateFlow.
     val uiState: StateFlow<ArtistUiState> =
-        // Start with the flow from the repository
         repository.getArtistDetails(artistId)
             .map { details ->
-                // Map the result from the repository into our UI state object
                 if (details != null) {
                     ArtistUiState.Success(details)
                 } else {
-                    // This case can be hit if the initial DB query is empty
                     ArtistUiState.Loading
                 }
             }
             .stateIn(
                 scope = viewModelScope,
-                // This is a robust policy that keeps the data for 5 seconds
-                // after the UI goes away, preventing re-fetching on rotation.
                 started = SharingStarted.WhileSubscribed(5000),
-                // The initial state while the flow is starting up.
                 initialValue = ArtistUiState.Loading
             )
 
+    val isArtistSaved = repository.isArtistSaved(artistId).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+
+    fun likeArtist() {
+        viewModelScope.launch {
+            repository.saveArtist(artistId)
+        }
+    }
+
+    fun dislikeArtist() {
+        viewModelScope.launch {
+            repository.unsaveArtist(artistId)
+        }
+    }
 
     init {
         // Trigger a refresh when the ViewModel is created

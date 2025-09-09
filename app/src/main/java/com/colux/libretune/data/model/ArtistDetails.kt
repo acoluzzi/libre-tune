@@ -1,6 +1,7 @@
 package com.colux.libretune.data.model
 
 data class ArtistDetails(
+    val id: String,
     val name: String,
     val description: String?,
     val images: List<Image>,

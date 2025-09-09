@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.colux.libretune.R
 import com.colux.libretune.data.model.Artist
 
 
@@ -54,6 +56,8 @@ fun ArtistCarousel(
                     AsyncImage(
                         model = artist.bestImageForCarousel(),
                         contentDescription = artist.name,
+                        placeholder = painterResource(id = R.drawable.ic_default_artist_avatar_foreground),
+                        error = painterResource(id = R.drawable.ic_default_artist_avatar_foreground),
                         modifier = Modifier
                             .fillMaxWidth()        // Fills the 120.dp width of the parent
                             .aspectRatio(1f)     // Makes the height equal to the width (a square)

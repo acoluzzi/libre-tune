@@ -1,5 +1,6 @@
 package com.colux.libretune.data.model.wrapper
 
+import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.Song
 
@@ -16,8 +17,8 @@ data class PlaylistWithSongs(
             .shuffled().take(4)
     }
 
-    fun hasToShowCollage(): Boolean {
-        return playlist?.isLocal == true && songs.isNotEmpty()
+    fun hasToShowCollageInLibrary(): Boolean {
+        return playlist?.isLocal == true && songs.isNotEmpty() && playlist.id != DatabaseConstants.LIKED_SONGS_PLAYLIST_ID
     }
 
     fun bestImage(): String? {

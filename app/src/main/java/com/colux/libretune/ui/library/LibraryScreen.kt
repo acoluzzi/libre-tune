@@ -96,7 +96,7 @@ fun PlaylistListItem(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (playlistWithSongs.hasToShowCollage()) {
+        if (playlistWithSongs.hasToShowCollageInLibrary()) {
             val imageUrls = remember(playlistWithSongs.playlist?.id) {
                 playlistWithSongs.getImages()
             }
@@ -108,7 +108,7 @@ fun PlaylistListItem(
             )
         } else {
             AsyncImage(
-                model = playlistWithSongs.bestImage() ?: R.drawable.default_playlist_image,
+                model = playlistWithSongs.bestImage() ?: R.mipmap.ic_default_liked_songs,
                 contentDescription = "Playlist Banner",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

@@ -1,6 +1,5 @@
 package com.colux.libretune.ui.playlist
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -77,24 +76,21 @@ fun PlaylistDetailScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberLazyListState()
-
-    // This derived state will be true when the header (item 0) is no longer visible.
     val showTopBar by remember {
         derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
     }
-
-    // --- State for the Bottom Sheet ---
     val sheetState = rememberModalBottomSheetState()
-    // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
 
     val currentlyPlayedPlaylist by playerViewModel.currentPlaylistId
-        .collectAsState(initial = false)
+        .collectAsState(initial = null)
 
     val isPlaying by playerViewModel.isPlaying.collectAsState(
         initial = false
     )
+
+    val isPlayingThisPlaylist = isPlaying && currentlyPlayedPlaylist == playlistId
 
     val isSaved by viewModel.isPlaylistSaved.collectAsState(
         initial = false
@@ -104,8 +100,6 @@ fun PlaylistDetailScreen(
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
             state.details?.let { playlistDetails ->
-                Log.d("PlaylistDetailScreen", "Displaying details for ${playlistDetails.name}")
-                Log.d("PlaylistDetailScreen", "Displaying ${playlistDetails.songs.size} songs")
                 Scaffold(
                     topBar = {
                         // The top bar is only visible when showTopBar is true
@@ -125,7 +119,7 @@ fun PlaylistDetailScreen(
                                         playerViewModel.playPlaylist(playlistDetails)
                                     }
                                 },
-                                isPlaying = isPlaying
+                                isPlaying = isPlayingThisPlaylist
                             )
                         }
                     }
@@ -150,7 +144,7 @@ fun PlaylistDetailScreen(
                                             playerViewModel.playPlaylist(playlistDetails)
                                         }
                                     },
-                                    isPlaying = isPlaying,
+                                    isPlaying = isPlayingThisPlaylist,
                                     onShuffleClick = {
                                         playerViewModel.shufflePlayPlaylist(playlistDetails)
                                     },
@@ -166,7 +160,7 @@ fun PlaylistDetailScreen(
                             }
 
 
-                            if (playlistDetails?.songs?.isNotEmpty() == true) {
+                            if (playlistDetails.songs.isNotEmpty()) {
                                 // The list of songs
                                 itemsIndexed(playlistDetails.songs) { index, song ->
                                     SongItem(
@@ -187,7 +181,7 @@ fun PlaylistDetailScreen(
                                     )
                                 }
                             } else {
-                                if (playlistDetails?.isLocal == true) {
+                                if (playlistDetails.isLocal) {
                                     item {
                                         Text(
                                             "This playlist is empty. Add songs from your library or online sources.",
@@ -203,7 +197,7 @@ fun PlaylistDetailScreen(
                                 }
                             }
 
-                            if (playlistDetails?.relatedPlaylists?.isNotEmpty() == true) {
+                            if (playlistDetails.relatedPlaylists.isNotEmpty()) {
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                 }
@@ -229,8 +223,6 @@ fun PlaylistDetailScreen(
                         }
 
                         if (!showTopBar) {
-                            // This is the back arrow that is always visible at the top left,
-                            // overlaid on top of the content.
                             IconButton(
                                 onClick = { navController.popBackStack() },
                                 modifier = Modifier
@@ -295,7 +287,7 @@ fun PlaylistHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            val showCollage = details?.isLocal == true && details.songs.isNotEmpty()
+            val showCollage = details.isLocal && details.songs.isNotEmpty()
 
             if (showCollage) {
                 val imageUrls = remember(details.id) {
@@ -363,7 +355,7 @@ fun PlaylistHeader(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // --- Buttons Row ---
         Row(

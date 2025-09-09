@@ -48,7 +48,7 @@ class PlaylistRepository @Inject constructor(
 
     private val logger = Logger.getLogger("PlaylistRepository")
 
-    private val cacheTtlMillis = TimeUnit.SECONDS.toMillis(1)
+    private val cacheTtlMillis = TimeUnit.DAYS.toMillis(1)
 
 
     @OptIn(ExperimentalCoroutinesApi::class)

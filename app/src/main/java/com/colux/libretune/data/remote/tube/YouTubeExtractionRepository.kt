@@ -135,7 +135,7 @@ class YouTubeExtractionRepository @Inject constructor(
                             "YouTubeExtractionRepository",
                             "Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}"
                         )
-                        return@withContext it.toDataModel()
+                        return@withContext it.toDataModel(id)
                     } else {
                         null
                     }

@@ -89,10 +89,12 @@ fun DiscographyContent(
     }
 
     val chipColors = FilterChipDefaults.filterChipColors(
-        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
         labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-        selectedLabelColor = MaterialTheme.colorScheme.primary
+        selectedLabelColor = MaterialTheme.colorScheme.primary,
     )
+
+
 
     Column(
         modifier = Modifier
@@ -118,7 +120,13 @@ fun DiscographyContent(
                     selected = selectedFilter == PlaylistType.ALBUM,
                     onClick = { selectedFilter = PlaylistType.ALBUM },
                     label = { Text("Albums") },
-                    colors = chipColors
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        selectedBorderColor = MaterialTheme.colorScheme.primary,
+                        borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        enabled = true,
+                        selected = selectedFilter == PlaylistType.ALBUM
+                    )
                 )
             }
 
@@ -127,7 +135,13 @@ fun DiscographyContent(
                     selected = selectedFilter == PlaylistType.SINGLE,
                     onClick = { selectedFilter = PlaylistType.SINGLE },
                     label = { Text("Singles") },
-                    colors = chipColors
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        selectedBorderColor = MaterialTheme.colorScheme.primary,
+                        borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        enabled = true,
+                        selected = selectedFilter == PlaylistType.SINGLE
+                    )
                 )
             }
 
@@ -136,7 +150,13 @@ fun DiscographyContent(
                     selected = selectedFilter == PlaylistType.EP,
                     onClick = { selectedFilter = PlaylistType.EP },
                     label = { Text("EPs") },
-                    colors = chipColors
+                    colors = chipColors,
+                    border = FilterChipDefaults.filterChipBorder(
+                        selectedBorderColor = MaterialTheme.colorScheme.primary,
+                        borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        enabled = true,
+                        selected = selectedFilter == PlaylistType.EP
+                    )
                 )
             }
         }

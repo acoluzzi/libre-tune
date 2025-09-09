@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.components.playlist
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,11 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Playlist
-import com.colux.libretune.data.model.PlaylistType
 
 @Composable
 fun PlaylistCard(playlist: Playlist, onSongClick: () -> Unit) {
@@ -43,16 +42,15 @@ fun PlaylistCard(playlist: Playlist, onSongClick: () -> Unit) {
             text = playlist.name,
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            modifier = Modifier.basicMarquee()
         )
 
-        if (playlist.type != PlaylistType.PLAYLIST && playlist.releaseYear != null) {
-            Text(
-                text = playlist.releaseYear.toString(),
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
+        Text(
+            text = playlist.getSubtitle(),
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            modifier = Modifier.basicMarquee()
+        )
     }
 }

@@ -181,9 +181,10 @@ interface PlaylistDao {
             FROM playlist_related_cross_ref prcr 
             WHERE prcr.parentPlaylistId = :id
         )
+        LIMIT :limit
     """
     )
-    fun getRelatedPlaylistsWithArtists(id: String): Flow<List<PlaylistWithArtists>>
+    fun getRelatedPlaylistsWithArtists(id: String, limit: Int): Flow<List<PlaylistWithArtists>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkPlaylistToArtists(crossRefs: List<ArtistPlaylistCrossRef>)

@@ -142,7 +142,12 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun playPlaylist(playlist: List<Song>, startingIndex: Int) {
+    fun playSongList(playlist: List<Song>, startingIndex: Int = 0) {
+        _playSongList(playlist, startingIndex)
+        _currentPlaylistId.value = null
+    }
+
+    private fun _playSongList(playlist: List<Song>, startingIndex: Int) {
         val args = bundleOf(
             "PLAYLIST" to ArrayList(playlist),
             "START_INDEX" to startingIndex
@@ -151,15 +156,16 @@ class PlayerViewModel @Inject constructor(
         mediaController?.sendCustomCommand(PlaybackService.COMMAND_PLAY_PLAYLIST_WITH_FETCH, args)
     }
 
-    fun playPlaylist(playlistDetails: PlaylistDetails) {
-        playPlaylist(playlistDetails.songs, 0)
+
+    fun playPlaylist(playlistDetails: PlaylistDetails, startingIndex: Int = 0) {
+        _playSongList(playlistDetails.songs, startingIndex)
 
         _currentPlaylistId.value = playlistDetails.id
     }
 
 
     fun shufflePlayPlaylist(playlistDetails: PlaylistDetails) {
-        playPlaylist(
+        _playSongList(
             playlistDetails.songs.shuffled(),
             0
         )

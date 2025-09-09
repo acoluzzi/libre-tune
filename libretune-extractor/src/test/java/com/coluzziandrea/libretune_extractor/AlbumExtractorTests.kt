@@ -63,6 +63,11 @@ class AlbumPageScrapingTests {
             playlistDetails?.relatedPlaylists?.get(0)?.name
         )
         assertEquals("MPREb_zBKX8qwlKte", playlistDetails?.relatedPlaylists?.get(0)?.id)
+        assertEquals(1, playlistDetails?.relatedPlaylists?.get(0)?.artists?.size)
+        assertEquals(
+            "The Beatles",
+            playlistDetails?.relatedPlaylists?.get(0)?.artists?.firstOrNull()?.name
+        )
         assertEquals(
             "https://lh3.googleusercontent.com/0uSK3j19kosq8SmrnZZ_mlw3kL6ZWFcLRgt0cqhACJcA6cEfLgCscIllVfF-LjkuV3zhuYG6MSFih6PdMw=w226-h226-l90-rj",
             playlistDetails?.relatedPlaylists?.get(0)?.images?.firstOrNull()?.url

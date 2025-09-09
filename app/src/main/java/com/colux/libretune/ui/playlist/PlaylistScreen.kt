@@ -118,10 +118,11 @@ fun PlaylistDetailScreen(
                                 playlistName = playlistDetails.name,
                                 onBackClick = { navController.popBackStack() },
                                 onPlayClick = {
-                                    playerViewModel.playPlaylist(
-                                        playlistDetails.songs,
-                                        0
-                                    )
+                                    if (currentlyPlayedPlaylist == playlistDetails.id)
+                                        playerViewModel.onPlayPauseClick()
+                                    else {
+                                        playerViewModel.playPlaylist(playlistDetails)
+                                    }
                                 },
                                 isPlaying = isPlaying
                             )
@@ -168,7 +169,7 @@ fun PlaylistDetailScreen(
                                         playerViewModel = playerViewModel,
                                         onClick = {
                                             playerViewModel.playPlaylist(
-                                                playlistDetails.songs,
+                                                playlistDetails,
                                                 index
                                             )
                                         },

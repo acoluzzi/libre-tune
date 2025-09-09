@@ -1,5 +1,6 @@
 package com.colux.libretune.data.repository
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumType
@@ -41,10 +42,13 @@ class PlaylistRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
 ) {
+    companion object {
+        private const val MAX_RELATED_FOR_PLAYLIST = 10
+    }
 
     private val logger = Logger.getLogger("PlaylistRepository")
 
-    private val cacheTtlMillis = TimeUnit.DAYS.toMillis(1)
+    private val cacheTtlMillis = TimeUnit.SECONDS.toMillis(1)
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -138,7 +142,11 @@ class PlaylistRepository @Inject constructor(
 
             val relatedPlaylistsFlow: Flow<List<PlaylistWithArtists>> =
                 db.playlistDao()
-                    .getRelatedPlaylistsWithArtists(playlistWithArtists.playlist.playlistId)
+                    .getRelatedPlaylistsWithArtists(
+                        playlistWithArtists.playlist.playlistId,
+                        MAX_RELATED_FOR_PLAYLIST // Limit the number of related playlists - as this will be greater every time we fetch from remote
+                    )
+
 
 
             logger.info { "getPlaylistDetails() building combined Flow for $id" }
@@ -271,16 +279,38 @@ class PlaylistRepository @Inject constructor(
                         remoteDetails.relatedPlaylists.map {
                             it.artists
                         }.flatten().map {
+                            Log.d(
+                                "PlaylistRepositoryDebug",
+                                "Adding Related playlist artist: $it"
+                            )
                             it.toEntity()
                         }
                     )
 
                     playlistRelatedLinks.addAll(
                         remoteDetails.relatedPlaylists.map { related ->
+                            Log.d(
+                                "PlaylistRepositoryDebug",
+                                "Linking album $playlistId to related playlist ${related.name} with ID ${related.id}"
+                            )
+                            Log.d(
+                                "PlaylistRepositoryDebug", "$related"
+                            )
                             PlaylistRelatedCrossRef(
                                 parentPlaylistId = playlistId,
                                 relatedPlaylistId = related.id
                             )
+                        }
+                    )
+
+                    albumArtistLinks.addAll(
+                        remoteDetails.relatedPlaylists.flatMap { playlist ->
+                            playlist.artists.map { artist ->
+                                PlaylistArtistCrossRef(
+                                    playlistId = playlist.id,
+                                    artistId = artist.id
+                                )
+                            }
                         }
                     )
                 }
@@ -318,6 +348,10 @@ class PlaylistRepository @Inject constructor(
 
                     playlistRelatedLinks.addAll(
                         remoteDetails.relatedPlaylists.map { related ->
+                            Log.d(
+                                "PlaylistRepositoryDebug",
+                                "Linking playlist $playlistId to related playlist ${related.name} with ID ${related.id}"
+                            )
                             PlaylistRelatedCrossRef(
                                 parentPlaylistId = playlistId,
                                 relatedPlaylistId = related.id
@@ -416,6 +450,10 @@ class PlaylistRepository @Inject constructor(
                 }
 
                 if (playlistRelatedLinks.isNotEmpty()) {
+                    Log.d(
+                        "PlaylistRepositoryDebug",
+                        "Inserting ${playlistRelatedLinks.size} playlist-related links for playlist ID: $playlistId"
+                    )
                     logger.info { "Inserting ${playlistRelatedLinks.size} playlist-related links for playlist ID: $playlistId" }
                     db.playlistDao().linkPlaylistsToRelatedPlaylists(playlistRelatedLinks)
                 }

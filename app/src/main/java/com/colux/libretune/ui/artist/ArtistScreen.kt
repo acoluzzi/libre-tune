@@ -128,7 +128,7 @@ fun ArtistScreen(
                             song = song,
                             playerViewModel = playerViewModel,
                             onClick = {
-                                playerViewModel.playPlaylist(
+                                playerViewModel.playSongList(
                                     state.details.topSongs,
                                     state.details.topSongs.indexOf(song)
                                 )

@@ -3,6 +3,7 @@ package com.coluzziandrea.libretune_extractor.parser.mapper
 import com.coluzziandrea.libretune_extractor.client.response.section.content.MusicTwoRowsItemRenderer
 import com.coluzziandrea.libretune_extractor.client.response.section.content.SectionContent
 import com.coluzziandrea.libretune_extractor.client.response.section.content.endpoint.NavigationEndpoint
+import com.coluzziandrea.libretune_extractor.model.Artist
 import com.coluzziandrea.libretune_extractor.model.Image
 import com.coluzziandrea.libretune_extractor.model.MusicNode
 import com.coluzziandrea.libretune_extractor.model.Playlist
@@ -55,6 +56,22 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
     val playlistTypeStr = subtitle.runs.firstOrNull()?.text ?: ""
     val releaseYearStr = subtitle.runs.getOrNull(2)?.text ?: ""
 
+    val artists = mutableListOf<Artist>()
+    subtitle.runs.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType == "MUSIC_PAGE_TYPE_ARTIST" }
+        .forEach {
+            val artistId =
+                (it.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId
+            val artistName = it.text
+            if (artistId.isNotEmpty() && artistName.isNotEmpty()) {
+                artists.add(
+                    Artist(
+                        id = artistId,
+                        name = artistName
+                    )
+                )
+            }
+        }
+
 
     val playlistType = when {
         playlistTypeStr.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
@@ -68,6 +85,7 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
         id = id,
         name = name,
         images = images,
+        artists = artists,
         type = playlistType,
         releaseYear = releaseYearStr.toIntOrNull() ?: -1,
     )

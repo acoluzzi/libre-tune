@@ -39,7 +39,11 @@ data class Playlist(
                 ""
             }
             val releaseYearStr = releaseYear?.let {
-                "• $it"
+                if (it > 0) {
+                    "• $it"
+                } else {
+                    null
+                }
             } ?: ""
             "$typeLabel $artistNamesStr $releaseYearStr"
         }

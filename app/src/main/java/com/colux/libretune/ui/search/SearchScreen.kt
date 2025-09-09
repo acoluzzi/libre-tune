@@ -196,7 +196,7 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
                                     // If it's a specific entity, handle based on type
                                     when (suggestion.type) {
                                         "Song" -> {
-                                            playerViewModel.playPlaylist(
+                                            playerViewModel.playSongList(
                                                 listOfNotNull(suggestion.song),
                                                 0
                                             )
@@ -451,7 +451,7 @@ fun SearchResultsList(
                         onSongMenuClick(song)
                     },
                     onClick = {
-                        playerViewModel.playPlaylist(
+                        playerViewModel.playSongList(
                             results.topSongs,
                             results.topSongs.indexOf(song)
                         )
@@ -482,7 +482,7 @@ fun SearchResultsList(
                     },
                     navController = navController,
                     onClick = {
-                        playerViewModel.playPlaylist(results.songs, results.songs.indexOf(song))
+                        playerViewModel.playSongList(results.songs, results.songs.indexOf(song))
                     })
             }
         }

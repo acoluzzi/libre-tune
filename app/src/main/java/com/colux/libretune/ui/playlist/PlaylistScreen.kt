@@ -115,6 +115,7 @@ fun PlaylistDetailScreen(
                             exit = fadeOut()
                         ) {
                             CollapsingTopAppBar(
+                                isPlayEnabled = playlistDetails.songs.isNotEmpty(),
                                 playlistName = playlistDetails.name,
                                 onBackClick = { navController.popBackStack() },
                                 onPlayClick = {
@@ -154,6 +155,7 @@ fun PlaylistDetailScreen(
                                         playerViewModel.shufflePlayPlaylist(playlistDetails)
                                     },
                                     isSaved = isSaved,
+                                    isLocal = playlistDetails.isLocal,
                                     onLikeToggle = {
                                         viewModel.togglePlaylistSavedStatus()
                                     }
@@ -274,6 +276,7 @@ fun PlaylistDetailScreen(
 fun PlaylistHeader(
     details: PlaylistDetails,
     isPlaying: Boolean,
+    isLocal: Boolean,
     isSaved: Boolean,
     onPlayPauseClick: () -> Unit,
     onShuffleClick: () -> Unit,
@@ -363,14 +366,16 @@ fun PlaylistHeader(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left-aligned buttons
-            IconButton(onClick = { onLikeToggle() }) {
-                Icon(
-                    if (isSaved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                    contentDescription = "Like Playlist"
-                )
+            if (!isLocal) {
+                IconButton(onClick = { onLikeToggle() }) {
+                    Icon(
+                        if (isSaved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Like Playlist"
+                    )
+                }
             }
+
             IconButton(onClick = { /* TODO: Show menu */ }) {
                 Icon(Icons.Default.MoreVert, contentDescription = "More options")
             }
@@ -378,9 +383,12 @@ fun PlaylistHeader(
             Spacer(modifier = Modifier.weight(1f))
 
             // Right-aligned buttons
-            IconButton(onClick = {
-                onShuffleClick()
-            }) {
+            IconButton(
+                onClick = {
+                    onShuffleClick()
+                },
+                enabled = details.songs.isNotEmpty()
+            ) {
                 Icon(
                     Icons.Default.Shuffle,
                     contentDescription = "Shuffle",
@@ -392,7 +400,8 @@ fun PlaylistHeader(
                 onClick = {
                     onPlayPauseClick()
                 },
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier.size(56.dp),
+                enabled = details.songs.isNotEmpty()
             ) {
                 Icon(
                     if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
@@ -411,6 +420,7 @@ fun PlaylistHeader(
 @Composable
 fun CollapsingTopAppBar(
     playlistName: String,
+    isPlayEnabled: Boolean,
     isPlaying: Boolean,
     onBackClick: () -> Unit,
     onPlayClick: () -> Unit
@@ -425,7 +435,8 @@ fun CollapsingTopAppBar(
         actions = {
             FilledIconButton(
                 onClick = onPlayClick,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp),
+                enabled = isPlayEnabled
             ) {
                 Icon(
                     if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,

@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.playlist
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -72,6 +73,8 @@ fun PlaylistDetailScreen(
     navController: NavHostController,
     viewModel: PlaylistDetailViewModel = hiltViewModel()
 ) {
+
+
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberLazyListState()
 
@@ -101,6 +104,8 @@ fun PlaylistDetailScreen(
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
             state.details?.let { playlistDetails ->
+                Log.d("PlaylistDetailScreen", "Displaying details for ${playlistDetails.name}")
+                Log.d("PlaylistDetailScreen", "Displaying ${playlistDetails.songs.size} songs")
                 Scaffold(
                     topBar = {
                         // The top bar is only visible when showTopBar is true

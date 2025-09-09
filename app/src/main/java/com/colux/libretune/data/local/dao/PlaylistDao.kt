@@ -12,6 +12,7 @@ import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
+import com.colux.libretune.data.local.wrapper.PlaylistWithArtists
 import com.colux.libretune.data.local.wrapper.PlaylistWithSongsEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -60,6 +61,9 @@ interface PlaylistDao {
 
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     fun getPlaylist(id: String): Flow<PlaylistEntity?>
+
+    @Query("SELECT * FROM playlists WHERE playlistId = :id")
+    fun getPlaylistWithArtists(id: String): Flow<PlaylistWithArtists?>
 
 
     @Query("SELECT * FROM playlists where isLocal = 1")
@@ -169,6 +173,17 @@ interface PlaylistDao {
     )
     fun getRelatedPlaylistsForPlaylist(playlistId: String): Flow<List<PlaylistEntity>>
 
+    @Query(
+        """
+        SELECT * FROM playlists p
+        WHERE p.playlistId IN (
+            SELECT prcr.relatedPlaylistId 
+            FROM playlist_related_cross_ref prcr 
+            WHERE prcr.parentPlaylistId = :id
+        )
+    """
+    )
+    fun getRelatedPlaylistsWithArtists(id: String): Flow<List<PlaylistWithArtists>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkPlaylistToArtists(crossRefs: List<ArtistPlaylistCrossRef>)

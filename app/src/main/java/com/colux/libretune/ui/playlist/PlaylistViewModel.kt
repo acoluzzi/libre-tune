@@ -32,6 +32,7 @@ class PlaylistDetailViewModel @Inject constructor(
     val uiState: StateFlow<PlaylistUiState> =
         repository.getPlaylistDetails(playlistId)
             .map { details ->
+                logger.info { "Emitting new playlist details for $playlistId: $details" }
                 PlaylistUiState.Success(details)
             }
             .stateIn(

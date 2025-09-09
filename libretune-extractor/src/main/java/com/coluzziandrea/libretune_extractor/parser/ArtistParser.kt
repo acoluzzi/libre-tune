@@ -126,9 +126,9 @@ class ArtistParser {
 
                                     "Singles & EPs" -> {
                                         singlesEp.addAll(currentPlaylists.map {
-                                            if (it.type != PlaylistType.SINGLE_EP) {
+                                            if (it.type == PlaylistType.SINGLE || it.type == PlaylistType.EP) {
                                                 it.copy(
-                                                    type = PlaylistType.SINGLE_EP, artists =
+                                                    artists =
                                                         listOf(
                                                             Artist(
                                                                 id = browseId,
@@ -138,7 +138,7 @@ class ArtistParser {
                                                 )
                                             } else {
                                                 it.copy(
-                                                    artists =
+                                                    type = PlaylistType.SINGLE, artists =
                                                         listOf(
                                                             Artist(
                                                                 id = browseId,

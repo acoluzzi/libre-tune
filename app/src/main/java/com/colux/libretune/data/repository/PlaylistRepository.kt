@@ -72,6 +72,31 @@ class PlaylistRepository @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getLocalPlaylistsWithSongs(): Flow<List<PlaylistWithSongs>> {
+        val playlistFlow: Flow<List<PlaylistWithSongsEntity>> = db.playlistDao().getLocalPlaylists()
+
+        return playlistFlow.map { playlists ->
+            playlists.map { (playlist, songs) ->
+                PlaylistWithSongs(
+                    playlist = playlist.toDataModel(),
+                    songs = songs.map { song ->
+                        val songAlbum = song.albumId?.let { db.playlistDao().getPlaylistById(it) }
+                        val albumArtists = songAlbum?.playlistId?.let {
+                            db.artistDao().getArtistsByAlbumId(it).firstOrNull() ?: emptyList()
+                        } ?: emptyList()
+
+                        SongWithAlbumAndArtists(
+                            song,
+                            songAlbum,
+                            albumArtists
+                        ).toDataModel()
+                    }
+                )
+            }
+        }
+    }
+
     suspend fun createNewPlaylist(name: String) {
         val newPlaylist = PlaylistEntity(
             playlistId = "local-${System.currentTimeMillis()}",
@@ -160,7 +185,8 @@ class PlaylistRepository @Inject constructor(
                 type = playlist.let {
                     when (it.type) {
                         AlbumType.ALBUM -> PlaylistType.ALBUM
-                        AlbumType.SINGLE_EP -> PlaylistType.SINGLE_EP
+                        AlbumType.SINGLE -> PlaylistType.SINGLE
+                        AlbumType.EP -> PlaylistType.EP
                         AlbumType.PLAYLIST -> PlaylistType.PLAYLIST
                     }
                 },
@@ -253,7 +279,7 @@ class PlaylistRepository @Inject constructor(
 
             // --- MAPPING LOGIC ---
             when (remoteDetails.type) {
-                PlaylistType.ALBUM, PlaylistType.SINGLE_EP -> {
+                PlaylistType.ALBUM, PlaylistType.SINGLE, PlaylistType.EP -> {
                     logger.info { "Mapping as AlbumEntity" }
                     albumEntities.add(
                         PlaylistEntity(
@@ -262,7 +288,7 @@ class PlaylistRepository @Inject constructor(
                             images = remoteDetails.images.map {
                                 it.toEntity()
                             },
-                            type = if (remoteDetails.type == PlaylistType.ALBUM) AlbumType.ALBUM else AlbumType.SINGLE_EP,
+                            type = if (remoteDetails.type == PlaylistType.ALBUM) AlbumType.ALBUM else if (remoteDetails.type == PlaylistType.SINGLE) AlbumType.SINGLE else AlbumType.EP,
                             releaseYear = remoteDetails.releaseYear,
                             updateTimestamp = System.currentTimeMillis()
                         )

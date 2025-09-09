@@ -3,7 +3,8 @@ package com.coluzziandrea.libretune_extractor.model
 enum class PlaylistType {
     PLAYLIST,
     ALBUM,
-    SINGLE_EP
+    SINGLE,
+    EP
 }
 
 data class Playlist(
@@ -11,7 +12,7 @@ data class Playlist(
     val images: List<Image>,
     val artists: List<Artist>? = null,
     val type: PlaylistType? = PlaylistType.PLAYLIST,
-    val releaseYear: Int
+    val releaseYear: Int? = null,
 ) {
 
     val name: String
@@ -26,7 +27,7 @@ data class Playlist(
         images: List<Image>,
         artists: List<Artist>? = null,
         type: PlaylistType = PlaylistType.PLAYLIST,
-        releaseYear: Int
+        releaseYear: Int? = null
     ) : this(
         node = MusicNode(
             id = id,

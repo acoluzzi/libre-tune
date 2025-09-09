@@ -39,7 +39,7 @@ fun ExtractorArtistDetails.toDataModel(): ArtistDetails {
             it.toDataModel(PlaylistType.ALBUM)
         },
         singlesAndEPs = singlesAndEp.map {
-            it.toDataModel(PlaylistType.SINGLE_EP)
+            it.toDataModel()
         },
         featuring = featuring.map {
             it.toDataModel()

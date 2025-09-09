@@ -35,7 +35,7 @@ class AddToPlaylistViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val playlists: StateFlow<List<PlaylistForSelection>> =
         // 1. Get the flow of all local playlists.
-        playlistRepository.getSavedPlaylistsWithSongs()
+        playlistRepository.getLocalPlaylistsWithSongs()
             .combine(song) { allPlaylists, currentSong ->
                 // 2. Combine it with the flow for the current song.
                 if (currentSong == null) {

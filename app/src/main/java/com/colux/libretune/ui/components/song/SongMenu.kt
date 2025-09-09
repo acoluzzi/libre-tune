@@ -61,10 +61,11 @@ fun SongMenu(
     val isLiked by playerViewModel.isCurrentSongLiked(song.id)
         .collectAsState(initial = false)
 
-    val isInPlaylist by playerViewModel.isSongInPlaylist(song.id, playlistId)
+    val isInLocalPlaylist by playerViewModel.isSongInLocalPlaylist(song.id, playlistId)
         .collectAsState(initial = false)
 
     val isInAlbum = song.album?.id == playlistId
+
 
     var showArtistPicker by remember { mutableStateOf(false) }
 
@@ -121,7 +122,7 @@ fun SongMenu(
             )
         }
 
-        if (isInPlaylist) {
+        if (isInLocalPlaylist) {
             MenuOptionItem(
                 text = "Remove from this playlist",
                 icon = Icons.Filled.PlaylistRemove,

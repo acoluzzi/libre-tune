@@ -58,10 +58,8 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
 
     val playlistType = when {
         playlistTypeStr.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
-        playlistTypeStr.contains("Single", ignoreCase = true) || playlistTypeStr.contains(
-            "EP",
-            ignoreCase = true
-        ) -> PlaylistType.SINGLE_EP
+        playlistTypeStr.contains("Single", ignoreCase = true) -> PlaylistType.SINGLE
+        playlistTypeStr.contains("EP", ignoreCase = true) -> PlaylistType.EP
 
         else -> PlaylistType.PLAYLIST
     }

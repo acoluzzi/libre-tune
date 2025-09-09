@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,6 +88,12 @@ fun DiscographyContent(
             .sortedByDescending { it.releaseYear }
     }
 
+    val chipColors = FilterChipDefaults.filterChipColors(
+        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        selectedLabelColor = MaterialTheme.colorScheme.primary
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -106,16 +113,32 @@ fun DiscographyContent(
                 .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilterChip(
-                selected = selectedFilter == PlaylistType.ALBUM,
-                onClick = { selectedFilter = PlaylistType.ALBUM },
-                label = { Text("Albums") }
-            )
-            FilterChip(
-                selected = selectedFilter == PlaylistType.SINGLE_EP,
-                onClick = { selectedFilter = PlaylistType.SINGLE_EP },
-                label = { Text("Singles & EPs") }
-            )
+            if (allReleases.any { it.type == PlaylistType.ALBUM }) {
+                FilterChip(
+                    selected = selectedFilter == PlaylistType.ALBUM,
+                    onClick = { selectedFilter = PlaylistType.ALBUM },
+                    label = { Text("Albums") },
+                    colors = chipColors
+                )
+            }
+
+            if (allReleases.any { it.type == PlaylistType.SINGLE }) {
+                FilterChip(
+                    selected = selectedFilter == PlaylistType.SINGLE,
+                    onClick = { selectedFilter = PlaylistType.SINGLE },
+                    label = { Text("Singles") },
+                    colors = chipColors
+                )
+            }
+
+            if (allReleases.any { it.type == PlaylistType.EP }) {
+                FilterChip(
+                    selected = selectedFilter == PlaylistType.EP,
+                    onClick = { selectedFilter = PlaylistType.EP },
+                    label = { Text("EPs") },
+                    colors = chipColors
+                )
+            }
         }
 
         // --- 4. Content List ---

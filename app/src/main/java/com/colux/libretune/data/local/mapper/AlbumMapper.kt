@@ -17,7 +17,8 @@ fun Playlist.toEntity(): PlaylistEntity {
         isLocal = this.isLocal,
         type = when (this.type) {
             PlaylistType.ALBUM -> AlbumType.ALBUM
-            PlaylistType.SINGLE_EP -> AlbumType.SINGLE_EP
+            PlaylistType.SINGLE -> AlbumType.SINGLE
+            PlaylistType.EP -> AlbumType.EP
             else -> AlbumType.PLAYLIST
         }
     )
@@ -34,7 +35,8 @@ fun PlaylistEntity.toDataModel(artists: List<ArtistEntity> = emptyList()): Playl
         },
         type = when (this.type) {
             AlbumType.ALBUM -> PlaylistType.ALBUM
-            AlbumType.SINGLE_EP -> PlaylistType.SINGLE_EP
+            AlbumType.SINGLE -> PlaylistType.SINGLE
+            AlbumType.EP -> PlaylistType.EP
             AlbumType.PLAYLIST -> PlaylistType.PLAYLIST
         },
         isLocal = this.isLocal ?: false,
@@ -52,7 +54,8 @@ fun AlbumWithArtists.toDataModel(): Playlist {
         artists = this.artists.map { it.toDataModel() },
         type = when (this.albumEntity.type) {
             AlbumType.ALBUM -> PlaylistType.ALBUM
-            AlbumType.SINGLE_EP -> PlaylistType.SINGLE_EP
+            AlbumType.SINGLE -> PlaylistType.SINGLE
+            AlbumType.EP -> PlaylistType.EP
             AlbumType.PLAYLIST -> PlaylistType.PLAYLIST
         },
         isLocal = false

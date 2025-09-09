@@ -45,6 +45,7 @@ import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
+import java.util.logging.Logger
 
 @Composable
 fun SongItem(
@@ -56,12 +57,21 @@ fun SongItem(
     navController: NavHostController,
 ) {
 
+    val logger = Logger.getLogger("SongItem")
+
+
     val selectedSong by playerViewModel.currentSong.collectAsState()
     val selectedSongIsPlaying by playerViewModel.isPlaying.collectAsState()
     val savedSongIds by playerViewModel.savedSongIds.collectAsState()
-
     val isSelectedSong = song.id == selectedSong?.id
     val isSaved = savedSongIds.contains(song.id)
+
+    val isDisplayingInOwnPlaylist =
+        song.album?.id != null && song.album.id == displayingInPlaylistId
+
+
+
+
 
     Row(
         modifier = Modifier
@@ -131,7 +141,7 @@ fun SongItem(
             )
         }
 
-        if (isSaved && displayingInPlaylistId != null && !displayingInLocalPlaylist) {
+        if (isSaved && !isDisplayingInOwnPlaylist && !displayingInLocalPlaylist) {
             Spacer(modifier = Modifier.width(8.dp))
 
             IconButton(onClick = {

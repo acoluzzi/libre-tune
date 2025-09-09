@@ -41,9 +41,10 @@ fun PlaylistItem(album: Playlist, onClick: () -> Unit) {
         Column {
             Text(text = album.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
             Text(
-                text = album.getArtistNames(),
+                text = album.getSubtitle(),
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 1
+                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
     }

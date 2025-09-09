@@ -3,7 +3,7 @@ package com.colux.libretune.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-enum class AlbumType { ALBUM, SINGLE_EP, PLAYLIST }
+enum class AlbumType { ALBUM, SINGLE, EP, PLAYLIST }
 
 @Entity(tableName = "playlists")
 data class PlaylistEntity(

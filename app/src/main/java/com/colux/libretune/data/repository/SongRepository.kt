@@ -22,6 +22,9 @@ class SongRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
 ) {
+
+    private val logger = java.util.logging.Logger.getLogger(SongRepository::class.java.name)
+
     suspend fun getSongUrlById(id: String): String? {
         return remote.getSongUrlById(id)
     }
@@ -46,7 +49,10 @@ class SongRepository @Inject constructor(
     }
 
     fun getSavedSongIds(): Flow<List<String>> {
-        return db.songDao().getSavedPlaylistSongIds()
+        return db.songDao().getSavedPlaylistSongIds().map {
+            logger.info { "Emitting new saved songs: $it" }
+            it
+        }
     }
 
     suspend fun logSongPlayed(song: Song) {
@@ -66,6 +72,10 @@ class SongRepository @Inject constructor(
         return db.playlistDao().isSongInPlaylist(playlistId, songId)
     }
 
+    fun isSongInLocalPlaylist(playlistId: String, songId: String): Flow<Boolean> {
+        return db.playlistDao().isSongInLocalPlaylist(playlistId, songId)
+    }
+
     suspend fun unlikeSong(song: Song) {
         val join = PlaylistSongCrossRef(
             playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
@@ -75,6 +85,7 @@ class SongRepository @Inject constructor(
     }
 
     suspend fun likeSong(song: Song) {
+        logger.info { "Like song $song" }
         _addSongToPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, song)
     }
 

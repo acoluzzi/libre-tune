@@ -41,6 +41,7 @@ class SearchExtractorTests {
         val topSong = result.genericMusicItems.get(1) as GenericMusicItem.SongResult
         assertEquals("Fear of the Dark", topSong.song?.title)
         assertEquals("bePCRKGUwAY", topSong.song?.id)
+        assertEquals(439, topSong.song?.durationSec)
         assertEquals(
             "https://lh3.googleusercontent.com/oJwgqSS3BqNI7lLB43eOkiiKCfgMFdFucJ5yI4XDGYovcbim9TrKYMg2t4ciHQ1jjbq0re3fpgBZrz1s=w60-h60-l90-rj",
             topSong.song?.images?.firstOrNull()?.url

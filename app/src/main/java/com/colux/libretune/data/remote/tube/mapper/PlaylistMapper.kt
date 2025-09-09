@@ -17,7 +17,8 @@ fun ExtractorPlaylist.toDataModel(albumType: PlaylistType = PlaylistType.PLAYLIS
         releaseYear = this.releaseYear,
         type = when (this.type) {
             ExtractorPlaylistType.ALBUM -> PlaylistType.ALBUM
-            ExtractorPlaylistType.SINGLE_EP -> PlaylistType.SINGLE_EP
+            ExtractorPlaylistType.SINGLE -> PlaylistType.SINGLE
+            ExtractorPlaylistType.EP -> PlaylistType.EP
             else -> albumType
         },
         isLocal = false
@@ -32,7 +33,8 @@ fun ExtractorPlaylistDetails.toDataModel(id: String): PlaylistDetails {
         artists = this.artists.map { it.toDataModel() },
         type = when (this.type) {
             ExtractorPlaylistType.ALBUM -> PlaylistType.ALBUM
-            ExtractorPlaylistType.SINGLE_EP -> PlaylistType.SINGLE_EP
+            ExtractorPlaylistType.SINGLE -> PlaylistType.SINGLE
+            ExtractorPlaylistType.EP -> PlaylistType.EP
             else -> PlaylistType.PLAYLIST
         },
         songs = this.songs.map { it.toDataModel() },

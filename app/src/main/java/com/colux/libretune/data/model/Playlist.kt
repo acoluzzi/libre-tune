@@ -3,7 +3,7 @@ package com.colux.libretune.data.model
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-enum class PlaylistType { ALBUM, SINGLE_EP, PLAYLIST }
+enum class PlaylistType { ALBUM, SINGLE, EP, PLAYLIST }
 
 @Parcelize
 data class Playlist(
@@ -21,5 +21,27 @@ data class Playlist(
 
     fun getArtistNames(): String {
         return artists.joinToString(", ") { it.name }
+    }
+
+    fun getSubtitle(): String {
+        val typeLabel = when (type) {
+            PlaylistType.ALBUM -> "Album"
+            PlaylistType.SINGLE -> "Single"
+            PlaylistType.EP -> "EP"
+            PlaylistType.PLAYLIST -> "Playlist"
+        }
+        return if (type == PlaylistType.PLAYLIST) {
+            typeLabel
+        } else {
+            val artistNamesStr = if (this.artists.isNotEmpty()) {
+                "• ${getArtistNames()}"
+            } else {
+                ""
+            }
+            val releaseYearStr = releaseYear?.let {
+                "• $it"
+            } ?: ""
+            "$typeLabel $artistNamesStr $releaseYearStr"
+        }
     }
 }

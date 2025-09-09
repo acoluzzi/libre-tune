@@ -53,10 +53,15 @@ fun MusicCardShelfRenderer.toPlaylist(): Playlist? {
             ignoreCase = true
         ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.ALBUM
 
-        typeStr?.contains("Single", ignoreCase = true) == true || typeStr?.contains(
+        typeStr?.contains(
+            "Single",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE
+
+        typeStr?.contains(
             "EP",
             ignoreCase = true
-        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE_EP
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.EP
 
         else -> com.coluzziandrea.libretune_extractor.model.PlaylistType.PLAYLIST
     }
@@ -65,7 +70,7 @@ fun MusicCardShelfRenderer.toPlaylist(): Playlist? {
         id = id,
         name = name,
         type = playlistType,
-        releaseYear = -1,
+        releaseYear = null,
         images = images,
         artists = artists
     )
@@ -124,10 +129,15 @@ fun MusicResponsiveListItemRenderer.toPlaylist(): Playlist? {
             ignoreCase = true
         ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.ALBUM
 
-        typeStr?.contains("Single", ignoreCase = true) == true || typeStr?.contains(
+        typeStr?.contains(
+            "Single",
+            ignoreCase = true
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE
+
+        typeStr?.contains(
             "EP",
             ignoreCase = true
-        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.SINGLE_EP
+        ) == true -> com.coluzziandrea.libretune_extractor.model.PlaylistType.EP
 
         else -> com.coluzziandrea.libretune_extractor.model.PlaylistType.PLAYLIST
     }
@@ -141,7 +151,7 @@ fun MusicResponsiveListItemRenderer.toPlaylist(): Playlist? {
         releaseYear = if (releaseYearStr != null && releaseYearStr.all { it.isDigit() }) {
             releaseYearStr.toInt()
         } else {
-            -1
+            null
         },
     )
 }

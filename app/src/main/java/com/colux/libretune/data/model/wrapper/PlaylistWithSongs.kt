@@ -8,7 +8,12 @@ data class PlaylistWithSongs(
     val songs: List<Song> = emptyList()
 ) {
     fun getImages(): List<String> {
-        return songs.shuffled().take(4).mapNotNull { it.images.firstOrNull()?.url }
+        return songs
+            .mapNotNull { it.images.firstOrNull()?.url }
+            .distinctBy {
+                it
+            }
+            .shuffled().take(4)
     }
 
     fun hasToShowCollage(): Boolean {

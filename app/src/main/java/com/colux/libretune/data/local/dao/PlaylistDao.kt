@@ -93,6 +93,17 @@ interface PlaylistDao {
 
     @Query(
         """
+        SELECT EXISTS(
+            SELECT 1 
+            FROM playlist_song_cross_ref pscr join playlists p ON pscr.playlistId = p.playlistId
+            WHERE pscr.playlistId = :playlistId AND pscr.songId = :songId AND p.isLocal = 1)
+        """
+    )
+    fun isSongInLocalPlaylist(playlistId: String, songId: String): Flow<Boolean>
+
+
+    @Query(
+        """
         SELECT * FROM playlists
         WHERE playlistId IN (
             SELECT playlistId FROM artist_featured_playlist_cross_ref WHERE artistId = :artistId
@@ -117,7 +128,7 @@ interface PlaylistDao {
     @Query(
         """
         SELECT * FROM playlists
-        WHERE (type = 'ALBUM' OR type = 'SINGLE_EP')
+        WHERE (type = 'ALBUM' OR type = 'SINGLE' OR type = 'EP')
         AND playlistId IN (
             SELECT playlistId FROM playlist_artist_cross_ref WHERE artistId = :artistId
         ) 
@@ -139,7 +150,7 @@ interface PlaylistDao {
     @Query(
         """
         SELECT * FROM playlists         
-        WHERE type = 'SINGLE_EP' 
+        WHERE (type = 'SINGLE' OR type = 'EP')
         AND playlistId IN (
             SELECT playlistId FROM playlist_artist_cross_ref WHERE artistId = :artistId
         ) 

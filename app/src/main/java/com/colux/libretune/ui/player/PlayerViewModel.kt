@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
@@ -73,7 +74,11 @@ class PlayerViewModel @Inject constructor(
 
 
     val savedSongIds: StateFlow<List<String>> = songRepository.getSavedSongIds()
-        .stateIn(
+        .onEach { newList ->
+            logger.info {
+                "Saved song IDs updated: $newList"
+            }
+        }.stateIn(
             scope = viewModelScope,
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
@@ -199,11 +204,11 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun isSongInPlaylist(songId: String, playlistId: String? = null): Flow<Boolean> {
+    fun isSongInLocalPlaylist(songId: String, playlistId: String? = null): Flow<Boolean> {
         if (playlistId == null) {
             return flowOf(false)
         }
-        return songRepository.isSongInPlaylist(playlistId, songId)
+        return songRepository.isSongInLocalPlaylist(playlistId, songId)
     }
 
 

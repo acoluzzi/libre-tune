@@ -49,13 +49,9 @@ class PlaylistParser {
                     header.musicResponsiveHeaderRenderer.subtitle.runs.firstOrNull()?.text?.let { subtitle ->
                         when {
                             subtitle.contains("Album", ignoreCase = true) -> PlaylistType.ALBUM
-                            subtitle.contains(
-                                "Single",
-                                ignoreCase = true
-                            ) || subtitle.contains(
-                                "EP",
-                                ignoreCase = true
-                            ) -> PlaylistType.SINGLE_EP
+                            subtitle.contains("Single", ignoreCase = true) -> PlaylistType.SINGLE
+                            subtitle.contains("EP", ignoreCase = true) -> PlaylistType.EP
+
 
                             else -> PlaylistType.PLAYLIST
                         }
@@ -109,7 +105,7 @@ class PlaylistParser {
                                             type = albumType,
                                             images = playlistImages,
                                             artists = artists,
-                                            releaseYear = -1
+                                            releaseYear = null
                                         )
                                     }
                                     songs.add(

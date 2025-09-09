@@ -86,8 +86,15 @@ fun MusicResponsiveListItemRenderer.toSong(trackNumber: Int? = null): Song? {
             }
         }
 
-    val durationStr =
+    var durationStr =
         fixedColumns?.firstOrNull()?.musicResponsiveListItemFixedColumnRenderer?.text?.runs?.firstOrNull()?.text
+
+    if (durationStr == null) {
+        durationStr =
+            flexColumns.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.getOrNull(
+                4
+            )?.text
+    }
 
     val durationSec = durationStr?.let {
         val parts = it.split(":").map { part -> part.toLongOrNull() ?: 0L }

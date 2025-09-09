@@ -118,7 +118,7 @@ class ArtistRepository @Inject constructor(
                     it.toDataModel()
                 },
                 singlesAndEPs = albums.filter {
-                    it.albumEntity.type == AlbumType.SINGLE_EP
+                    it.albumEntity.type == AlbumType.SINGLE || it.albumEntity.type == AlbumType.EP
                 }.map {
                     it.toDataModel()
                 },

@@ -23,4 +23,12 @@ data class PlaylistWithSongs(
     fun bestImage(): String? {
         return playlist?.images?.maxByOrNull { it.width ?: 0 }?.url
     }
+
+    fun getSubtitle(): String {
+        var subtitle = playlist?.getSubtitle() ?: ""
+        if (songs.isNotEmpty()) {
+            subtitle += " • ${songs.size} song${if (songs.size > 1) "s" else ""}"
+        }
+        return subtitle
+    }
 }

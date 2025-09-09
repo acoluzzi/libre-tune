@@ -126,8 +126,9 @@ fun PlaylistListItem(
                 )
             }
             Text(
-                text = "Playlist • ${playlistWithSongs.songs.size} song" + if (playlistWithSongs.songs.size != 1) "s" else "",
-                style = MaterialTheme.typography.bodyMedium
+                text = playlistWithSongs.getSubtitle(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
         }
     }

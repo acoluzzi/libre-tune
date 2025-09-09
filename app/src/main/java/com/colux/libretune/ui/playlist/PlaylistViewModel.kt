@@ -48,17 +48,19 @@ class PlaylistDetailViewModel @Inject constructor(
         }
     }
 
-    fun togglePlaylistSavedStatus() {
-        viewModelScope.launch {
-            if (!isPlaylistSaved.value) {
-                repository.savePlaylist(playlistId)
-                logger.info("Removed playlist $playlistId from library")
-            } else {
-                repository.unsavePlaylist(playlistId)
-                logger.info("Added playlist $playlistId to library")
-            }
-        }
 
+    fun likePlaylist() {
+        viewModelScope.launch {
+            repository.savePlaylist(playlistId)
+            logger.info("Added playlist $playlistId from library")
+        }
+    }
+
+    fun dislikePlaylist() {
+        viewModelScope.launch {
+            repository.unsavePlaylist(playlistId)
+            logger.info("Removed playlist $playlistId from library")
+        }
     }
 
 

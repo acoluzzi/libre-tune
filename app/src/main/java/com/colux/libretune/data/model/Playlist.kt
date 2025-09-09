@@ -23,15 +23,18 @@ data class Playlist(
         return artists.joinToString(", ") { it.name }
     }
 
-    fun getSubtitle(): String {
-        val typeLabel = when (type) {
+    fun getTypeLabel(): String {
+        return when (type) {
             PlaylistType.ALBUM -> "Album"
             PlaylistType.SINGLE -> "Single"
             PlaylistType.EP -> "EP"
             PlaylistType.PLAYLIST -> "Playlist"
         }
+    }
+
+    fun getSubtitle(): String {
         return if (type == PlaylistType.PLAYLIST) {
-            typeLabel
+            getTypeLabel()
         } else {
             val artistNamesStr = if (this.artists.isNotEmpty()) {
                 "• ${getArtistNames()}"
@@ -45,7 +48,7 @@ data class Playlist(
                     null
                 }
             } ?: ""
-            "$typeLabel $artistNamesStr $releaseYearStr"
+            "${getTypeLabel()} $artistNamesStr $releaseYearStr"
         }
     }
 }

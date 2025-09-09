@@ -156,8 +156,11 @@ fun PlaylistDetailScreen(
                                     },
                                     isSaved = isSaved,
                                     isLocal = playlistDetails.isLocal,
-                                    onLikeToggle = {
-                                        viewModel.togglePlaylistSavedStatus()
+                                    onLike = {
+                                        viewModel.likePlaylist()
+                                    },
+                                    onDislike = {
+                                        viewModel.dislikePlaylist()
                                     }
                                 )
                             }
@@ -280,7 +283,8 @@ fun PlaylistHeader(
     isSaved: Boolean,
     onPlayPauseClick: () -> Unit,
     onShuffleClick: () -> Unit,
-    onLikeToggle: () -> Unit
+    onLike: () -> Unit,
+    onDislike: () -> Unit
 ) {
 
 
@@ -367,7 +371,9 @@ fun PlaylistHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!isLocal) {
-                IconButton(onClick = { onLikeToggle() }) {
+                IconButton(onClick = {
+                    if (isSaved) onDislike() else onLike()
+                }) {
                     Icon(
                         if (isSaved) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,

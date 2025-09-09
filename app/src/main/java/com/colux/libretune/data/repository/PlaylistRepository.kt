@@ -56,9 +56,9 @@ class PlaylistRepository @Inject constructor(
         val playlistFlow: Flow<List<PlaylistWithSongsEntity>> = db.playlistDao().getSavedPlaylists()
 
         return playlistFlow.map { playlists ->
-            playlists.map { (playlist, songs) ->
+            playlists.map { (playlist, songs, artists) ->
                 PlaylistWithSongs(
-                    playlist = playlist.toDataModel(),
+                    playlist = playlist.toDataModel(artists),
                     songs = songs.map { song ->
                         val songAlbum = song.albumId?.let { db.playlistDao().getPlaylistById(it) }
                         val albumArtists = songAlbum?.playlistId?.let {

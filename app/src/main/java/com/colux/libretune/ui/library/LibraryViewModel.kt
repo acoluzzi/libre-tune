@@ -2,7 +2,9 @@ package com.colux.libretune.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
+import com.colux.libretune.data.repository.ArtistRepository
 import com.colux.libretune.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,7 +13,10 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class LibraryViewModel @Inject constructor(val playlistRepository: PlaylistRepository) :
+class LibraryViewModel @Inject constructor(
+    playlistRepository: PlaylistRepository,
+    artistRepository: ArtistRepository
+) :
     ViewModel() {
 
 
@@ -19,5 +24,11 @@ class LibraryViewModel @Inject constructor(val playlistRepository: PlaylistRepos
     val playlists: StateFlow<List<PlaylistWithSongs>> =
         playlistRepository.getSavedPlaylistsWithSongs()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+
+    val artists: StateFlow<List<Artist>> = artistRepository.getSavedArtists().stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
+    )
+
 
 }

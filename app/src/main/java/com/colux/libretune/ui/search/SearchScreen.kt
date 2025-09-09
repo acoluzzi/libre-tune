@@ -583,7 +583,8 @@ fun ArtistSearchResultItem(artist: Artist, onClick: () -> Unit) {
             Text(
                 text = "Artist",
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 1
+                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
         }
 

@@ -37,12 +37,14 @@ import coil.compose.AsyncImage
 import com.colux.libretune.R
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
 import com.colux.libretune.ui.nav.Screen
+import com.colux.libretune.ui.search.ArtistSearchResultItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(navController: NavHostController) {
     val viewModel: LibraryViewModel = hiltViewModel()
     val playlists by viewModel.playlists.collectAsState()
+    val artists by viewModel.artists.collectAsState()
 
 
     Scaffold(
@@ -77,6 +79,19 @@ fun LibraryScreen(navController: NavHostController) {
                     }
                 )
             }
+
+            items(artists) { artist ->
+                ArtistSearchResultItem(
+                    artist = artist,
+                    onClick = {
+                        navController.navigate(
+                            Screen.Artist.createRoute(artist.id)
+                        )
+                    }
+                )
+            }
+
+
         }
     }
 }

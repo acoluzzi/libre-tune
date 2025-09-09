@@ -67,6 +67,18 @@ interface ArtistDao {
     @Query("SELECT * FROM artists WHERE artistId = :artistId")
     fun getArtist(artistId: String): Flow<ArtistEntity?>
 
+    @Query(
+        """
+        SELECT * 
+        FROM artists a
+        WHERE a.artistId IN (
+            SELECT DISTINCT artistId 
+            FROM library 
+            WHERE type = 'ARTIST'
+        )
+    """
+    )
+    fun getSavedArtists(): Flow<List<ArtistEntity>>
 
     @Query(
         """

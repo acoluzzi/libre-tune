@@ -14,6 +14,7 @@ import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.SongArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
+import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.model.wrapper.AlbumWithArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
@@ -321,6 +322,12 @@ class ArtistRepository @Inject constructor(
         }
     }
 
+
+    fun getSavedArtists(): Flow<List<Artist>> {
+        return db.artistDao().getSavedArtists().map { artists ->
+            artists.map { it.toDataModel() }
+        }
+    }
 
     suspend fun saveArtist(artistId: String) {
         db.libraryDao().insert(

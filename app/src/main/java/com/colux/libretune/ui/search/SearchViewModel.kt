@@ -5,14 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.repository.SearchRepository
+import com.colux.libretune.ui.util.smartThrottle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
-// Represents the different states the search screen can be in
 sealed interface SearchUiState {
     data object Explore : SearchUiState
     data class Suggestions(val suggestions: List<SearchSuggestion>) : SearchUiState
@@ -30,9 +33,16 @@ class SearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Explore)
     val uiState = _uiState.asStateFlow()
 
+    val moodGenres = repository.getMoodGenres().smartThrottle(30.minutes) { previous, _ ->
+        previous == null
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
+
     private var searchJob: Job? = null
 
-    // This function is called on every keystroke from the UI
     fun onQueryChange(query: String) {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
@@ -44,10 +54,8 @@ class SearchViewModel @Inject constructor(
 
     fun onFocusChanged(isFocused: Boolean, currentQuery: String) {
         if (isFocused) {
-            // When focus is gained, immediately trigger a suggestion fetch.
             onQueryChange(currentQuery)
         } else if (currentQuery.isBlank()) {
-            // When focus is lost and the query is blank, go back to the Explore view.
             _uiState.value = SearchUiState.Explore
         }
     }
@@ -61,20 +69,12 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = SearchUiState.Loading
 
-
             val result = repository.searchContent(query)
-
-
-
             if (result == null || result.isEmpty) {
                 _uiState.value = SearchUiState.Empty(query)
             } else {
-
                 _uiState.value = SearchUiState.Results(result)
-
             }
-
-
         }
     }
 

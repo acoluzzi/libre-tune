@@ -13,7 +13,7 @@ import kotlin.time.Duration
  */
 fun <T> Flow<T>.smartThrottle(
     period: Duration,
-    emitNowPredicate: (previous: T?, current: T) -> Boolean
+    emitNowPredicate: (previous: T?, current: T) -> Boolean = { _, _ -> false }
 ): Flow<T> {
     var lastEmitTime = 0L
     var previousItem: T? = null

@@ -2,6 +2,8 @@ package com.colux.libretune.data.repository
 
 import com.colux.libretune.data.local.dao.SearchQueryDao
 import com.colux.libretune.data.local.entity.SearchQueryEntity
+import com.colux.libretune.data.model.MoodGenreCategory
+import com.colux.libretune.data.model.MoodGenres
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
@@ -17,6 +19,20 @@ class SearchRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val searchQueryDao: SearchQueryDao,
 ) {
+
+    fun getMoodGenres(): Flow<MoodGenres?> {
+        return flow {
+            val remoteResults = remote.getMoodGenres()
+            emit(remoteResults)
+        }
+    }
+
+    fun getMoodGenreCategory(moodId: String): Flow<MoodGenreCategory?> {
+        return flow {
+            val remoteResults = remote.getMoodGenreCategory(moodId)
+            emit(remoteResults)
+        }
+    }
 
     suspend fun searchContent(query: String): SearchResult? {
         val result = remote.searchContent(query)

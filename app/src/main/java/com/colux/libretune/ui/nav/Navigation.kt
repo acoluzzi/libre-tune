@@ -14,6 +14,7 @@ import com.colux.libretune.ui.discography.DiscographyScreen
 import com.colux.libretune.ui.history.HistoryScreen
 import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
+import com.colux.libretune.ui.mood_genre.MoodGenreScreen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.playlist.PlaylistDetailScreen
 import com.colux.libretune.ui.search.SearchScreen
@@ -89,6 +90,8 @@ fun Navigation(
             composable(Screen.History.route) {
                 HistoryScreen(navController = navController, playerViewModel = playerViewModel)
             }
+
+
         }
 
 
@@ -153,6 +156,20 @@ fun Navigation(
             }
             composable(Screen.History.route) {
                 HistoryScreen(navController = navController, playerViewModel = playerViewModel)
+            }
+
+            composable(Screen.MoodGenre.route, arguments = listOf(navArgument("moodGenreId") {
+                type =
+                    NavType.StringType
+            })) { backStackEntry ->
+                val moodGenreId = backStackEntry.arguments?.getString("moodGenreId")
+                if (moodGenreId != null) {
+                    MoodGenreScreen(
+                        moodGenreId = moodGenreId,
+                        navController = navController,
+                        playerViewModel = playerViewModel
+                    )
+                }
             }
         }
 

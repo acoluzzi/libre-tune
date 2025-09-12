@@ -1,5 +1,6 @@
 package com.coluzziandrea.libretune_extractor.client.response
 
+import com.coluzziandrea.libretune_extractor.client.response.section.content.ContentTitle
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,6 +20,12 @@ data class MusicImmersiveHeaderRenderer(
 )
 
 @Serializable
+data class MusicHeaderRenderer(
+    val title: ContentTitle
+)
+
+@Serializable
 data class BrowseDataHeader(
-    val musicImmersiveHeaderRenderer: MusicImmersiveHeaderRenderer? = null
+    val musicImmersiveHeaderRenderer: MusicImmersiveHeaderRenderer? = null,
+    val musicHeaderRenderer: MusicHeaderRenderer? = null
 )

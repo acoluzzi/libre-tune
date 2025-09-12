@@ -17,5 +17,5 @@ data class BrowseEndpointSupportedConfig(
 data class BrowseEndpoint(
     val browseId: String,
     val params: String? = null,
-    val browseEndpointContextSupportedConfigs: BrowseEndpointSupportedConfig
+    val browseEndpointContextSupportedConfigs: BrowseEndpointSupportedConfig? = null
 )

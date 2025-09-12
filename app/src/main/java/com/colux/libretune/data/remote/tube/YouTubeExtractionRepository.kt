@@ -2,6 +2,8 @@ package com.colux.libretune.data.remote.tube
 
 import android.util.Log
 import com.colux.libretune.data.model.ArtistDetails
+import com.colux.libretune.data.model.MoodGenreCategory
+import com.colux.libretune.data.model.MoodGenres
 import com.colux.libretune.data.model.Playlist
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.model.SearchResult
@@ -67,6 +69,30 @@ class YouTubeExtractionRepository @Inject constructor(
         }
     }
 
+
+    suspend fun getMoodGenres(): MoodGenres? {
+        return withContext(Dispatchers.IO) {
+            try {
+                libreTuneExtractor.genresMoods()
+                    ?.toDataModel()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    suspend fun getMoodGenreCategory(moodId: String): MoodGenreCategory? {
+        return withContext(Dispatchers.IO) {
+            try {
+                libreTuneExtractor.genreMoodCategory(moodId)
+                    ?.toDataModel()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 
     suspend fun searchContent(query: String): SearchResult? {
         return coroutineScope {

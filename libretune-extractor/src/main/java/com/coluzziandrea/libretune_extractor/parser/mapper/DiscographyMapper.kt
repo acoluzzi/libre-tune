@@ -13,7 +13,7 @@ fun BrowseData.toDiscography(): Discography? {
 
     if (albumsContentItem is SectionContent.GridContent) {
         albumsContentItem.gridRenderer.items.mapNotNull {
-            it.musicTwoRowItemRenderer.toPlaylist()
+            it.musicTwoRowItemRenderer?.toPlaylist()
         }.let {
             return Discography(
                 albums = it

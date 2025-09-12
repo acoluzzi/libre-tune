@@ -13,11 +13,11 @@ fun SectionContent.MusicResponsiveListItemContent.extractAlbumInfo(): MusicNode?
 
     val albumFlexColumn = musicResponsiveListItemRenderer.flexColumns.find {
         it.musicResponsiveListItemFlexColumnRenderer.text.runs?.any { run ->
-            run.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && run.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType == "MUSIC_PAGE_TYPE_ALBUM"
+            run.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && run.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType == "MUSIC_PAGE_TYPE_ALBUM"
         } == true
     }
 
-    albumFlexColumn?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType == "MUSIC_PAGE_TYPE_ALBUM" }
+    albumFlexColumn?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType == "MUSIC_PAGE_TYPE_ALBUM" }
         ?.first {
             val id =
                 (it.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId
@@ -39,7 +39,7 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
 
 
     val name =
-        title.runs.firstOrNull()?.text
+        title.runs.firstOrNull()?.text?.trim()
 
     if (id == null || name == null || id.isEmpty() || name.isEmpty()) {
         return null
@@ -57,7 +57,7 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
     val releaseYearStr = subtitle.runs.getOrNull(2)?.text ?: ""
 
     val artists = mutableListOf<Artist>()
-    subtitle.runs.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType == "MUSIC_PAGE_TYPE_ARTIST" }
+    subtitle.runs.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType == "MUSIC_PAGE_TYPE_ARTIST" }
         .forEach {
             val artistId =
                 (it.navigationEndpoint as NavigationEndpoint.BrowseNavigationEndpoint).browseEndpoint.browseId

@@ -71,4 +71,9 @@ sealed class Screen(
         fun createRoute() = "history"
     }
 
+    data object MoodGenre :
+        Screen("mood_genre/{moodGenreId}", "Mood Genre", Icons.Default.Album, Icons.Default.Album) {
+        fun createRoute(moodGenreId: String) = "mood_genre/$moodGenreId"
+    }
+
 }

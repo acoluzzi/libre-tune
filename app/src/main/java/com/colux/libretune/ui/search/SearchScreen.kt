@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,7 +29,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -64,8 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Artist
-import com.colux.libretune.data.model.Image
-import com.colux.libretune.data.model.Playlist
+import com.colux.libretune.data.model.MoodGenres
 import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.model.Song
@@ -76,29 +73,6 @@ import com.colux.libretune.ui.nav.AppDrawerMenu
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
-
-// --- DATA MODELS (as provided by you, with fixes) ---
-
-// A simple object to hold updated mock data for the previews
-object DummyData {
-    private val imageList = listOf(Image("https://picsum.photos/seed/music/200", 200, 200))
-    private val queen = Artist("a1", "Queen", imageList)
-    private val ledZeppelin = Artist("a2", "Led Zeppelin", imageList)
-
-    val songs = listOf(
-        Song("s1", "Bohemian Rhapsody", listOf(queen), null, 12313123, 1, imageList),
-        Song("s2", "Stairway to Heaven", listOf(ledZeppelin), null, 123123123, 2, imageList)
-    )
-    val artists = listOf(queen, ledZeppelin)
-    val playlists = listOf(
-        Playlist("p1", "Rock Classics", imageList, listOf(queen, ledZeppelin), isLocal = false),
-        Playlist("p2", "70s Hits", imageList, listOf(ledZeppelin), isLocal = false)
-    )
-    val genres = listOf(
-        "Rock", "Pop", "Hip Hop", "Jazz", "Classical", "Electronic"
-    )
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,20 +88,17 @@ fun SearchScreen(
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
-    // --- State for the Bottom Sheet ---
     val sheetState = rememberModalBottomSheetState()
-    // This holds the song that the user tapped the menu for. If null, the sheet is hidden.
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
+    val moodGenres by searchViewModel.moodGenres.collectAsState()
 
-    // 1. The drawer state now lives inside the HomeScreen.
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     BackHandler(enabled = drawerState.isOpen || isFocused) {
-        // Close the drawer when the back button is pressed.
         scope.launch { drawerState.close() }
-        // If the search field is focused, clear focus to hide suggestions.
         if (isFocused) {
             query = ""
             searchViewModel.onQueryChange("")
@@ -138,7 +109,6 @@ fun SearchScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Your existing AppDrawer composable
             AppDrawerMenu(
                 navController = navController,
                 closeDrawer = { scope.launch { drawerState.close() } }
@@ -310,7 +280,11 @@ fun SearchScreen(
                         } else {
                             // If not focused, we are in "browse" or "results" mode.
                             when (val state = uiState) {
-                                is SearchUiState.Explore -> ExplorePanel(genres = DummyData.genres)
+                                is SearchUiState.Explore -> ExplorePanel(
+                                    moodGenres = moodGenres,
+                                    navController = navController
+                                )
+
                                 is SearchUiState.Loading -> SearchResultsSkeleton()
                                 is SearchUiState.Empty -> EmptyResults(query = state.query)
                                 is SearchUiState.Results -> SearchResultsList(
@@ -320,7 +294,10 @@ fun SearchScreen(
                                     onSongMenuClick = { song -> selectedSongForMenu = song }
                                 )
                                 // Suggestions state is ignored when not focused
-                                is SearchUiState.Suggestions -> ExplorePanel(genres = DummyData.genres)
+                                is SearchUiState.Suggestions -> ExplorePanel(
+                                    moodGenres = moodGenres,
+                                    navController = navController
+                                )
                             }
 
                             if (selectedSongForMenu != null) {
@@ -359,30 +336,44 @@ fun SearchScreen(
 // --- UI Components for Each State ---
 
 @Composable
-fun ExplorePanel(genres: List<String>) {
+fun ExplorePanel(moodGenres: MoodGenres?, navController: NavHostController) {
     Column {
         Text(
-            text = "Browse all",
+            text = "Moods & Genres",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
         )
+
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(genres) { genre ->
-                Card(modifier = Modifier.height(100.dp)) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(genre)
-                    }
+
+            if (moodGenres == null) {
+                items(15) {
+                    MoodGenreSkeleton()
                 }
+                return@LazyVerticalGrid
             }
+
+
+
+            items((moodGenres.moods + moodGenres.genres)) { mood ->
+                MoodGenreCard(
+                    mood = mood,
+                    modifier = Modifier
+                        .width(100.dp),
+                    onClickListener = {
+                        navController.navigate(Screen.MoodGenre.createRoute(mood.id))
+                    }
+                )
+            }
+
         }
+
     }
 }
 

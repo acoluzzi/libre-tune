@@ -15,7 +15,7 @@ fun SectionContent.MusicResponsiveListItemContent.toMusicItem(): GenericMusicIte
 
         is NavigationEndpoint.BrowseNavigationEndpoint -> {
             val pageType =
-                musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs.browseEndpointContextMusicConfig.pageType
+                musicResponsiveListItemRenderer.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType
 
             when (pageType) {
                 "MUSIC_PAGE_TYPE_ARTIST" -> {

@@ -3,6 +3,7 @@ package com.colux.libretune.data.local.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.ArtistEntity
 import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
 import com.colux.libretune.data.local.join.HistoryArtistCrossRef
@@ -22,6 +23,7 @@ interface HistoryDao {
     @Insert
     suspend fun linkHistoryItemToArtists(crossRef: List<HistoryArtistCrossRef>)
 
+    @Transaction
     @Query(
         """
         SELECT *
@@ -50,7 +52,7 @@ interface HistoryDao {
     )
     fun getRecentlyPlayedArtists(limit: Int): Flow<List<ArtistEntity>>
 
-    // Gets the most recently played, unique albums
+    @Transaction
     @Query(
         """
         SELECT playlists.* FROM playlists

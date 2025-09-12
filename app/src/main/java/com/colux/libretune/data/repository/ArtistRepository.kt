@@ -14,9 +14,9 @@ import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.SongArtistCrossRef
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.local.mapper.toEntity
+import com.colux.libretune.data.local.wrapper.PlaylistWithArtists
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
-import com.colux.libretune.data.model.wrapper.AlbumWithArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -55,7 +55,7 @@ class ArtistRepository @Inject constructor(
         // 1. Get the individual flows from each DAO.
         val artistFlow: Flow<ArtistEntity?> = db.artistDao().getArtist(artistId)
 
-        val albumsAndSinglesFlow: Flow<List<PlaylistEntity>> =
+        val albumsAndSinglesFlow: Flow<List<PlaylistWithArtists>> =
             db.playlistDao().getAlbumsAndSinglesByArtistId(artistId)
 
         val similarArtistsFlow: Flow<List<ArtistEntity>> =
@@ -80,24 +80,12 @@ class ArtistRepository @Inject constructor(
 
         val songsWithArtistAndAlbum = db.songDao().getSongsWithAlbumByArtistId(artistId)
 
-        val albumsWithArtistsFlow: Flow<List<AlbumWithArtists>> =
-            albumsAndSinglesFlow.map { albums ->
-                albums.map { album ->
-                    val albumArtists =
-                        db.artistDao().getArtistsByAlbumId(album.playlistId).firstOrNull()
-                    AlbumWithArtists(
-                        album,
-                        albumArtists ?: emptyList()
-                    )
-                }
-            }
-
 
         // 2. Use 'combine' to merge the results from all flows.
         return combine(
             artistFlow,
             songsWithArtistAndAlbum,
-            albumsWithArtistsFlow,
+            albumsAndSinglesFlow,
             similarArtistsFlow,
             playlistAndFeaturingFlow
         ) { artist, songs, albums, similarArtists, playlists ->
@@ -117,12 +105,12 @@ class ArtistRepository @Inject constructor(
                     it.toDataModel()
                 },
                 albums = albums.filter {
-                    it.albumEntity.type == AlbumType.ALBUM
+                    it.playlist.type == AlbumType.ALBUM
                 }.map {
                     it.toDataModel()
                 },
                 singlesAndEPs = albums.filter {
-                    it.albumEntity.type == AlbumType.SINGLE || it.albumEntity.type == AlbumType.EP
+                    it.playlist.type == AlbumType.SINGLE || it.playlist.type == AlbumType.EP
                 }.map {
                     it.toDataModel()
                 },

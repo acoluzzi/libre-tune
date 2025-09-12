@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
+import com.colux.libretune.data.local.join.HistoryArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
 import com.colux.libretune.data.local.join.SongArtistCrossRef
@@ -57,12 +58,29 @@ class SongRepository @Inject constructor(
     }
 
     suspend fun logSongPlayed(song: Song) {
-        db.historyDao().insertHistory(
-            PlaybackHistoryEntity(
-                songId = song.id,
-                playedAtTimestamp = System.currentTimeMillis()
+        _saveSong(song)
+
+        db.withTransaction {
+            logger.info { "insertHistory for song played: $song" }
+            db.historyDao().insertHistory(
+                PlaybackHistoryEntity(
+                    songId = song.id,
+                    albumId = song.album?.id,
+                    playedAtTimestamp = System.currentTimeMillis()
+                )
             )
-        )
+
+            db.historyDao().linkHistoryItemToArtists(
+                song.artists.map { artist ->
+                    HistoryArtistCrossRef(
+                        historyId = db.historyDao().getLastInsertedId(),
+                        artistId = artist.id
+                    )
+                }
+            )
+        }
+
+
     }
 
     fun isSongLiked(id: String): Flow<Boolean> {
@@ -90,7 +108,8 @@ class SongRepository @Inject constructor(
         _addSongToPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, song)
     }
 
-    private suspend fun _addSongToPlaylist(playlistId: String, song: Song) {
+    private suspend fun _saveSong(song: Song) {
+        logger.info { "Save song $song" }
         val albumEntity = song.album?.toEntity()
         val artistsEntities = song.artists.map { it.toEntity() }
         val songEntity = song.toEntity()
@@ -104,6 +123,7 @@ class SongRepository @Inject constructor(
                 )
             }
         } ?: emptyList()
+
 
         db.withTransaction {
             logger.info { "Upserting artist entities: $artistsEntities" }
@@ -131,14 +151,18 @@ class SongRepository @Inject constructor(
             }
             logger.info { "Linking song to artist: $songArtistLinks" }
             db.songDao().linkSongsToArtists(songArtistLinks)
-
-            val join = PlaylistSongCrossRef(
-                playlistId = playlistId,
-                songId = song.id
-            )
-            logger.info { "Linking song to playlist: $join" }
-            db.playlistDao().addSongToPlaylist(join)
         }
+    }
+
+    private suspend fun _addSongToPlaylist(playlistId: String, song: Song) {
+        _saveSong(song)
+
+        val join = PlaylistSongCrossRef(
+            playlistId = playlistId,
+            songId = song.id
+        )
+        logger.info { "Linking song to playlist: $join" }
+        db.playlistDao().addSongToPlaylist(join)
     }
 
     suspend fun removeSongFromAllPlaylists(songId: String) {

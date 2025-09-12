@@ -35,6 +35,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        isCoreLibraryDesugaringEnabled = true
+
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -73,6 +76,9 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
 
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.compose)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
 
     implementation(libs.androidx.material.icons.extended.android)

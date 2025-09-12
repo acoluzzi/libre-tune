@@ -62,13 +62,16 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     fun getPlaylist(id: String): Flow<PlaylistEntity?>
 
+    @Transaction
     @Query("SELECT * FROM playlists WHERE playlistId = :id")
     fun getPlaylistWithArtists(id: String): Flow<PlaylistWithArtists?>
 
 
+    @Transaction
     @Query("SELECT * FROM playlists where isLocal = 1")
     fun getLocalPlaylists(): Flow<List<PlaylistWithSongsEntity>>
 
+    @Transaction
     @Query(
         """
         SELECT * 
@@ -129,6 +132,7 @@ interface PlaylistDao {
     fun getPlaylistsForArtist(artistId: String): Flow<List<PlaylistEntity>>
 
 
+    @Transaction
     @Query(
         """
         SELECT * FROM playlists
@@ -138,7 +142,7 @@ interface PlaylistDao {
         ) 
     """
     )
-    fun getAlbumsAndSinglesByArtistId(artistId: String): Flow<List<PlaylistEntity>>
+    fun getAlbumsAndSinglesByArtistId(artistId: String): Flow<List<PlaylistWithArtists>>
 
     @Query(
         """
@@ -173,6 +177,7 @@ interface PlaylistDao {
     )
     fun getRelatedPlaylistsForPlaylist(playlistId: String): Flow<List<PlaylistEntity>>
 
+    @Transaction
     @Query(
         """
         SELECT * FROM playlists p
@@ -184,7 +189,7 @@ interface PlaylistDao {
         LIMIT :limit
     """
     )
-    fun getRelatedPlaylistsWithArtists(id: String, limit: Int): Flow<List<PlaylistWithArtists>>
+    fun getRelatedPlaylistsWithArtists(id: String, limit: Int = 20): Flow<List<PlaylistWithArtists>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun linkPlaylistToArtists(crossRefs: List<ArtistPlaylistCrossRef>)

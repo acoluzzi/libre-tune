@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -26,24 +26,31 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,8 +72,10 @@ import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.components.album.PlaylistItem
 import com.colux.libretune.ui.components.song.SongItem
 import com.colux.libretune.ui.components.song.SongMenu
+import com.colux.libretune.ui.nav.AppDrawerMenu
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.player.PlayerViewModel
+import kotlinx.coroutines.launch
 
 // --- DATA MODELS (as provided by you, with fixes) ---
 
@@ -93,7 +102,12 @@ object DummyData {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostController) {
+fun SearchScreen(
+    playerViewModel: PlayerViewModel,
+    navController: NavHostController,
+    onShowPlayerFullScreen: () -> Unit,
+    searchViewModel: SearchViewModel = hiltViewModel()
+) {
     val searchViewModel: SearchViewModel = hiltViewModel()
     val uiState by searchViewModel.uiState.collectAsState()
     var query by remember { mutableStateOf("") }
@@ -106,163 +120,234 @@ fun SearchScreen(playerViewModel: PlayerViewModel, navController: NavHostControl
     var selectedSongForMenu by remember { mutableStateOf<Song?>(null) }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-    ) {
-        // --- Search Input Field ---
-        OutlinedTextField(
-            value = query,
-            onValueChange = {
-                query = it
-                searchViewModel.onQueryChange(it)
-            },
-            label = { Text("What do you want to play?") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .onFocusChanged { focusState ->
-                    isFocused = focusState.isFocused
-                    searchViewModel.onFocusChanged(focusState.isFocused, query)
-                },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {
-                searchViewModel.submitSearch(query)
-                focusManager.clearFocus()
-            }),
+    // 1. The drawer state now lives inside the HomeScreen.
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-            // 1. Add the leading search icon
-            leadingIcon = {
-                Icon(Icons.Default.Search, contentDescription = "Search Icon")
-            },
+    BackHandler(enabled = drawerState.isOpen || isFocused) {
+        // Close the drawer when the back button is pressed.
+        scope.launch { drawerState.close() }
+        // If the search field is focused, clear focus to hide suggestions.
+        if (isFocused) {
+            query = ""
+            searchViewModel.onQueryChange("")
+            focusManager.clearFocus()
+        }
+    }
 
-            // 2. Add the clearable trailing icon
-            trailingIcon = {
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = {
-                        query = ""
-                        searchViewModel.onQueryChange("")
-                        focusManager.clearFocus()
-                    }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear search")
-                    }
-                }
-            },
-
-            // 3. Customize the colors
-            colors = TextFieldDefaults.colors(
-                // Use surfaceVariant for a "less black" background
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-
-                // Use onSurfaceVariant for a "more gray" text color
-                focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-
-                // Customize other colors for a polished look
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-
-                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                focusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            // Your existing AppDrawer composable
+            AppDrawerMenu(
+                navController = navController,
+                closeDrawer = { scope.launch { drawerState.close() } }
             )
-        )
+        }
+    ) {
 
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Search") },
+                    // 3. The burger icon to open the drawer.
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Open menu")
+                        }
+                    }
+                )
+            }
+        ) { innerPadding ->
+            // The LazyColumn with your home screen content
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
 
-        // --- Main Content Area ---
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Show suggestions only when the user is typing and the text field is focused
+                item {
+                    // --- Search Input Field ---
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = {
+                            query = it
+                            searchViewModel.onQueryChange(it)
+                        },
+                        label = { Text("What do you want to play?") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .onFocusChanged { focusState ->
+                                isFocused = focusState.isFocused
+                                searchViewModel.onFocusChanged(focusState.isFocused, query)
+                            },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = {
+                            searchViewModel.submitSearch(query)
+                            focusManager.clearFocus()
+                        }),
 
-            if (isFocused) {
-                if (uiState is SearchUiState.Suggestions) {
-                    SuggestionsOverlay(
-                        suggestions = (uiState as SearchUiState.Suggestions).suggestions,
-                        onSuggestionClick = { suggestion ->
-                            when (suggestion) {
-                                is SearchSuggestion.QuerySuggestion -> {
-                                    // If it's a simple query, submit a new search
-                                    query = suggestion.query
-                                    searchViewModel.submitSearch(suggestion.query)
-                                }
+                        // 1. Add the leading search icon
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = "Search Icon")
+                        },
 
-                                is SearchSuggestion.EntitySuggestion -> {
-                                    // If it's a specific entity, handle based on type
-                                    when (suggestion.type) {
-                                        "Song" -> {
-                                            playerViewModel.playSongList(
-                                                listOfNotNull(suggestion.song),
-                                                0
-                                            )
-                                        }
-
-                                        "Artist" -> {
-                                            navController.navigate(
-                                                Screen.Artist.createRoute(
-                                                    suggestion.artist?.id
-                                                        ?: return@SuggestionsOverlay
-                                                )
-                                            )
-                                        }
-
-                                        "Album", "Playlist" -> {
-                                            navController.navigate(
-                                                Screen.PlaylistDetail.createRoute(
-                                                    suggestion.album?.id ?: suggestion.playlist?.id
-                                                    ?: return@SuggestionsOverlay
-                                                )
-                                            )
-                                        }
-                                    }
+                        // 2. Add the clearable trailing icon
+                        trailingIcon = {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    query = ""
+                                    searchViewModel.onQueryChange("")
+                                    focusManager.clearFocus()
+                                }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear search")
                                 }
                             }
-                            // Hide the keyboard and suggestions overlay
-                            focusManager.clearFocus()
-                        }
+                        },
+
+                        // 3. Customize the colors
+                        colors = TextFieldDefaults.colors(
+                            // Use surfaceVariant for a "less black" background
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+
+                            // Use onSurfaceVariant for a "more gray" text color
+                            focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+
+                            // Customize other colors for a polished look
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+                            unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+
+                            unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+                            focusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
-                }
-            } else {
-                // If not focused, we are in "browse" or "results" mode.
-                when (val state = uiState) {
-                    is SearchUiState.Explore -> ExplorePanel(genres = DummyData.genres)
-                    is SearchUiState.Loading -> SearchResultsSkeleton()
-                    is SearchUiState.Empty -> EmptyResults(query = state.query)
-                    is SearchUiState.Results -> SearchResultsList(
-                        results = state.results,
-                        navController = navController,
-                        playerViewModel = playerViewModel,
-                        onSongMenuClick = { song -> selectedSongForMenu = song }
-                    )
-                    // Suggestions state is ignored when not focused
-                    is SearchUiState.Suggestions -> ExplorePanel(genres = DummyData.genres)
                 }
 
-                if (selectedSongForMenu != null) {
-                    ModalBottomSheet(
-                        onDismissRequest = { selectedSongForMenu = null },
-                        sheetState = sheetState
+                item {
+                    // --- Main Content Area ---
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxHeight()
+                            .padding(
+                                top = 16.dp
+                            )
                     ) {
-                        // We can reuse the menu from the full-screen player
-                        SongMenu(
-                            song = selectedSongForMenu!!,
-                            onClose = {
-                                selectedSongForMenu = null
-                            },
-                            navController = navController,
-                            playerViewModel = playerViewModel,
-                        )
+                        // Show suggestions only when the user is typing and the text field is focused
+
+                        if (isFocused) {
+                            if (uiState is SearchUiState.Suggestions) {
+                                SuggestionsOverlay(
+                                    suggestions = (uiState as SearchUiState.Suggestions).suggestions,
+                                    onSuggestionClick = { suggestion ->
+                                        when (suggestion) {
+                                            is SearchSuggestion.QuerySuggestion -> {
+                                                // If it's a simple query, submit a new search
+                                                query = suggestion.query
+                                                searchViewModel.submitSearch(suggestion.query)
+                                            }
+
+                                            is SearchSuggestion.EntitySuggestion -> {
+                                                // If it's a specific entity, handle based on type
+                                                when (suggestion.type) {
+                                                    "Song" -> {
+                                                        onShowPlayerFullScreen()
+                                                        playerViewModel.playSongList(
+                                                            listOfNotNull(suggestion.song),
+                                                            0
+                                                        )
+                                                    }
+
+                                                    "Artist" -> {
+                                                        navController.navigate(
+                                                            Screen.Artist.createRoute(
+                                                                suggestion.artist?.id
+                                                                    ?: return@SuggestionsOverlay
+                                                            )
+                                                        )
+                                                    }
+
+                                                    "Album", "Playlist" -> {
+                                                        navController.navigate(
+                                                            Screen.PlaylistDetail.createRoute(
+                                                                suggestion.album?.id
+                                                                    ?: suggestion.playlist?.id
+                                                                    ?: return@SuggestionsOverlay
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+                                        // Hide the keyboard and suggestions overlay
+                                        focusManager.clearFocus()
+
+                                    }
+                                )
+                            }
+                        } else {
+                            // If not focused, we are in "browse" or "results" mode.
+                            when (val state = uiState) {
+                                is SearchUiState.Explore -> ExplorePanel(genres = DummyData.genres)
+                                is SearchUiState.Loading -> SearchResultsSkeleton()
+                                is SearchUiState.Empty -> EmptyResults(query = state.query)
+                                is SearchUiState.Results -> SearchResultsList(
+                                    results = state.results,
+                                    navController = navController,
+                                    playerViewModel = playerViewModel,
+                                    onSongMenuClick = { song -> selectedSongForMenu = song }
+                                )
+                                // Suggestions state is ignored when not focused
+                                is SearchUiState.Suggestions -> ExplorePanel(genres = DummyData.genres)
+                            }
+
+                            if (selectedSongForMenu != null) {
+                                ModalBottomSheet(
+                                    onDismissRequest = { selectedSongForMenu = null },
+                                    sheetState = sheetState
+                                ) {
+                                    // We can reuse the menu from the full-screen player
+                                    SongMenu(
+                                        song = selectedSongForMenu!!,
+                                        onClose = {
+                                            selectedSongForMenu = null
+                                        },
+                                        navController = navController,
+                                        playerViewModel = playerViewModel,
+                                    )
+                                }
+                            }
+
+                        }
+
+
                     }
                 }
 
+
             }
-
-
         }
 
 
@@ -402,7 +487,10 @@ fun EntitySuggestionItem(suggestion: SearchSuggestion.EntitySuggestion, onClick:
                     append(" • ${suggestion.getArtistNameLabel()}")
                 }
             }
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = subtitle, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
         }
     }
 }

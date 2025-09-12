@@ -18,6 +18,7 @@ import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.ArtistFeaturedPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.ArtistRelatedCrossRef
+import com.colux.libretune.data.local.join.HistoryArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
@@ -36,6 +37,7 @@ import com.colux.libretune.data.local.join.SongArtistCrossRef
         SongArtistCrossRef::class,
         PlaybackHistoryEntity::class,
         LibraryEntity::class,
+        HistoryArtistCrossRef::class,
         PlaylistSongCrossRef::class], version = 1
 )
 @TypeConverters(Converters::class)

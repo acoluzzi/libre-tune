@@ -4,6 +4,7 @@ coilCompose = "2.7.0"
 converterMoshi = "3.0.0"
 coreKtxVersion = "1.17.0"
 coreSplashscreen = "1.0.1"
+desugar_jdk_libs = "2.1.5"
 hiltAndroid = "2.57.1"
 hiltAndroidVersion = "2.57.1"
 hiltCompiler = "2.57.1"
@@ -40,6 +41,7 @@ newpipeExtractor = "0.24.8"
 newpipeextractorVersion = "v0.27.0"
 okhttp = "5.1.0"
 okhttpVersion = "5.1.0"
+pagingRuntimeKtx = "3.3.6"
 paletteKtx = "1.0.0"
 retrofit = "3.0.0"
 foundationLayout = "1.9.0"
@@ -60,6 +62,8 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Ui" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingRuntimeKtx" }
+androidx-paging-runtime-ktx = { module = "androidx.paging:paging-runtime-ktx", version.ref = "pagingRuntimeKtx" }
 androidx-palette-ktx = { module = "androidx.palette:palette-ktx", version.ref = "paletteKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
@@ -67,6 +71,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "converterMoshi" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-v2511 = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidVersion" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }

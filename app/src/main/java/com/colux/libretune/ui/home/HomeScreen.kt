@@ -1,117 +1,163 @@
 package com.colux.libretune.ui.home
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material3.DrawerState
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.colux.libretune.data.model.Song
-import com.colux.libretune.ui.components.playlist.PlaylistCarousel
-import kotlinx.coroutines.CoroutineScope
+import com.colux.libretune.data.model.HomeFeedItem
+import com.colux.libretune.ui.nav.AppDrawerMenu
+import com.colux.libretune.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    playerViewModel: PlayerViewModel,
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel(),
-    onSongClick: (playlist: List<Song>, songIndex: Int) -> Unit,
-    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-    scope: CoroutineScope = rememberCoroutineScope()
 ) {
+
+    val greeting = remember { getGreeting() }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            AppDrawer(
+            // Your existing AppDrawer composable
+            AppDrawerMenu(
                 navController = navController,
-                closeDrawer = { scope.launch { drawerState.close() } })
+                closeDrawer = { scope.launch { drawerState.close() } }
+            )
         }
     ) {
-        val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
-        val madeForYou by viewModel.madeForYou.collectAsState()
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Space between carousels
-        ) {
-            item {
-                // A nice greeting
-                Text(
-                    text = "Good afternoon", // You can make this dynamic based on time!
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(16.dp)
+        // 2. The HomeScreen has its own Scaffold.
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(greeting) },
+                    // 3. The burger icon to open the drawer.
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Open menu")
+                        }
+                    }
                 )
             }
-
-            item {
-                PlaylistCarousel(
-                    title = "Recently Played",
-                    playlists = listOf(),
-                    onItemClick = { index ->
-                        onSongClick(recentlyPlayed, index)
-                    })
-            }
-
-            item {
-                PlaylistCarousel(
-                    title = "Made for You",
-                    playlists = listOf(),
-                    onItemClick = { index ->
-                        onSongClick(madeForYou, index)
-                    })
-            }
-
-
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
-            }
+        ) { innerPadding ->
+            HomeScreenContent(
+                innerPadding = innerPadding,
+                uiState = uiState,
+                navController = navController
+            )
         }
     }
+}
 
+@Composable
+fun HomeScreenContent(
+    uiState: HomeUiState,
+    innerPadding: PaddingValues,
+    navController: NavController
+) {
+    when (uiState) {
+        is HomeUiState.Loading -> {
+            HomeScreenSkeleton(innerPadding)
+        }
 
+        is HomeUiState.Empty -> {
+            HomeScreenEmpty(innerPadding)
+        }
+
+        is HomeUiState.Success -> {
+            HomeScreenSuccess(innerPadding, uiState.items, navController = navController)
+        }
+    }
 }
 
 
 @Composable
-fun AppDrawer(navController: NavController, closeDrawer: () -> Unit) {
-    ModalDrawerSheet {
-        // ... Drawer header (e.g., app logo)
-        NavigationDrawerItem(
-            label = { Text("History") },
-            icon = { Icon(Icons.Default.History, contentDescription = "History") },
-            selected = false,
-            onClick = { navController.navigate("history"); closeDrawer() }
-        )
-        NavigationDrawerItem(
-            label = { Text("Statistics") },
-            icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
-            selected = false,
-            onClick = { navController.navigate("statistics"); closeDrawer() }
-        )
+fun HomeScreenSuccess(
+    innerPadding: PaddingValues,
+    items: List<HomeFeedItem>,
+    navController: NavController
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+    ) {
+
+        items(items) { item ->
+            HomeSuggestionItemView(
+                item = item,
+                navController = navController
+            )
+        }
+
+
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
+        }
     }
 }
+
+
+@Composable
+fun HomeScreenEmpty(innerPadding: PaddingValues) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+    ) {
+        item {
+            Text(
+                "Start searching for you favorite music to populate the home.",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+
+private fun getGreeting(): String {
+    val calendar = Calendar.getInstance()
+    return when (calendar.get(Calendar.HOUR_OF_DAY)) {
+        in 5..11 -> "Good morning"
+        in 12..17 -> "Good afternoon"
+        else -> "Good evening"
+    }
+}
+
+

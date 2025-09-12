@@ -3,6 +3,7 @@ package com.colux.libretune.ui.nav
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -63,6 +64,11 @@ sealed class Screen(
     data object CreatePlaylist :
         Screen("create_playlist", "Create Playlist", Icons.Default.Add, Icons.Default.Add) {
         fun createRoute() = "create_playlist"
+    }
+
+    data object History :
+        Screen("history", "History", Icons.Default.History, Icons.Default.History) {
+        fun createRoute() = "history"
     }
 
 }

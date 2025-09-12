@@ -98,11 +98,8 @@ fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
         ) {
             Navigation(
                 navController = navController,
-                playerViewModel,
-                onSongClick = { playlist, songIndex ->
-                    // When a song is clicked, update the playerViewModel with the new song
-                    playerViewModel.playSongList(playlist, songIndex)
-                }
+                playerViewModel = playerViewModel,
+                onShowPlayerFullScreen = { showBottomSheet = true }
             )
 
             if (currentSong != null) {

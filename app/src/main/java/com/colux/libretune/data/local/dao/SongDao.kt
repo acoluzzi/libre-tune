@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.colux.libretune.data.local.entity.SongEntity
 import com.colux.libretune.data.local.join.SongArtistCrossRef
 import com.colux.libretune.data.local.wrapper.SongWithAlbumAndArtist
@@ -21,6 +22,7 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE albumId = :albumId")
     suspend fun getSongsByAlbumId(albumId: String): List<SongEntity>
 
+    @Transaction
     @Query(
         """
         
@@ -36,9 +38,11 @@ interface SongDao {
     )
     fun getSongsWithAlbumByArtistId(artistId: String): Flow<List<SongWithAlbumAndArtist>>
 
+    @Transaction
     @Query("SELECT * FROM songs WHERE albumId = :albumId")
     fun getSongsWithAlbumAndArtistByAlbumId(albumId: String): Flow<List<SongWithAlbumAndArtist>>
 
+    @Transaction
     @Query("SELECT * FROM songs WHERE songId IN (SELECT songId FROM playlist_song_cross_ref WHERE playlistId = :playlistId)")
     fun getSongsWithAlbumAndArtistByPlaylistId(playlistId: String): Flow<List<SongWithAlbumAndArtist>>
 

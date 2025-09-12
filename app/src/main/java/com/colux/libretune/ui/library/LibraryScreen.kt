@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.library
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,17 +16,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -36,8 +42,10 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.R
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
+import com.colux.libretune.ui.nav.AppDrawerMenu
 import com.colux.libretune.ui.nav.Screen
 import com.colux.libretune.ui.search.ArtistSearchResultItem
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,54 +54,80 @@ fun LibraryScreen(navController: NavHostController) {
     val playlists by viewModel.playlists.collectAsState()
     val artists by viewModel.artists.collectAsState()
 
+    // 1. The drawer state now lives inside the HomeScreen.
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Your Library") },
-                actions = {
-                    // "Plus" button to show the create playlist dialog
-                    IconButton(onClick = { navController.navigate(Screen.CreatePlaylist.route) }) {
-                        Icon(Icons.Default.Add, contentDescription = "Create new playlist")
-                    }
-                }
+    BackHandler(enabled = drawerState.isOpen) {
+        // Close the drawer when the back button is pressed.
+        scope.launch { drawerState.close() }
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            // Your existing AppDrawer composable
+            AppDrawerMenu(
+                navController = navController,
+                closeDrawer = { scope.launch { drawerState.close() } }
             )
-        },
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-    ) { innerPadding ->
-        LazyColumn(
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Your Library") },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Open menu")
+                        }
+                    },
+                    actions = {
+                        // "Plus" button to show the create playlist dialog
+                        IconButton(onClick = { navController.navigate(Screen.CreatePlaylist.route) }) {
+                            Icon(Icons.Default.Add, contentDescription = "Create new playlist")
+                        }
+                    }
+                )
+            },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(bottom = 80.dp) // Space for mini-player
-        ) {
-            items(playlists) { playlist ->
-                PlaylistListItem(
-                    playlistWithSongs = playlist,
-                    onClick = {
-                        navController.navigate(
-                            Screen.PlaylistDetail.createRoute(playlist.playlist?.id ?: "")
-                        )
-                    }
-                )
+                .statusBarsPadding()
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(bottom = 80.dp) // Space for mini-player
+            ) {
+                items(playlists) { playlist ->
+                    PlaylistListItem(
+                        playlistWithSongs = playlist,
+                        onClick = {
+                            navController.navigate(
+                                Screen.PlaylistDetail.createRoute(playlist.playlist?.id ?: "")
+                            )
+                        }
+                    )
+                }
+
+                items(artists) { artist ->
+                    ArtistSearchResultItem(
+                        artist = artist,
+                        onClick = {
+                            navController.navigate(
+                                Screen.Artist.createRoute(artist.id)
+                            )
+                        }
+                    )
+                }
+
+
             }
-
-            items(artists) { artist ->
-                ArtistSearchResultItem(
-                    artist = artist,
-                    onClick = {
-                        navController.navigate(
-                            Screen.Artist.createRoute(artist.id)
-                        )
-                    }
-                )
-            }
-
-
         }
     }
+
+
 }
 
 /**

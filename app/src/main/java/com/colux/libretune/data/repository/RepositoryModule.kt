@@ -36,6 +36,19 @@ class RepositoryModule {
         return PlaylistRepository(remote, db)
     }
 
+    @Provides
+    fun provideHomeRepositoryImpl(
+        db: AppDatabase
+    ): HomeRepository {
+        return HomeRepository(db)
+    }
+
+    @Provides
+    fun provideHistoryRepositoryImpl(
+        db: AppDatabase
+    ): HistoryRepository {
+        return HistoryRepository(db)
+    }
 
     @Provides
     fun provideAlbumRepositoryImpl(

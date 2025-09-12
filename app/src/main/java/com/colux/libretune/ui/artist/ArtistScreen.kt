@@ -384,7 +384,7 @@ fun ArtistScreen(
                                 ArtistCarousel(
                                     title = "Similar Artists",
                                     artists = state.details.similarArtists,
-                                    modifier = Modifier.height(200.dp),
+                                    modifier = Modifier.height(210.dp),
                                     onItemClick = { artistId ->
                                         navController.navigate(Screen.Artist.createRoute(artistId))
                                     }

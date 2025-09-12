@@ -7,11 +7,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.add_to_playlist.AddToPlaylistScreen
 import com.colux.libretune.ui.artist.ArtistScreen
 import com.colux.libretune.ui.create_playlist.CreatePlaylistScreen
 import com.colux.libretune.ui.discography.DiscographyScreen
+import com.colux.libretune.ui.history.HistoryScreen
 import com.colux.libretune.ui.home.HomeScreen
 import com.colux.libretune.ui.library.LibraryScreen
 import com.colux.libretune.ui.player.PlayerViewModel
@@ -22,7 +22,7 @@ import com.colux.libretune.ui.search.SearchScreen
 fun Navigation(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
-    onSongClick: (playlist: List<Song>, songIndex: Int) -> Unit
+    onShowPlayerFullScreen: () -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -31,13 +31,8 @@ fun Navigation(
 
         navigation(startDestination = "home_screen", route = Screen.Home.route) {
             composable("home_screen") {
-                HomeScreen(navController = navController, onSongClick = onSongClick)
+                HomeScreen(playerViewModel = playerViewModel, navController = navController)
             }
-        }
-
-
-        navigation(startDestination = "search_screen", route = Screen.Search.route) {
-            composable("search_screen") { SearchScreen(playerViewModel, navController) }
 
             composable(Screen.Artist.route, arguments = listOf(navArgument("artistId") {
                 type =
@@ -88,6 +83,76 @@ fun Navigation(
                         navController = navController
                     )
                 }
+            }
+
+
+            composable(Screen.History.route) {
+                HistoryScreen(navController = navController, playerViewModel = playerViewModel)
+            }
+        }
+
+
+        navigation(startDestination = "search_screen", route = Screen.Search.route) {
+            composable("search_screen") {
+                SearchScreen(
+                    playerViewModel,
+                    navController,
+                    onShowPlayerFullScreen
+                )
+            }
+
+            composable(Screen.Artist.route, arguments = listOf(navArgument("artistId") {
+                type =
+                    NavType.StringType
+            })) { backStackEntry ->
+                val artistId = backStackEntry.arguments?.getString("artistId")
+                if (artistId != null) {
+                    ArtistScreen(artistId = artistId, playerViewModel, navController)
+                }
+            }
+
+            composable(
+                route = Screen.PlaylistDetail.route,
+                arguments = listOf(navArgument("playlistId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val playlistId = backStackEntry.arguments?.getString("playlistId")
+                if (playlistId != null) {
+                    PlaylistDetailScreen(
+                        playlistId = playlistId,
+                        playerViewModel = playerViewModel,
+                        navController = navController
+                    )
+                }
+            }
+
+            composable(
+                route = Screen.Discography.route,
+                arguments = listOf(navArgument("artistId") { type = NavType.StringType })
+            ) {
+                val artistId = it.arguments?.getString("artistId")
+                if (artistId != null) {
+                    DiscographyScreen(
+                        artistId = artistId,
+                        navController = navController
+                    )
+                }
+            }
+
+            composable(
+                route = Screen.AddToPlaylist.route,
+                arguments = listOf(navArgument("songId") { type = NavType.StringType })
+            ) {
+                val songId = it.arguments?.getString("songId")
+                if (songId != null) {
+                    AddToPlaylistScreen(
+                        songId = songId,
+                        playerViewModel = playerViewModel,
+                        navController = navController
+                    )
+                }
+            }
+            composable(Screen.History.route) {
+                HistoryScreen(navController = navController, playerViewModel = playerViewModel)
             }
         }
 
@@ -148,6 +213,10 @@ fun Navigation(
 
             composable(Screen.CreatePlaylist.route) {
                 CreatePlaylistScreen(navController = navController)
+            }
+
+            composable(Screen.History.route) {
+                HistoryScreen(navController = navController, playerViewModel = playerViewModel)
             }
         }
 

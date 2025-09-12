@@ -1,12 +1,15 @@
 package com.colux.libretune.ui.components.artist
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -28,19 +31,69 @@ import com.colux.libretune.data.model.Artist
 
 @Composable
 fun ArtistCarousel(
-    title: String,
+    title: String? = null,
     artists: List<Artist>,
     onItemClick: (String) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+    relatedToArtist: Artist? = null,
+    onRelatedArtistClick: (String) -> Unit = {}
 ) {
     Column(
         modifier = modifier
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
-        )
+        if (relatedToArtist != null) {
+            // New header for "Fans of X also like"
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onRelatedArtistClick(relatedToArtist.id) }
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = relatedToArtist.bestImageForCarousel(),
+                    contentDescription = relatedToArtist.name,
+                    placeholder = painterResource(id = R.drawable.ic_default_artist_avatar_foreground),
+                    error = painterResource(id = R.drawable.ic_default_artist_avatar_foreground),
+                    modifier = Modifier
+                        .size(40.dp) // A good size for a header icon
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(
+                        text = "For fans of",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+
+                    Text(
+                        text = relatedToArtist.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.basicMarquee()
+                    )
+                }
+
+
+            }
+        } else {
+            // Original header, shown only if relatedToArtist is null and a title is provided
+            if (title?.isNotBlank() == true) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 8.dp
+                    )
+                )
+            }
+        }
         LazyRow(
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {

@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "playback_history")
 data class PlaybackHistoryEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val historyId: Long = 0,
     val songId: String,
+    val albumId: String? = null,
     val playedAtTimestamp: Long = System.currentTimeMillis()
 )

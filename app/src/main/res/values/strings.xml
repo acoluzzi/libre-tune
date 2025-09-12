@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">LibreTune</string>
     <string name="music_channel_name">Music Service</string>
+    <string name="fans_of_artist_also_like">Fans of %1$s also like</string>
 </resources>

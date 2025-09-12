@@ -1,5 +1,6 @@
 package com.colux.libretune.ui.artist
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -300,6 +301,20 @@ fun ArtistScreen(
                         item {
                             Spacer(modifier = Modifier.height(16.dp))
                         }
+
+                        Log.d("ArtistScreen", "state.details.albums: ${state.details.albums.size}")
+                        Log.d(
+                            "ArtistScreen",
+                            "state.details.albums releaseYears: ${state.details.albums.map { it.releaseYear }}"
+                        )
+                        Log.d(
+                            "ArtistScreen",
+                            "state.details.singlesAndEPs: ${state.details.singlesAndEPs.size}"
+                        )
+                        Log.d(
+                            "ArtistScreen",
+                            "state.details.singlesAndEPs releaseYears: ${state.details.singlesAndEPs.map { it.releaseYear }}"
+                        )
 
                         val allReleases = (state.details.albums + state.details.singlesAndEPs)
                             .sortedByDescending { it.releaseYear }

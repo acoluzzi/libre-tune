@@ -72,6 +72,7 @@ class ArtistPageScrapingTests {
             "Beatles '64 (Music from the Disney+ Documentary)",
             artistDetails?.albums?.get(0)?.name
         )
+        assertEquals(2024, artistDetails?.albums?.get(0)?.releaseYear)
         assertEquals("MPREb_OLtz6K1cjET", artistDetails?.albums?.get(0)?.id)
         assertEquals(
             "https://lh3.googleusercontent.com/bMY8zm6aijac0ykQxvifCWOvtIF9IaVPhTD3IW5nIuwghU3QtvmRPBcsRIqdnB7H2VIWKs5J7OZ9wZff=w226-h226-l90-rj",

@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,20 +58,20 @@ fun AppDrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 selected = false,
                 onClick = { navController.navigate("history"); closeDrawer() }
             )
-            NavigationDrawerItem(
-                label = { Text("Statistics") },
-                icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
-                selected = false,
-                onClick = { navController.navigate("statistics"); closeDrawer() }
-            )
-
-            // --- 3. Bottom Menu Items ---
-            NavigationDrawerItem(
-                label = { Text("Settings") },
-                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                selected = false,
-                onClick = { /* TODO: navController.navigate("settings") */; closeDrawer() }
-            )
+//            NavigationDrawerItem(
+//                label = { Text("Statistics") },
+//                icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
+//                selected = false,
+//                onClick = { navController.navigate("statistics"); closeDrawer() }
+//            )
+//
+//            // --- 3. Bottom Menu Items ---
+//            NavigationDrawerItem(
+//                label = { Text("Settings") },
+//                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+//                selected = false,
+//                onClick = { /* TODO: navController.navigate("settings") */; closeDrawer() }
+//            )
 
             // Add padding at the very bottom for the system navigation bar
             Spacer(modifier = Modifier.navigationBarsPadding())

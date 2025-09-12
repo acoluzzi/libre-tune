@@ -78,7 +78,7 @@ class ArtistRepository @Inject constructor(
                 }
             }
 
-        val songsWithArtistAndAlbum = db.songDao().getSongsWithAlbumByArtistId(artistId)
+        val songsWithArtistAndAlbum = db.songDao().getTopSongsWithAlbumByArtistId(artistId)
 
 
         // 2. Use 'combine' to merge the results from all flows.
@@ -99,11 +99,7 @@ class ArtistRepository @Inject constructor(
                 name = artist.name,
                 description = artist.description,
                 images = artist.images.map { it.toDataModel() },
-                topSongs = songs.sortedBy {
-                    -it.song.views
-                }.take(5).map {
-                    it.toDataModel()
-                },
+                topSongs = songs.map { it.toDataModel() },
                 albums = albums.filter {
                     it.playlist.type == AlbumType.ALBUM
                 }.map {
@@ -240,7 +236,8 @@ class ArtistRepository @Inject constructor(
                 song.artists.map { artist ->
                     SongArtistCrossRef(
                         songId = song.id,
-                        artistId = artist.id
+                        artistId = artist.id,
+                        isTopSong = true
                     )
                 }
             }

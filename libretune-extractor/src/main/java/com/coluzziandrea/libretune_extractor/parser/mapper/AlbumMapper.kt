@@ -54,7 +54,7 @@ fun MusicTwoRowsItemRenderer.toPlaylist(): Playlist? {
     }
 
     val playlistTypeStr = subtitle.runs.firstOrNull()?.text ?: ""
-    val releaseYearStr = subtitle.runs.getOrNull(2)?.text ?: ""
+    val releaseYearStr = subtitle.runs.getOrNull(2)?.text ?: subtitle.runs.getOrNull(0)?.text ?: ""
 
     val artists = mutableListOf<Artist>()
     subtitle.runs.filter { it.navigationEndpoint is NavigationEndpoint.BrowseNavigationEndpoint && it.navigationEndpoint.browseEndpoint.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType == "MUSIC_PAGE_TYPE_ARTIST" }

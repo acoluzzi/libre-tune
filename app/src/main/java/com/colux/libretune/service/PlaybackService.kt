@@ -47,6 +47,26 @@ class PlaybackService : MediaSessionService() {
 
     val logger = java.util.logging.Logger.getLogger("PlaybackService")
 
+    private val urlCache = mutableMapOf<String, String>()
+
+    /**
+     * A helper function that first checks the cache for a URL.
+     * If not found, it fetches from the repository and adds it to the cache.
+     */
+    private suspend fun getOrFetchUrl(song: Song): String? {
+        // Return the cached URL if it exists
+        if (urlCache.containsKey(song.id)) {
+            return urlCache[song.id]
+        }
+
+        // Otherwise, fetch it from the remote source
+        val fetchedUrl = songRepository.getSongUrlById(song.id)
+        if (fetchedUrl != null) {
+            // Store the new URL in the cache for next time
+            urlCache[song.id] = fetchedUrl
+        }
+        return fetchedUrl
+    }
 
     private val mediaSessionCallback = object : MediaSession.Callback {
 
@@ -90,7 +110,7 @@ class PlaybackService : MediaSessionService() {
                     val startingSong = playlist[startingIndex]
 
                     logger.info { "Fetching URL for starting song: ${startingSong.title}" }
-                    val songUrl = songRepository.getSongUrlById(startingSong.id)
+                    val songUrl = getOrFetchUrl(startingSong)
 
                     if (songUrl != null) {
                         // 5. Create a real MediaItem with the fetched URL.
@@ -112,7 +132,7 @@ class PlaybackService : MediaSessionService() {
                         if (index == startingIndex) return@forEachIndexed
 
                         logger.info { "Fetching URL for remain song: ${song.title}" }
-                        val songUrl = songRepository.getSongUrlById(song.id)
+                        val songUrl = getOrFetchUrl(song)
                         if (songUrl != null) {
                             val realItem = placeholderMediaItems[index].buildUpon()
                                 .setUri(songUrl)

@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,6 +62,10 @@ class HomeRepository @Inject constructor(
         }.flatMapLatest { (artists, albums) ->
             logger.info { "Seed Artists: $artists" }
             logger.info { "Seed Albums: $albums" }
+
+            if (artists.isEmpty() && albums.isEmpty()) {
+                return@flatMapLatest flowOf(emptyList())
+            }
 
             val relatedArtistsFlows = artists.map { artist ->
                 db.artistDao().getSimilarArtists(artist.artistId).map { similarArtists ->

@@ -39,6 +39,22 @@ interface SongDao {
     fun getSongsWithAlbumByArtistId(artistId: String): Flow<List<SongWithAlbumAndArtist>>
 
     @Transaction
+    @Query(
+        """
+        
+        SELECT * 
+        FROM songs 
+        WHERE songId IN (
+            SELECT songId 
+            FROM song_artist_cross_ref 
+            WHERE artistId = :artistId AND isTopSong = 1
+        )
+        
+        """
+    )
+    fun getTopSongsWithAlbumByArtistId(artistId: String): Flow<List<SongWithAlbumAndArtist>>
+
+    @Transaction
     @Query("SELECT * FROM songs WHERE albumId = :albumId")
     fun getSongsWithAlbumAndArtistByAlbumId(albumId: String): Flow<List<SongWithAlbumAndArtist>>
 

@@ -101,7 +101,6 @@ fun DiscographyContent(
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        // --- Header (You can add artist name here if needed) ---
         Text(
             text = "Releases",
             style = MaterialTheme.typography.headlineMedium,

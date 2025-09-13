@@ -63,7 +63,6 @@ fun HistoryScreen(
 
     Scaffold(
         topBar = {
-            // Use a custom header instead of the default TopAppBar
             HistoryHeader(
                 onBackClick = { navController.popBackStack() }
             )

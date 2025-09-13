@@ -168,7 +168,6 @@ fun PlayerFullScreen(
                 activeTickColor = Color.Transparent,
             )
 
-            // Seek Bar (we'll make this functional later)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Slider(
                     value = if (isUserSeeking) sliderPosition else currentPosition.toFloat(),
@@ -196,7 +195,7 @@ fun PlayerFullScreen(
                         )
                     },
 
-                    // The track composable (thinner)
+                    // The track composable
                     track = { sliderState ->
                         SliderDefaults.Track(
                             sliderState = sliderState,

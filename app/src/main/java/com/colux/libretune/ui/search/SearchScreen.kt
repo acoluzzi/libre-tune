@@ -121,7 +121,6 @@ fun SearchScreen(
             topBar = {
                 TopAppBar(
                     title = { Text("Search") },
-                    // 3. The burger icon to open the drawer.
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Open menu")
@@ -130,7 +129,6 @@ fun SearchScreen(
                 )
             }
         ) { innerPadding ->
-            // The LazyColumn with your home screen content
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -160,12 +158,10 @@ fun SearchScreen(
                             focusManager.clearFocus()
                         }),
 
-                        // 1. Add the leading search icon
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = "Search Icon")
                         },
 
-                        // 2. Add the clearable trailing icon
                         trailingIcon = {
                             if (query.isNotEmpty()) {
                                 IconButton(onClick = {
@@ -178,9 +174,7 @@ fun SearchScreen(
                             }
                         },
 
-                        // 3. Customize the colors
                         colors = TextFieldDefaults.colors(
-                            // Use surfaceVariant for a "less black" background
                             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
                                 alpha = 0.5f
@@ -189,13 +183,11 @@ fun SearchScreen(
                                 alpha = 0.5f
                             ),
 
-                            // Use onSurfaceVariant for a "more gray" text color
                             focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                 alpha = 0.5f
                             ),
 
-                            // Customize other colors for a polished look
                             cursorColor = MaterialTheme.colorScheme.primary,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
@@ -224,7 +216,6 @@ fun SearchScreen(
                                 top = 16.dp
                             )
                     ) {
-                        // Show suggestions only when the user is typing and the text field is focused
 
                         if (isFocused) {
                             if (uiState is SearchUiState.Suggestions) {
@@ -410,7 +401,6 @@ fun SuggestionsOverlay(
             .background(MaterialTheme.colorScheme.surface)
     ) {
         items(suggestions) { suggestion ->
-            // Use a 'when' statement to handle each type of suggestion
             when (suggestion) {
                 is SearchSuggestion.QuerySuggestion -> {
                     QuerySuggestionItem(

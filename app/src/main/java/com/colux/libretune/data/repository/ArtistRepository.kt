@@ -89,8 +89,6 @@ class ArtistRepository @Inject constructor(
             similarArtistsFlow,
             playlistAndFeaturingFlow
         ) { artist, songs, albums, similarArtists, playlists ->
-            // This block runs whenever any of the source flows emit a new value.
-            // If the main artist doesn't exist, we can't build the details.
             if (artist == null) return@combine null
 
             // 3. Manually "stitch" the data together into the clean UI model.
@@ -127,16 +125,11 @@ class ArtistRepository @Inject constructor(
 
 
     private suspend fun shouldFetch(artistId: String): Boolean {
-        // Fetch the artist record just to check its timestamp
         val cachedArtist = db.artistDao().getArtist(artistId).firstOrNull()
-
-        // Always fetch if there's no data
         if (cachedArtist == null) return true
 
         val lastUpdate = cachedArtist.updateTimestamp ?: 0
         if (lastUpdate == 0L) return true
-
-        // Fetch if the data is older than our TTL
         val isStale =
             (System.currentTimeMillis() - lastUpdate) > cacheTtlMillis
         return isStale
@@ -156,8 +149,6 @@ class ArtistRepository @Inject constructor(
 
             logger.info { "Received data from remote: $remoteDetails" }
 
-            // --- MAPPING LOGIC ---
-            // 1. Map the main artist
             val artistEntity = ArtistEntity(
                 artistId = artistId,
                 name = remoteDetails.name,

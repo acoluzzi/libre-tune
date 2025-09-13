@@ -12,9 +12,8 @@ import androidx.core.view.WindowCompat
 
 val Green = Color(0xff1DB954)
 val AbsoluteBlack = Color(0xFF000000)
-val White = Color(0xFFFFFFFF) // Add White color here for consistency
+val White = Color(0xFFFFFFFF)
 
-// Create one color scheme that will be used for both light and dark system themes.
 private val BaseColorScheme = darkColorScheme(
     primary = Green, // Default primary for the app
     background = AbsoluteBlack,
@@ -24,7 +23,6 @@ private val BaseColorScheme = darkColorScheme(
     onBackground = White,
     onSurface = White,
     onSurfaceVariant = White,
-    // Add other colors as needed to match your design
 )
 
 @Composable

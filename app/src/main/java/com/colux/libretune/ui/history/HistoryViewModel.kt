@@ -29,38 +29,30 @@ class HistoryViewModel @Inject constructor(historyRepository: HistoryRepository)
         pagingSourceFactory = { historyRepository }
     ).flow
         .map { pagingData: PagingData<HistoryItem> ->
-            // First, map the raw Song objects to our sealed interface type
             pagingData.map { song ->
                 HistoryListItem.SongItem(song)
             }
         }
         .map { pagingData ->
-            // Now, insert the date separators
             pagingData.insertSeparators { before: HistoryListItem.SongItem?, after: HistoryListItem.SongItem? ->
-                // Logic to decide if a separator is needed
                 if (after == null) {
-                    // End of the list, no separator needed
                     return@insertSeparators null
                 }
 
                 val afterDate = after.songPlayed.playedAt.toLocalDate()
 
                 if (before == null) {
-                    // This is the very first item, so it needs a header
                     return@insertSeparators HistoryListItem.DateHeader(afterDate)
                 }
 
-                // Check if the day is different between the 'before' and 'after' items
                 val beforeDate = before.songPlayed.playedAt.toLocalDate()
                 if (beforeDate != afterDate) {
                     HistoryListItem.DateHeader(afterDate)
                 } else {
-                    // Same day, no separator needed
                     null
                 }
             }
         }
-        // Cache the results in the viewModelScope to survive configuration changes
         .cachedIn(viewModelScope)
 }
 

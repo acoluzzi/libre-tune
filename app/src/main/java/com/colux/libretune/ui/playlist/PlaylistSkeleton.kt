@@ -22,10 +22,8 @@ fun PlaylistDetailSkeleton() {
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-        // 1. Banner Skeleton
         BannerSkeleton()
 
-        // 2. Title and Subtitle Skeletons
         Spacer(modifier = Modifier.height(16.dp))
         // A smaller skeleton for the subtitle
         Box(
@@ -37,9 +35,6 @@ fun PlaylistDetailSkeleton() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. List of Song Skeletons
-        // We use a Column here instead of a LazyColumn because the whole
-        // screen is not scrollable in the skeleton state.
         SongsSkeleton(10)
     }
 }

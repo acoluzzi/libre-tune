@@ -19,7 +19,6 @@ class SongWithAlbumAndArtist(
     )
     val album: PlaylistEntity?,
 
-    // Defines the many-to-many relationship between a Song and its Artists.
     @Relation(
         parentColumn = "songId",
         entityColumn = "artistId",

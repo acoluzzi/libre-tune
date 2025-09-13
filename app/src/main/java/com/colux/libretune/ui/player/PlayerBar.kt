@@ -46,7 +46,7 @@ fun PlayerBar(
 
     val dynamicPrimaryColor by playerViewModel.dynamicPrimaryColor.collectAsState()
     val currentPosition by playerViewModel.currentPosition.collectAsState()
-    val totalDuration by playerViewModel.totalDuration.collectAsState() // Corrected variable name
+    val totalDuration by playerViewModel.totalDuration.collectAsState()
     val isLiked by playerViewModel.isCurrentSongLiked(song?.id ?: "")
         .collectAsState(initial = false)
 
@@ -74,7 +74,7 @@ fun PlayerBar(
             // This modifier is now just for the Row's specific styling
             modifier = Modifier
                 .fillMaxWidth()
-                .background(dynamicColor) // This will be your dark gray
+                .background(dynamicColor)
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -131,7 +131,6 @@ fun PlayerBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(3.dp),
-            // Explicitly set the color to White, if you want it always white
             color = Color.White, // Progress color is always white
             trackColor = Color.White.copy(alpha = 0.3f)
         )

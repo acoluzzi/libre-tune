@@ -57,10 +57,10 @@ dependencies {
     // This plugin handles automatic JSON serialization/deserialization
     implementation(libs.ktor.client.content.negotiation)
     // This tells the plugin to use kotlinx.serialization
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.3")
+    implementation(libs.ktor.serialization.kotlinx.json)
 
     // Optional: for logging network requests, very useful for debugging
-    implementation("io.ktor:ktor-client-logging:3.2.3")
+    implementation(libs.ktor.client.logging)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

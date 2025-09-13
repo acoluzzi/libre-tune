@@ -22,7 +22,6 @@ class DownloaderImpl private constructor(
 
         val response = client.newCall(okRequest).execute()
 
-        // The fix is to use .string() instead of .byteStream()
         val responseBodyString = response.body?.string()
 
         return Response(

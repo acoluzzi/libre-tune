@@ -302,13 +302,13 @@ fun PlaylistHeader(
                 val useDefaultImage =
                     details.isLocal && details.songs.isEmpty()
                 val imageModel = if (useDefaultImage) {
-                    R.drawable.default_playlist_image // Your local drawable
+                    R.drawable.default_playlist_image
                 } else {
                     details.bestImage() // The remote URL
                 }
 
                 AsyncImage(
-                    model = imageModel, // Or your collage logic
+                    model = imageModel,
                     contentDescription = "Playlist Art",
                     modifier = Modifier
                         .size(150.dp)

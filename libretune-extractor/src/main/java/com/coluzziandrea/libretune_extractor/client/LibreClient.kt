@@ -20,13 +20,19 @@ class LibreClient(
     private val client: HttpClient
 ) {
 
-    val BASE_URL = "https://music.youtube.com/youtubei/v1"
+    companion object {
+        const val BASE_URL = "https://music.youtube.com/youtubei/v1"
+
+        const val CLIENT_NAME = "WEB_REMIX"
+        const val CLIENT_VERSION = "1.20250827.05.00"
+    }
+
 
     private fun getContext(): Context {
         return Context(
             client = Client(
-                clientName = "WEB_REMIX",
-                clientVersion = "1.20250827.05.00"
+                clientName = CLIENT_NAME,
+                clientVersion = CLIENT_VERSION
             )
         )
     }

@@ -19,15 +19,12 @@ import androidx.compose.ui.unit.dp
 import com.colux.libretune.data.model.MoodGenreItem
 import kotlin.random.Random
 
-// Helper function to generate a random color.
-// You might want to define a specific range or palette for these colors.
+// Helper function to generate a random color
 fun generateRandomColor(): Color {
-    // Generate random values for Red, Green, Blue components
     val red = Random.nextInt(256)
     val green = Random.nextInt(256)
     val blue = Random.nextInt(256)
 
-    // Create a Color object. You can adjust alpha (transparency) here.
     return Color(red, green, blue)
 }
 

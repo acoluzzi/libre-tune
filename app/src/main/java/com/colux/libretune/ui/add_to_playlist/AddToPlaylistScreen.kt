@@ -200,7 +200,6 @@ fun PlaylistSelectionItem(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // You can use your collage or a simple image here
         PlaylistImageCollage(
             imageUrls = playlistWithSongs.playlist.songs.mapNotNull { it.getBestImageUrl() },
             size = 64.dp

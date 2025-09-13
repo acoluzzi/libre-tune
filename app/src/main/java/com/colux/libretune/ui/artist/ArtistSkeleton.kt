@@ -22,7 +22,6 @@ import com.colux.libretune.ui.search.SongItemSkeleton
 import com.colux.libretune.ui.search.TitleSkeleton
 import com.colux.libretune.ui.util.shimmerBackground
 
-// Make sure you have your shimmerBackground, TitleSkeleton, and SongItemSkeleton here
 
 /**
  * A placeholder for the large artist banner image at the top.

@@ -22,7 +22,7 @@ class DatabaseCallback(
             val likedSongsPlaylist = PlaylistEntity(
                 playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
                 name = DatabaseConstants.LIKED_SONGS_PLAYLIST_NAME,
-                images = emptyList(), // TODO
+                images = emptyList(),
                 isLocal = true, // It's a local, user-specific playlist,
                 type = AlbumType.PLAYLIST
             )

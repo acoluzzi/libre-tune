@@ -20,7 +20,6 @@ class LibraryViewModel @Inject constructor(
     ViewModel() {
 
 
-    // This flow now gets ALL playlists with their associated songs.
     val playlists: StateFlow<List<PlaylistWithSongs>> =
         playlistRepository.getSavedPlaylistsWithSongs()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

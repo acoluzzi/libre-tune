@@ -165,7 +165,7 @@ class PlaybackService : MediaSessionService() {
             MediaSession.Builder(this, exoPlayer)
                 .setCallback(mediaSessionCallback)
                 .setSessionActivity(it)
-        } // This sets the tap action
+        }
             ?.build()
 
         setMediaNotificationProvider(

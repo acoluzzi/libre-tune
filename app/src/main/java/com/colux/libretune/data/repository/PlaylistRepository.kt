@@ -118,8 +118,6 @@ class PlaylistRepository @Inject constructor(
     fun getPlaylistDetails(id: String): Flow<PlaylistDetails?> {
         logger.info { "getPlaylistDetails() Starting getPlaylistDetails for $id" }
 
-
-        // Start with the main playlist/album flow. This is our root.
         return db.playlistDao().getPlaylistWithArtists(id).flatMapLatest { playlistWithArtists ->
             // If the main entity is null, we can't proceed.
             if (playlistWithArtists == null) {

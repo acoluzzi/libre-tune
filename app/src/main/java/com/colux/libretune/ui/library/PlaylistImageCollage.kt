@@ -41,7 +41,6 @@ fun PlaylistImageCollage(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
             )
-            // You could add an Icon here for an empty playlist
         } else if (displayedImageUrls.size == 1) {
             // Single image fills the whole box
             AsyncImage(

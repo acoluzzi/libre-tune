@@ -116,7 +116,6 @@ class SongRepository @Inject constructor(
 
         val albumArtistsLinks = song.album?.let { album ->
             artistsEntities.map { artistEntity ->
-                // Assuming you have an AlbumArtistCrossRef entity to represent the many-to-many relationship
                 PlaylistArtistCrossRef(
                     playlistId = album.id,
                     artistId = artistEntity.artistId

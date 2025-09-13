@@ -54,7 +54,6 @@ fun LibraryScreen(navController: NavHostController) {
     val playlists by viewModel.playlists.collectAsState()
     val artists by viewModel.artists.collectAsState()
 
-    // 1. The drawer state now lives inside the HomeScreen.
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -66,7 +65,6 @@ fun LibraryScreen(navController: NavHostController) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Your existing AppDrawer composable
             AppDrawerMenu(
                 navController = navController,
                 closeDrawer = { scope.launch { drawerState.close() } }
@@ -152,7 +150,7 @@ fun PlaylistListItem(
 
             PlaylistImageCollage(
                 imageUrls = imageUrls,
-                size = 64.dp, // Match your desired item size
+                size = 64.dp,
                 modifier = Modifier.size(64.dp) // Maintain consistent size for the row
             )
         } else {

@@ -26,24 +26,17 @@ class AddToPlaylistViewModel @Inject constructor(
 
     private val songId: String = savedStateHandle.get<String>("songId")!!
 
-    // This is now a StateFlow that will hold the song details once loaded.
     val song: StateFlow<Song?> = songRepository.getSongById(songId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
 
-    // This is the final state for the UI, combining all our data.
     @OptIn(ExperimentalCoroutinesApi::class)
     val playlists: StateFlow<List<PlaylistForSelection>> =
-        // 1. Get the flow of all local playlists.
         playlistRepository.getLocalPlaylistsWithSongs()
             .combine(song) { allPlaylists, currentSong ->
-                // 2. Combine it with the flow for the current song.
                 if (currentSong == null) {
-                    // If we don't have the song details yet, return an empty list.
                     emptyList()
                 } else {
-                    // 3. Now that we have both the playlists and the song,
-                    // we can perform the mapping.
                     allPlaylists.map { playlist ->
                         val containsSong = playlist.songs.any { it.id == currentSong.id }
                         PlaylistForSelection(playlist, containsSong)

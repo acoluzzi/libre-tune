@@ -55,7 +55,6 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // Your existing AppDrawer composable
             AppDrawerMenu(
                 navController = navController,
                 closeDrawer = { scope.launch { drawerState.close() } }
@@ -143,7 +142,7 @@ fun HomeScreenEmpty(innerPadding: PaddingValues) {
     ) {
         item {
             Text(
-                "Start searching for you favorite music to populate the home.",
+                "Search & play your favourite songs to populate the home feed.",
                 modifier = Modifier.padding(16.dp)
             )
         }

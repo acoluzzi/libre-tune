@@ -184,7 +184,6 @@ fun SongItem(
 
 @Composable
 fun PlayingIndicator(
-    // The component now knows if the song is playing or paused
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary

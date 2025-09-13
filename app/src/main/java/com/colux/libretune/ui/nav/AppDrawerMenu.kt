@@ -38,7 +38,6 @@ fun AppDrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                     .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Replace with your actual logo
                 Image(
                     painter = painterResource(id = R.drawable.ic_notification),
                     contentDescription = "App Logo",
@@ -58,6 +57,7 @@ fun AppDrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 selected = false,
                 onClick = { navController.navigate("history"); closeDrawer() }
             )
+            // TODO add statistics and settings pages
 //            NavigationDrawerItem(
 //                label = { Text("Statistics") },
 //                icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },

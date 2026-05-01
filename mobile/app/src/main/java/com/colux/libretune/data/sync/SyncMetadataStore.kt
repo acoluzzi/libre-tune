@@ -7,14 +7,18 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 /**
- * Tracks per-collection timestamps used by [LibrarySyncOrchestrator] to
- * decide whether the local snapshot must be pushed to the backend.
+ * Tracks per-collection timestamps used by [LibrarySyncOrchestrator] for the
+ * last-writer-wins decision on every batch run:
  *
- * - [setLocalChangedAt] is called every time the user mutates the matching
- *   local collection (likes a song, saves an album, etc.).
- * - [setSyncedAt] is called after a successful push or pull.
- * - When `localChangedAt > syncedAt` the collection is "dirty" and must
- *   be pushed on the next batch run.
+ * - [localChangedAt] is the most recent local mutation timestamp; bumped from
+ *   the repositories on every relevant write.
+ * - [remoteUpdatedAt] is the timestamp the backend reported the last time we
+ *   talked to it. After a successful pull it equals the server's value;
+ *   after a successful push it equals the timestamp the client uploaded.
+ *
+ * The orchestrator compares these two numbers — together with whether the
+ * server reports any timestamp at all — to decide whether the collection
+ * must be pushed, pulled, or left alone.
  */
 @Singleton
 class SyncMetadataStore @Inject constructor(
@@ -23,22 +27,22 @@ class SyncMetadataStore @Inject constructor(
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun setLocalChangedAt(collection: SyncCollection, timestamp: Long = System.currentTimeMillis()) {
+    fun setLocalChangedAt(
+        collection: SyncCollection,
+        timestamp: Long = System.currentTimeMillis(),
+    ) {
         prefs.edit().putLong(localKey(collection), timestamp).apply()
     }
 
     fun localChangedAt(collection: SyncCollection): Long =
         prefs.getLong(localKey(collection), 0L)
 
-    fun setSyncedAt(collection: SyncCollection, timestamp: Long = System.currentTimeMillis()) {
-        prefs.edit().putLong(syncedKey(collection), timestamp).apply()
+    fun setRemoteUpdatedAt(collection: SyncCollection, timestamp: Long) {
+        prefs.edit().putLong(remoteKey(collection), timestamp).apply()
     }
 
-    fun syncedAt(collection: SyncCollection): Long =
-        prefs.getLong(syncedKey(collection), 0L)
-
-    fun isDirty(collection: SyncCollection): Boolean =
-        localChangedAt(collection) > syncedAt(collection)
+    fun remoteUpdatedAt(collection: SyncCollection): Long =
+        prefs.getLong(remoteKey(collection), 0L)
 
     /** Wipe all sync timestamps (e.g. on logout). */
     fun clear() {
@@ -46,7 +50,7 @@ class SyncMetadataStore @Inject constructor(
     }
 
     private fun localKey(collection: SyncCollection) = "${collection.key}_local_at"
-    private fun syncedKey(collection: SyncCollection) = "${collection.key}_synced_at"
+    private fun remoteKey(collection: SyncCollection) = "${collection.key}_remote_at"
 
     private companion object {
         const val PREFS_NAME = "libretune_sync_metadata"

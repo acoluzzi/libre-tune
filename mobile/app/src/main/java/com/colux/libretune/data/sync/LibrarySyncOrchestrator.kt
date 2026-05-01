@@ -18,6 +18,7 @@ import com.colux.libretune.data.remote.backend.PlaylistsPayload
 import com.colux.libretune.data.remote.backend.RemotePlaylist
 import com.colux.libretune.data.remote.backend.SavedAlbumsPayload
 import com.colux.libretune.data.remote.backend.SavedArtistsPayload
+import com.colux.libretune.data.remote.backend.SyncStateResponse
 import com.colux.libretune.data.repository.BackendSyncRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -28,18 +29,27 @@ import java.util.logging.Logger
 /**
  * Owns the local⇄remote synchronisation policy.
  *
- * The local Room database is the source of truth, so each batch run looks at
- * each [SyncCollection] independently and decides what to do based on the
- * timestamps recorded in [SyncMetadataStore]:
+ * For every [SyncCollection] the orchestrator compares three values on each
+ * batch run:
  *
- * - **Local is empty** → pull the remote snapshot into the local database
- *   (new device / fresh install).
- * - **Local was modified after last sync** (or never synced) → push the
- *   local snapshot to the backend.
- * - **Otherwise** → no-op.
+ * - `remote_ts` — the server's `last_updated_ms` for this collection
+ *   (`null` if the server has never received data for it).
+ * - `local_ts` — `localChangedAt` from [SyncMetadataStore], i.e. the most
+ *   recent local mutation.
+ * - `seen_remote_ts` — `remoteUpdatedAt`, the last server timestamp this
+ *   client mirrored.
  *
- * Push always sends the full snapshot for the collection so the server
- * can replace its state — there is no partial diff protocol on the wire.
+ * The decision is last-writer-wins:
+ *
+ * - `remote_ts == null` and local is non-empty → push (and stamp the
+ *   server with `local_ts`).
+ * - `remote_ts > local_ts` → pull (the server has a fresher snapshot).
+ * - `remote_ts < local_ts` → push (the client has a fresher snapshot).
+ * - otherwise → no-op.
+ *
+ * Local data is the source of truth on conflict, but a remote snapshot
+ * with a strictly higher timestamp wins because it represents a write
+ * the user made on another device after this device's last edit.
  */
 @Singleton
 class LibrarySyncOrchestrator @Inject constructor(
@@ -54,48 +64,71 @@ class LibrarySyncOrchestrator @Inject constructor(
             logger.info("Not authenticated; skipping sync.")
             return@runCatching
         }
+        val state = backend.fetchState()
         SyncCollection.values().forEach { collection ->
             try {
-                syncCollection(collection)
+                syncCollection(collection, state.remoteTimestamp(collection))
             } catch (t: Throwable) {
                 logger.log(Level.WARNING, "Sync failed for $collection", t)
             }
         }
     }
 
-    suspend fun syncCollection(collection: SyncCollection) {
+    suspend fun syncCollection(collection: SyncCollection, remoteTs: Long?) {
         if (!backend.isAuthenticated()) return
-        val localEmpty = isLocalEmpty(collection)
-        val neverSynced = metadata.syncedAt(collection) == 0L
+        val localTs = metadata.localChangedAt(collection)
+
         when {
-            localEmpty -> {
-                logger.info("Pulling $collection (local is empty).")
+            remoteTs == null -> {
+                if (!isLocalEmpty(collection)) {
+                    logger.info("Pushing $collection (server has nothing).")
+                    val effectiveTs = ensureLocalTimestamp(collection, localTs)
+                    push(collection, effectiveTs)
+                    metadata.setRemoteUpdatedAt(collection, effectiveTs)
+                } else {
+                    logger.info("Skipping $collection (both sides empty).")
+                }
+            }
+            remoteTs > localTs -> {
+                logger.info("Pulling $collection (remote $remoteTs > local $localTs).")
                 pull(collection)
-                metadata.setSyncedAt(collection)
+                metadata.setLocalChangedAt(collection, remoteTs)
+                metadata.setRemoteUpdatedAt(collection, remoteTs)
             }
-            metadata.isDirty(collection) || neverSynced -> {
-                logger.info("Pushing $collection (local dirty or never synced).")
-                push(collection)
-                metadata.setSyncedAt(collection)
+            remoteTs < localTs -> {
+                logger.info("Pushing $collection (local $localTs > remote $remoteTs).")
+                push(collection, localTs)
+                metadata.setRemoteUpdatedAt(collection, localTs)
             }
-            else -> logger.info("Nothing to sync for $collection.")
+            else -> logger.info("$collection already in sync at $remoteTs.")
         }
     }
+
+    /** First-time push for a user with pre-existing local data: invent a
+     *  timestamp so the comparison rules above remain monotonic. */
+    private fun ensureLocalTimestamp(collection: SyncCollection, localTs: Long): Long =
+        if (localTs > 0) localTs else System.currentTimeMillis().also {
+            metadata.setLocalChangedAt(collection, it)
+        }
 
     // ---------------------------------------------------------------------
     // PUSH
     // ---------------------------------------------------------------------
 
-    private suspend fun push(collection: SyncCollection) {
+    private suspend fun push(collection: SyncCollection, timestamp: Long) {
         when (collection) {
-            SyncCollection.LIKED_SONGS -> backend.pushLikedSongs(buildLikedSongsPayload())
-            SyncCollection.PLAYLISTS -> backend.pushPlaylists(buildPlaylistsPayload())
-            SyncCollection.SAVED_ALBUMS -> backend.pushSavedAlbums(buildSavedAlbumsPayload())
-            SyncCollection.SAVED_ARTISTS -> backend.pushSavedArtists(buildSavedArtistsPayload())
+            SyncCollection.LIKED_SONGS ->
+                backend.pushLikedSongs(buildLikedSongsPayload(timestamp))
+            SyncCollection.PLAYLISTS ->
+                backend.pushPlaylists(buildPlaylistsPayload(timestamp))
+            SyncCollection.SAVED_ALBUMS ->
+                backend.pushSavedAlbums(buildSavedAlbumsPayload(timestamp))
+            SyncCollection.SAVED_ARTISTS ->
+                backend.pushSavedArtists(buildSavedArtistsPayload(timestamp))
         }
     }
 
-    private suspend fun buildLikedSongsPayload(): LikedSongsPayload {
+    private suspend fun buildLikedSongsPayload(timestamp: Long): LikedSongsPayload {
         val songs = db.songDao()
             .getSongsWithAlbumAndArtistByPlaylistId(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID)
             .first()
@@ -108,10 +141,10 @@ class LibrarySyncOrchestrator @Inject constructor(
                 position = index,
             )
         }
-        return LikedSongsPayload(items)
+        return LikedSongsPayload(last_updated_ms = timestamp, items = items)
     }
 
-    private suspend fun buildPlaylistsPayload(): PlaylistsPayload {
+    private suspend fun buildPlaylistsPayload(timestamp: Long): PlaylistsPayload {
         val playlists = db.playlistDao().getSavedPlaylists().first()
             .filter {
                 it.playlist.type == AlbumType.PLAYLIST &&
@@ -138,10 +171,10 @@ class LibrarySyncOrchestrator @Inject constructor(
                 songs = songEntries,
             )
         }
-        return PlaylistsPayload(items)
+        return PlaylistsPayload(last_updated_ms = timestamp, items = items)
     }
 
-    private suspend fun buildSavedAlbumsPayload(): SavedAlbumsPayload {
+    private suspend fun buildSavedAlbumsPayload(timestamp: Long): SavedAlbumsPayload {
         val albums = db.playlistDao().getSavedPlaylists().first()
             .filter { it.playlist.type != AlbumType.PLAYLIST }
         val items = albums.mapIndexed { index, pws ->
@@ -150,15 +183,15 @@ class LibrarySyncOrchestrator @Inject constructor(
                 position = index,
             )
         }
-        return SavedAlbumsPayload(items)
+        return SavedAlbumsPayload(last_updated_ms = timestamp, items = items)
     }
 
-    private suspend fun buildSavedArtistsPayload(): SavedArtistsPayload {
+    private suspend fun buildSavedArtistsPayload(timestamp: Long): SavedArtistsPayload {
         val artists = db.artistDao().getSavedArtists().first()
         val items = artists.mapIndexed { index, artist ->
             artist.toRemoteArtist(position = index)
         }
-        return SavedArtistsPayload(items)
+        return SavedArtistsPayload(last_updated_ms = timestamp, items = items)
     }
 
     // ---------------------------------------------------------------------
@@ -175,9 +208,9 @@ class LibrarySyncOrchestrator @Inject constructor(
     }
 
     private suspend fun applyLikedSongs(payload: LikedSongsPayload) {
-        if (payload.items.isEmpty()) return
         val now = System.currentTimeMillis()
         db.withTransaction {
+            db.playlistDao().clearLikedSongs()
             payload.items.forEach { item ->
                 db.songDao().insertSong(item.song.toEntityStub(now))
                 db.playlistDao().addSongToPlaylist(
@@ -191,11 +224,13 @@ class LibrarySyncOrchestrator @Inject constructor(
     }
 
     private suspend fun applyPlaylists(payload: PlaylistsPayload) {
-        if (payload.items.isEmpty()) return
         val now = System.currentTimeMillis()
         db.withTransaction {
+            db.playlistDao().clearSyncedPlaylists()
             payload.items.forEach { remotePlaylist ->
-                val playlistId = remotePlaylist.remote_id.ifEmpty { "remote-${now}-${remotePlaylist.name.hashCode()}" }
+                val playlistId = remotePlaylist.remote_id.ifEmpty {
+                    "remote-${now}-${remotePlaylist.name.hashCode()}"
+                }
                 val isLocal = remotePlaylist.remote_id.isEmpty()
                 db.playlistDao().insert(
                     PlaylistEntity(
@@ -228,9 +263,9 @@ class LibrarySyncOrchestrator @Inject constructor(
     }
 
     private suspend fun applySavedAlbums(payload: SavedAlbumsPayload) {
-        if (payload.items.isEmpty()) return
         val now = System.currentTimeMillis()
         db.withTransaction {
+            db.libraryDao().clearSavedAlbumLinks()
             payload.items.forEach { album ->
                 db.playlistDao().insert(
                     PlaylistEntity(
@@ -255,9 +290,9 @@ class LibrarySyncOrchestrator @Inject constructor(
     }
 
     private suspend fun applySavedArtists(payload: SavedArtistsPayload) {
-        if (payload.items.isEmpty()) return
         val now = System.currentTimeMillis()
         db.withTransaction {
+            db.libraryDao().clearSavedArtistLinks()
             payload.items.forEach { artist ->
                 db.artistDao().upsert(
                     ArtistEntity(
@@ -310,3 +345,11 @@ class LibrarySyncOrchestrator @Inject constructor(
     private fun String.toImageAttribute(): ImageAttribute? =
         if (isBlank()) null else ImageAttribute(url = this)
 }
+
+private fun SyncStateResponse.remoteTimestamp(collection: SyncCollection): Long? =
+    when (collection) {
+        SyncCollection.LIKED_SONGS -> liked_songs
+        SyncCollection.PLAYLISTS -> playlists
+        SyncCollection.SAVED_ALBUMS -> saved_albums
+        SyncCollection.SAVED_ARTISTS -> saved_artists
+    }

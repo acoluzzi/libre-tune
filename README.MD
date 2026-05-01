@@ -41,20 +41,33 @@ powers account features:
 
 ### Sync model
 
-The local Room database is the source of truth. A WorkManager-driven batch
-job (`LibrarySyncWorker`, scheduled every 15 minutes and on app start) walks
-the four collections — liked songs, playlists, saved albums, saved artists
-— and decides per collection:
+A WorkManager-driven batch job (`LibrarySyncWorker`, scheduled every 15
+minutes and on app start) walks the four collections — liked songs,
+playlists, saved albums, saved artists — and applies last-writer-wins per
+collection using a single timestamp on each side:
 
-- if the local collection is empty, the remote snapshot is pulled into the
-  local database (handles new device / fresh install);
-- otherwise, if the local collection has been modified after the last
-  successful sync, the local snapshot is pushed to the backend.
+- `local_ts` — the most recent local mutation, bumped from the relevant
+  repository every time the user likes / unlikes a song, edits a playlist,
+  saves an album, or follows an artist.
+- `remote_ts` — the `last_updated_ms` the backend reports through
+  `GET /api/sync/state/`.
 
-Per-collection `lastLocalChangedAt` timestamps are bumped from the relevant
-repositories whenever the user likes / unlikes a song, edits a playlist,
-saves an album, or follows an artist, so the worker only pushes data that
-has actually changed since the previous run.
+For every collection the worker decides:
+
+| Condition | Action |
+| --- | --- |
+| `remote_ts == null` and local non-empty | push, server adopts `local_ts` |
+| `remote_ts == null` and local empty | no-op |
+| `remote_ts > local_ts` | pull, set `local_ts := remote_ts` |
+| `remote_ts < local_ts` | push, server adopts `local_ts` |
+| `remote_ts == local_ts` | no-op |
+
+A pull replaces the local snapshot for that collection (and only that
+collection) — songs / playlists / library links that came from the
+previous remote state are cleared first. The protocol is intentionally
+single-user, multi-device: if two devices edit the same collection between
+syncs the later writer wins. Multi-user / collaborative editing would
+require an op-based protocol on top of this.
 
 ## Feature Roadmap
 

@@ -92,3 +92,32 @@ class SavedArtist(models.Model):
     class Meta:
         ordering = ["position", "id"]
         unique_together = ("user", "remote_id")
+
+
+class CollectionMeta(models.Model):
+    """Tracks the most recent client-supplied modification timestamp for
+    each (user, collection) pair so the mobile app can perform a
+    last-writer-wins comparison on every sync run.
+    """
+
+    LIKED_SONGS = "liked_songs"
+    PLAYLISTS = "playlists"
+    SAVED_ALBUMS = "saved_albums"
+    SAVED_ARTISTS = "saved_artists"
+    COLLECTION_CHOICES = (
+        (LIKED_SONGS, "Liked songs"),
+        (PLAYLISTS, "Playlists"),
+        (SAVED_ALBUMS, "Saved albums"),
+        (SAVED_ARTISTS, "Saved artists"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="collection_meta",
+    )
+    collection = models.CharField(max_length=32, choices=COLLECTION_CHOICES)
+    last_updated_ms = models.BigIntegerField()
+
+    class Meta:
+        unique_together = ("user", "collection")

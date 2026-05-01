@@ -59,11 +59,25 @@ interface LibraryDao {
     @Query(
         """
          SELECT EXISTS(
-            SELECT 1 FROM library 
-            WHERE id = :libraryId AND type = :type 
+            SELECT 1 FROM library
+            WHERE id = :libraryId AND type = :type
             LIMIT 1
         )
     """
     )
     fun isItemInLibrary(libraryId: String, type: LibraryItemType): Flow<Boolean>
+
+    @Query(
+        """
+        DELETE FROM library
+        WHERE type = 'PLAYLIST' AND playlistId IN (
+            SELECT playlistId FROM playlists
+            WHERE type IN ('ALBUM', 'SINGLE', 'EP')
+        )
+        """
+    )
+    suspend fun clearSavedAlbumLinks()
+
+    @Query("DELETE FROM library WHERE type = 'ARTIST'")
+    suspend fun clearSavedArtistLinks()
 }

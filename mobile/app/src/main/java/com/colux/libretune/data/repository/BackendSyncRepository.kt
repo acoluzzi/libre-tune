@@ -6,6 +6,7 @@ import com.colux.libretune.data.remote.backend.LikedSongsPayload
 import com.colux.libretune.data.remote.backend.PlaylistsPayload
 import com.colux.libretune.data.remote.backend.SavedAlbumsPayload
 import com.colux.libretune.data.remote.backend.SavedArtistsPayload
+import com.colux.libretune.data.remote.backend.SyncStateResponse
 import com.colux.libretune.data.sync.SyncMetadataStore
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -32,6 +33,8 @@ class BackendSyncRepository @Inject constructor(
         api.logout()
         syncMetadata.clear()
     }
+
+    suspend fun fetchState(): SyncStateResponse = api.fetchState()
 
     suspend fun pullLikedSongs(): LikedSongsPayload = api.fetchLikedSongs()
     suspend fun pushLikedSongs(payload: LikedSongsPayload) = api.pushLikedSongs(payload)

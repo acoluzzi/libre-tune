@@ -224,4 +224,49 @@ interface PlaylistDao {
     suspend fun removeSongFromPlaylist(join: PlaylistSongCrossRef)
 
 
+    @Query(
+        """
+        DELETE FROM playlist_song_cross_ref
+        WHERE playlistId = 'liked_songs_playlist'
+        """
+    )
+    suspend fun clearLikedSongs()
+
+    @Query(
+        """
+        DELETE FROM playlist_song_cross_ref
+        WHERE playlistId IN (
+            SELECT playlistId FROM playlists
+            WHERE type = 'PLAYLIST' AND playlistId != 'liked_songs_playlist'
+        )
+        """
+    )
+    suspend fun clearSyncedPlaylistSongLinks()
+
+    @Query(
+        """
+        DELETE FROM library
+        WHERE type = 'PLAYLIST' AND playlistId IN (
+            SELECT playlistId FROM playlists WHERE type = 'PLAYLIST'
+        )
+        """
+    )
+    suspend fun clearSyncedPlaylistLibraryLinks()
+
+    @Query(
+        """
+        DELETE FROM playlists
+        WHERE isLocal = 1
+          AND type = 'PLAYLIST'
+          AND playlistId != 'liked_songs_playlist'
+        """
+    )
+    suspend fun clearLocalUserPlaylists()
+
+    @Transaction
+    suspend fun clearSyncedPlaylists() {
+        clearSyncedPlaylistSongLinks()
+        clearSyncedPlaylistLibraryLinks()
+        clearLocalUserPlaylists()
+    }
 }

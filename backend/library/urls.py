@@ -5,9 +5,11 @@ from .views import (
     PlaylistsView,
     SavedAlbumsView,
     SavedArtistsView,
+    SyncStateView,
 )
 
 urlpatterns = [
+    path("state/", SyncStateView.as_view(), name="sync-state"),
     path("liked-songs/", LikedSongsView.as_view(), name="liked-songs"),
     path("playlists/", PlaylistsView.as_view(), name="playlists"),
     path("saved-albums/", SavedAlbumsView.as_view(), name="saved-albums"),

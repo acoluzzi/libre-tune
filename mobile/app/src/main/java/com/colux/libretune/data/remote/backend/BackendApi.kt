@@ -59,6 +59,9 @@ class BackendApi @Inject constructor(
     suspend fun me(): RemoteUser =
         authedGet("$baseUrl/api/auth/me/")
 
+    suspend fun fetchState(): SyncStateResponse =
+        authedGet("$baseUrl/api/sync/state/")
+
     suspend fun fetchLikedSongs(): LikedSongsPayload =
         authedGet("$baseUrl/api/sync/liked-songs/")
 
@@ -130,7 +133,10 @@ data class RemoteSong(
 data class LikedSongItem(val song: RemoteSong, val position: Int = 0)
 
 @Serializable
-data class LikedSongsPayload(val items: List<LikedSongItem>)
+data class LikedSongsPayload(
+    val last_updated_ms: Long? = null,
+    val items: List<LikedSongItem>,
+)
 
 @Serializable
 data class PlaylistEntry(val song: RemoteSong, val position: Int = 0)
@@ -145,7 +151,10 @@ data class RemotePlaylist(
 )
 
 @Serializable
-data class PlaylistsPayload(val items: List<RemotePlaylist>)
+data class PlaylistsPayload(
+    val last_updated_ms: Long? = null,
+    val items: List<RemotePlaylist>,
+)
 
 @Serializable
 data class RemoteAlbum(
@@ -157,7 +166,10 @@ data class RemoteAlbum(
 )
 
 @Serializable
-data class SavedAlbumsPayload(val items: List<RemoteAlbum>)
+data class SavedAlbumsPayload(
+    val last_updated_ms: Long? = null,
+    val items: List<RemoteAlbum>,
+)
 
 @Serializable
 data class RemoteArtist(
@@ -168,4 +180,15 @@ data class RemoteArtist(
 )
 
 @Serializable
-data class SavedArtistsPayload(val items: List<RemoteArtist>)
+data class SavedArtistsPayload(
+    val last_updated_ms: Long? = null,
+    val items: List<RemoteArtist>,
+)
+
+@Serializable
+data class SyncStateResponse(
+    val liked_songs: Long? = null,
+    val playlists: Long? = null,
+    val saved_albums: Long? = null,
+    val saved_artists: Long? = null,
+)

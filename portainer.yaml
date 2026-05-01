@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: libretune-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=libretune_db
+      - POSTGRES_USER=libretune_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U libretune_user -d libretune_db']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  libretune-server:
+    image: ghcr.io/acoluzzi/libre-tune/django-server:main
+    container_name: libretune-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=libretune_db
+      - POSTGRES_USER=libretune_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_PORT=5432
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+      - DATABASE_URL=postgres://libretune_user:${DB_PASSWORD}@db:5432/libretune_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.libretune.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.services.libretune.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.libretune-ratelimit.ratelimit.average=60"
+      - "traefik.http.middlewares.libretune-ratelimit.ratelimit.burst=20"
+      - "traefik.http.routers.libretune.middlewares=libretune-ratelimit"
+    networks:
+      - default
+      - proxy
+    command: sh -c "python manage.py migrate --noinput && gunicorn libretune_backend.wsgi:application --bind 0.0.0.0:8000"
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=60
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - REPO_USER=${GHCR_USER}
+      - REPO_PASS=${GHCR_TOKEN}
+    command: libretune-server
+
+volumes:
+  postgres_data:
+
+networks:
+  proxy:
+    external: true

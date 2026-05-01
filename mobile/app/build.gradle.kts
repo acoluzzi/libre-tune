@@ -21,6 +21,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "BACKEND_BASE_URL",
+            "\"https://libretune.coluzziandrea.com\""
+        )
     }
 
     buildTypes {
@@ -44,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

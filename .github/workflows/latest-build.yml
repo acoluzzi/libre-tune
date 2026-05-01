@@ -30,16 +30,17 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Make gradlew executable
-        run: chmod +x ./gradlew
+        run: chmod +x ./mobile/gradlew
 
       - name: Build debug APK
+        working-directory: mobile
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
       - name: Collect APK
         id: collect
         run: |
           mkdir -p artifacts
-          apk=$(find app/build/outputs/apk -name "*.apk" -print -quit)
+          apk=$(find mobile/app/build/outputs/apk -name "*.apk" -print -quit)
           if [ -z "$apk" ]; then
             echo "No APK was produced." >&2
             exit 1

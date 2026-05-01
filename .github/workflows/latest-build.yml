@@ -7,16 +7,13 @@ on:
       - master
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 concurrency:
   group: latest-build
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build & publish APK
+    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
@@ -53,23 +50,10 @@ jobs:
           echo "apk_path=$dest" >> "$GITHUB_OUTPUT"
           echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
 
-      - name: Delete previous "latest-build" release
-        run: gh release delete latest-build --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish to "Latest build" release
-        uses: softprops/action-gh-release@v2
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: latest-build
-          name: Latest build
-          body: |
-            Automated build from `${{ github.ref_name }}` @ `${{ steps.collect.outputs.short_sha }}`.
-
-            This release is updated on every push to the default branch and
-            always points to the most recent successful build.
-          prerelease: true
-          make_latest: false
-          files: ${{ steps.collect.outputs.apk_path }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: LibreTune-latest-${{ steps.collect.outputs.short_sha }}
+          path: ${{ steps.collect.outputs.apk_path }}
+          if-no-files-found: error
+          retention-days: 90

@@ -26,6 +26,49 @@ LibreTune is an alternative frontend for YouTube Music, with a focus on user pri
 - Personalized home feed with recommendations
 - History of played songs
 
+## Repository layout
+
+This repository hosts both the Android app and the backend service that
+powers account features:
+
+- [`mobile/`](./mobile) — the LibreTune Android application (Kotlin / Jetpack
+  Compose / Gradle).
+- [`backend/`](./backend) — the LibreTune backend, a Django + Django REST
+  Framework service deployed at
+  [libretune.coluzziandrea.com](https://libretune.coluzziandrea.com) which
+  provides user authentication and syncs liked songs, playlists, saved
+  albums and saved artists across devices.
+
+### Sync model
+
+A WorkManager-driven batch job (`LibrarySyncWorker`, scheduled every 15
+minutes and on app start) walks the four collections — liked songs,
+playlists, saved albums, saved artists — and applies last-writer-wins per
+collection using a single timestamp on each side:
+
+- `local_ts` — the most recent local mutation, bumped from the relevant
+  repository every time the user likes / unlikes a song, edits a playlist,
+  saves an album, or follows an artist.
+- `remote_ts` — the `last_updated_ms` the backend reports through
+  `GET /api/sync/state/`.
+
+For every collection the worker decides:
+
+| Condition | Action |
+| --- | --- |
+| `remote_ts == null` and local non-empty | push, server adopts `local_ts` |
+| `remote_ts == null` and local empty | no-op |
+| `remote_ts > local_ts` | pull, set `local_ts := remote_ts` |
+| `remote_ts < local_ts` | push, server adopts `local_ts` |
+| `remote_ts == local_ts` | no-op |
+
+A pull replaces the local snapshot for that collection (and only that
+collection) — songs / playlists / library links that came from the
+previous remote state are cleared first. The protocol is intentionally
+single-user, multi-device: if two devices edit the same collection between
+syncs the later writer wins. Multi-user / collaborative editing would
+require an op-based protocol on top of this.
+
 ## Feature Roadmap
 
 We are actively working on adding more features to LibreTune. Here are some features we are planning to add in the near future:

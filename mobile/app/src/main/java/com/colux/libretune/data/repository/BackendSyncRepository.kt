@@ -6,6 +6,7 @@ import com.colux.libretune.data.remote.backend.LikedSongsPayload
 import com.colux.libretune.data.remote.backend.PlaylistsPayload
 import com.colux.libretune.data.remote.backend.SavedAlbumsPayload
 import com.colux.libretune.data.remote.backend.SavedArtistsPayload
+import com.colux.libretune.data.sync.SyncMetadataStore
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
@@ -18,6 +19,7 @@ import jakarta.inject.Singleton
 class BackendSyncRepository @Inject constructor(
     private val api: BackendApi,
     private val tokenStore: BackendTokenStore,
+    private val syncMetadata: SyncMetadataStore,
 ) {
     fun isAuthenticated(): Boolean = tokenStore.isAuthenticated()
 
@@ -26,7 +28,10 @@ class BackendSyncRepository @Inject constructor(
 
     suspend fun login(username: String, password: String) = api.login(username, password)
 
-    suspend fun logout() = api.logout()
+    suspend fun logout() {
+        api.logout()
+        syncMetadata.clear()
+    }
 
     suspend fun pullLikedSongs(): LikedSongsPayload = api.fetchLikedSongs()
     suspend fun pushLikedSongs(payload: LikedSongsPayload) = api.pushLikedSongs(payload)

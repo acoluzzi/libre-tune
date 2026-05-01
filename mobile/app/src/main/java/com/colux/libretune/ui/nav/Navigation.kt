@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.colux.libretune.ui.add_to_playlist.AddToPlaylistScreen
 import com.colux.libretune.ui.artist.ArtistScreen
+import com.colux.libretune.ui.auth.AuthScreen
 import com.colux.libretune.ui.create_playlist.CreatePlaylistScreen
 import com.colux.libretune.ui.discography.DiscographyScreen
 import com.colux.libretune.ui.history.HistoryScreen
@@ -91,6 +92,9 @@ fun Navigation(
                 HistoryScreen(navController = navController, playerViewModel = playerViewModel)
             }
 
+            composable(Screen.Auth.route) {
+                AuthScreen(navController = navController)
+            }
 
         }
 

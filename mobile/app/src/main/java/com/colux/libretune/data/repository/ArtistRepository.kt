@@ -18,6 +18,8 @@ import com.colux.libretune.data.local.wrapper.PlaylistWithArtists
 import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
+import com.colux.libretune.data.sync.SyncCollection
+import com.colux.libretune.data.sync.SyncMetadataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
@@ -42,6 +44,7 @@ data class PlaylistFlowItem(
 class ArtistRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
+    private val syncMetadata: SyncMetadataStore,
 ) {
 
     private val logger = Logger.getLogger("ArtistRepository")
@@ -314,6 +317,7 @@ class ArtistRepository @Inject constructor(
                 addedAtTimestamp = System.currentTimeMillis()
             )
         )
+        syncMetadata.setLocalChangedAt(SyncCollection.SAVED_ARTISTS)
     }
 
     fun isArtistSaved(artistId: String): Flow<Boolean> {
@@ -329,6 +333,7 @@ class ArtistRepository @Inject constructor(
                 addedAtTimestamp = System.currentTimeMillis()
             )
         )
+        syncMetadata.setLocalChangedAt(SyncCollection.SAVED_ARTISTS)
     }
 
 }

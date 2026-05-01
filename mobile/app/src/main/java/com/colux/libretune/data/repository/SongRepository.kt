@@ -13,6 +13,8 @@ import com.colux.libretune.data.local.mapper.toEntity
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
+import com.colux.libretune.data.sync.SyncCollection
+import com.colux.libretune.data.sync.SyncMetadataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -23,7 +25,15 @@ import javax.inject.Singleton
 class SongRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
+    private val syncMetadata: SyncMetadataStore,
 ) {
+
+    private fun collectionForPlaylist(playlistId: String): SyncCollection =
+        if (playlistId == DatabaseConstants.LIKED_SONGS_PLAYLIST_ID) {
+            SyncCollection.LIKED_SONGS
+        } else {
+            SyncCollection.PLAYLISTS
+        }
 
     private val logger = java.util.logging.Logger.getLogger(SongRepository::class.java.name)
 
@@ -101,11 +111,13 @@ class SongRepository @Inject constructor(
             songId = song.id
         )
         db.playlistDao().removeSongFromPlaylist(join)
+        syncMetadata.setLocalChangedAt(SyncCollection.LIKED_SONGS)
     }
 
     suspend fun likeSong(song: Song) {
         logger.info { "Like song $song" }
         _addSongToPlaylist(DatabaseConstants.LIKED_SONGS_PLAYLIST_ID, song)
+        syncMetadata.setLocalChangedAt(SyncCollection.LIKED_SONGS)
     }
 
     private suspend fun _saveSong(song: Song) {
@@ -166,14 +178,18 @@ class SongRepository @Inject constructor(
 
     suspend fun removeSongFromAllPlaylists(songId: String) {
         db.playlistDao().removeSongFromAllLocalPlaylists(songId)
+        syncMetadata.setLocalChangedAt(SyncCollection.LIKED_SONGS)
+        syncMetadata.setLocalChangedAt(SyncCollection.PLAYLISTS)
     }
 
     suspend fun removeSongFromPlaylist(playlistId: String, songId: String) {
         db.playlistDao().removeSongFromPlaylist(PlaylistSongCrossRef(playlistId, songId))
+        syncMetadata.setLocalChangedAt(collectionForPlaylist(playlistId))
     }
 
     suspend fun addSongToPlaylist(playlistId: String, song: Song) {
         _addSongToPlaylist(playlistId, song)
+        syncMetadata.setLocalChangedAt(collectionForPlaylist(playlistId))
     }
 
 

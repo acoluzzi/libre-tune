@@ -76,4 +76,7 @@ sealed class Screen(
         fun createRoute(moodGenreId: String) = "mood_genre/$moodGenreId"
     }
 
+    data object Auth :
+        Screen("auth", "Account", Icons.Default.Person, Icons.Default.Person)
+
 }

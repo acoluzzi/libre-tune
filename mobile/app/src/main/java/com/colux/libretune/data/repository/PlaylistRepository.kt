@@ -23,6 +23,8 @@ import com.colux.libretune.data.model.PlaylistType
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
 import com.colux.libretune.data.model.wrapper.SongWithAlbumAndArtists
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
+import com.colux.libretune.data.sync.SyncCollection
+import com.colux.libretune.data.sync.SyncMetadataStore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -41,9 +43,19 @@ import javax.inject.Singleton
 class PlaylistRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
+    private val syncMetadata: SyncMetadataStore,
 ) {
     companion object {
         private const val MAX_RELATED_FOR_PLAYLIST = 10
+    }
+
+    private suspend fun collectionForLibraryPlaylist(playlistId: String): SyncCollection {
+        val playlist = db.playlistDao().getPlaylistById(playlistId)
+        return if (playlist?.type == AlbumType.PLAYLIST) {
+            SyncCollection.PLAYLISTS
+        } else {
+            SyncCollection.SAVED_ALBUMS
+        }
     }
 
     private val logger = Logger.getLogger("PlaylistRepository")
@@ -111,6 +123,7 @@ class PlaylistRepository @Inject constructor(
             updateTimestamp = System.currentTimeMillis()
         )
         db.playlistDao().insert(newPlaylist)
+        syncMetadata.setLocalChangedAt(SyncCollection.PLAYLISTS)
     }
 
 
@@ -207,6 +220,7 @@ class PlaylistRepository @Inject constructor(
                 addedAtTimestamp = System.currentTimeMillis()
             )
         )
+        syncMetadata.setLocalChangedAt(collectionForLibraryPlaylist(playlistId))
     }
 
     fun isPlaylistSaved(playlistId: String): Flow<Boolean> {
@@ -214,6 +228,7 @@ class PlaylistRepository @Inject constructor(
     }
 
     suspend fun unsavePlaylist(playlistId: String) {
+        val collection = collectionForLibraryPlaylist(playlistId)
         db.libraryDao().delete(
             LibraryEntity(
                 id = playlistId,
@@ -222,6 +237,7 @@ class PlaylistRepository @Inject constructor(
                 addedAtTimestamp = System.currentTimeMillis()
             )
         )
+        syncMetadata.setLocalChangedAt(collection)
     }
 
     suspend fun refreshPlaylistDetails(id: String) {

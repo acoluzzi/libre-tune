@@ -39,6 +39,23 @@ powers account features:
   provides user authentication and syncs liked songs, playlists, saved
   albums and saved artists across devices.
 
+### Sync model
+
+The local Room database is the source of truth. A WorkManager-driven batch
+job (`LibrarySyncWorker`, scheduled every 15 minutes and on app start) walks
+the four collections — liked songs, playlists, saved albums, saved artists
+— and decides per collection:
+
+- if the local collection is empty, the remote snapshot is pulled into the
+  local database (handles new device / fresh install);
+- otherwise, if the local collection has been modified after the last
+  successful sync, the local snapshot is pushed to the backend.
+
+Per-collection `lastLocalChangedAt` timestamps are bumped from the relevant
+repositories whenever the user likes / unlikes a song, edits a playlist,
+saves an album, or follows an artist, so the worker only pushes data that
+has actually changed since the previous run.
+
 ## Feature Roadmap
 
 We are actively working on adding more features to LibreTune. Here are some features we are planning to add in the near future:

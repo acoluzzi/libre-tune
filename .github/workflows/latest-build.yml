@@ -53,6 +53,11 @@ jobs:
           echo "apk_path=$dest" >> "$GITHUB_OUTPUT"
           echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
 
+      - name: Delete previous "latest-build" release
+        run: gh release delete latest-build --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to "Latest build" release
         uses: softprops/action-gh-release@v2
         with:

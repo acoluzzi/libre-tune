@@ -10,8 +10,16 @@ The service is deployed at https://libretune.coluzziandrea.com.
 
 ## Quickstart
 
+Start the local PostgreSQL instance first:
+
 ```bash
 cd backend
+docker compose -f docker-compose.dev.yml up -d
+```
+
+Then run the Django server:
+
+```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

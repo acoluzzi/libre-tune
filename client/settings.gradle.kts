@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 rootProject.name = "LibreTune"
 include(":app")
 include(":libretune-extractor")
+include(":shared")
+include(":desktop")

@@ -14,6 +14,8 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
     implementation(project(":shared"))
+    implementation(project(":libretune-extractor"))
+    implementation(libs.ktor.client.cio)
 }
 
 compose.desktop {

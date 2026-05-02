@@ -1,8 +1,58 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")
-    kotlin("plugin.serialization") version "1.9.24"
+    alias(libs.plugins.kotlin.serialization)
+}
+
+kotlin {
+    androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
+    jvm("desktop") {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.ktor.client.logging)
+                implementation(libs.kotlinx.serialization.json)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmTestCommon by creating {
+            dependsOn(commonTest)
+            dependencies {
+                implementation(libs.ktor.client.mock)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.junit.jupiter.api)
+                runtimeOnly(libs.junit.jupiter.engine)
+            }
+        }
+        val androidUnitTest by getting {
+            dependsOn(jvmTestCommon)
+        }
+        val desktopTest by getting {
+            dependsOn(jvmTestCommon)
+        }
+    }
 }
 
 android {
@@ -11,8 +61,6 @@ android {
 
     defaultConfig {
         minSdk = 29
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -29,65 +77,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 
     testOptions {
         unitTests.all {
-            it.useJUnitPlatform() // This tells Gradle to use the JUnit 5 runner
+            it.useJUnitPlatform()
         }
     }
-}
-
-dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-
-
-    // Ktor Client Core
-    implementation(libs.ktor.client.core)
-    // CIO is a good default engine for Android
-    implementation(libs.ktor.client.cio)
-
-    // This plugin handles automatic JSON serialization/deserialization
-    implementation(libs.ktor.client.content.negotiation)
-    // This tells the plugin to use kotlinx.serialization
-    implementation(libs.ktor.serialization.kotlinx.json)
-
-    // Optional: for logging network requests, very useful for debugging
-    implementation(libs.ktor.client.logging)
-
-
-    // Core Kotlin/Java
-    implementation(libs.androidx.core.ktx.v1131)
-
-    // Hilt (for dependency injection in the data layer)
-    implementation(libs.hilt.android.v2511)
-    kapt(libs.hilt.compiler.v2511)
-
-
-    // OkHttp & Jsoup
-    implementation(libs.okhttp.v4120)
-    implementation(libs.jsoup.v1172)
-
-
-    implementation(libs.kotlinx.serialization.json)
-
-
-
-    testImplementation(libs.ktor.client.mock)
-    testImplementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.mockito.kotlin)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-
-
-    testImplementation(kotlin("test"))
 }

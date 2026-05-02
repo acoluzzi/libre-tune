@@ -1,5 +1,6 @@
 package com.colux.libretune.di
 
+import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,4 +49,9 @@ object NetworkModule {
             }
         }
     }
+
+    @Provides
+    @Singleton
+    fun provideLibreTuneExtractor(httpClient: HttpClient): LibreTuneExtractor =
+        LibreTuneExtractor(httpClient)
 }

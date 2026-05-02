@@ -16,14 +16,9 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toGenreMoodCategory
 import com.coluzziandrea.libretune_extractor.parser.mapper.toGenresMoods
 import com.coluzziandrea.libretune_extractor.parser.toSearchSuggestions
 import io.ktor.client.HttpClient
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import javax.inject.Inject
-import javax.inject.Singleton
+import io.ktor.http.encodeURLParameter
 
-
-@Singleton
-class LibreTuneExtractor @Inject constructor(
+class LibreTuneExtractor(
     httpClient: HttpClient
 ) {
 
@@ -49,14 +44,14 @@ class LibreTuneExtractor @Inject constructor(
     }
 
     suspend fun search(query: String): SearchResult? {
-        return client.search(URLEncoder.encode(query, StandardCharsets.UTF_8.name())).let {
+        return client.search(query.encodeURLParameter()).let {
             SearchResultParser.from(it)
         }
     }
 
 
     suspend fun searchSuggestions(query: String): List<SearchSuggestion> {
-        return client.searchSuggestions(URLEncoder.encode(query, StandardCharsets.UTF_8.name()))
+        return client.searchSuggestions(query.encodeURLParameter())
             .toSearchSuggestions()
     }
 

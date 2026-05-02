@@ -1,7 +1,7 @@
 package com.colux.libretune.data.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import com.colux.libretune.shared.parcelable.Parcelable
+import com.colux.libretune.shared.parcelable.Parcelize
 
 @Parcelize
 data class Artist(

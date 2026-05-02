@@ -133,6 +133,7 @@ dependencies {
 
 
     implementation(project(":libretune-extractor"))
+    implementation(project(":shared"))
 
 
     testImplementation(libs.junit)

@@ -1,5 +1,9 @@
 package com.colux.libretune.di
 
+import com.colux.libretune.BuildConfig
+import com.colux.libretune.data.remote.backend.AndroidBackendTokenStore
+import com.colux.libretune.data.remote.backend.BackendApi
+import com.colux.libretune.data.remote.backend.BackendTokenStore
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import dagger.Module
 import dagger.Provides
@@ -54,4 +58,15 @@ object NetworkModule {
     @Singleton
     fun provideLibreTuneExtractor(httpClient: HttpClient): LibreTuneExtractor =
         LibreTuneExtractor(httpClient)
+
+    @Provides
+    @Singleton
+    fun provideBackendTokenStore(impl: AndroidBackendTokenStore): BackendTokenStore = impl
+
+    @Provides
+    @Singleton
+    fun provideBackendApi(
+        httpClient: HttpClient,
+        tokenStore: BackendTokenStore,
+    ): BackendApi = BackendApi(httpClient, tokenStore, BuildConfig.BACKEND_BASE_URL)
 }

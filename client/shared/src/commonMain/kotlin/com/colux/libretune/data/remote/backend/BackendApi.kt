@@ -1,6 +1,5 @@
 package com.colux.libretune.data.remote.backend
 
-import com.colux.libretune.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -11,24 +10,22 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.serialization.Serializable
 
 /**
- * Client for the LibreTune backend service hosted at
- * [BuildConfig.BACKEND_BASE_URL] (https://libretune.coluzziandrea.com).
+ * Client for the LibreTune backend service.
  *
  * Handles user authentication and library sync (liked songs, playlists,
  * saved albums, saved artists). Pass the token returned by [register] /
- * [login] to every sync call.
+ * [login] to every sync call. The [baseUrl] is supplied by the host
+ * platform (Android wires it from BuildConfig.BACKEND_BASE_URL).
  */
-@Singleton
-class BackendApi @Inject constructor(
+class BackendApi(
     private val httpClient: HttpClient,
     private val tokenStore: BackendTokenStore,
+    baseUrl: String,
 ) {
-    private val baseUrl: String = BuildConfig.BACKEND_BASE_URL.trimEnd('/')
+    private val baseUrl: String = baseUrl.trimEnd('/')
 
     suspend fun register(username: String, password: String, email: String? = null): AuthResponse {
         val response: AuthResponse = httpClient.post("$baseUrl/api/auth/register/") {

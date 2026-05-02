@@ -2,7 +2,10 @@ package com.colux.libretune.data.repository
 
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.dao.SearchQueryDao
+import com.colux.libretune.data.remote.backend.BackendApi
+import com.colux.libretune.data.remote.backend.BackendTokenStore
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
+import com.colux.libretune.data.sync.AndroidSyncMetadataStore
 import com.colux.libretune.data.sync.SyncMetadataStore
 import dagger.Module
 import dagger.Provides
@@ -12,6 +15,16 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 class RepositoryModule {
+
+    @Provides
+    fun provideSyncMetadataStore(impl: AndroidSyncMetadataStore): SyncMetadataStore = impl
+
+    @Provides
+    fun provideBackendSyncRepository(
+        api: BackendApi,
+        tokenStore: BackendTokenStore,
+        syncMetadata: SyncMetadataStore,
+    ): BackendSyncRepository = BackendSyncRepository(api, tokenStore, syncMetadata)
 
     @Provides
     fun provideArtistRepositoryImpl(

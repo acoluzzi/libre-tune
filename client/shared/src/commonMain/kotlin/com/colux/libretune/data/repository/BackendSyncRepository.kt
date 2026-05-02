@@ -8,16 +8,12 @@ import com.colux.libretune.data.remote.backend.SavedAlbumsPayload
 import com.colux.libretune.data.remote.backend.SavedArtistsPayload
 import com.colux.libretune.data.remote.backend.SyncStateResponse
 import com.colux.libretune.data.sync.SyncMetadataStore
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 /**
- * High-level operations against the LibreTune backend
- * (https://libretune.coluzziandrea.com): authenticate the user and
- * push / pull the four library collections we keep in sync.
+ * High-level operations against the LibreTune backend: authenticate the
+ * user and push / pull the four library collections we keep in sync.
  */
-@Singleton
-class BackendSyncRepository @Inject constructor(
+class BackendSyncRepository(
     private val api: BackendApi,
     private val tokenStore: BackendTokenStore,
     private val syncMetadata: SyncMetadataStore,

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
     id("kotlin-parcelize")
 }
 
@@ -30,6 +31,8 @@ kotlin {
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.kotlinx.serialization.json)
+                api(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
             }
         }
         val commonTest by getting {
@@ -63,4 +66,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+}
+
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspDesktop", libs.androidx.room.compiler)
+}
+
+ksp {
+    arg("room.schemaLocation", "${projectDir}/schemas")
 }

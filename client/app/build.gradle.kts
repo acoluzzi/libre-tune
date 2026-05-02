@@ -117,7 +117,7 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    // Room compiler runs in :shared via KSP now; no kapt needed here.
 
     // For fetching the web page
     implementation(libs.okhttp)

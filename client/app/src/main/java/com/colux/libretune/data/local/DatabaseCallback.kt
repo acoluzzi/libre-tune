@@ -1,7 +1,7 @@
 package com.colux.libretune.data.local
 
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.SQLiteConnection
 import com.colux.libretune.data.local.dao.PlaylistDao
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.PlaylistEntity
@@ -14,19 +14,17 @@ class DatabaseCallback(
     private val scope: CoroutineScope
 ) : RoomDatabase.Callback() {
 
-    override fun onCreate(db: SupportSQLiteDatabase) {
-        super.onCreate(db)
+    override fun onCreate(connection: SQLiteConnection) {
+        super.onCreate(connection)
 
-        // Launch a coroutine to perform the database insertion off the main thread
         scope.launch {
             val likedSongsPlaylist = PlaylistEntity(
                 playlistId = DatabaseConstants.LIKED_SONGS_PLAYLIST_ID,
                 name = DatabaseConstants.LIKED_SONGS_PLAYLIST_NAME,
                 images = emptyList(),
-                isLocal = true, // It's a local, user-specific playlist,
+                isLocal = true,
                 type = AlbumType.PLAYLIST
             )
-            // Use the DAO to insert the default playlist
             playlistDao.get().upsert(likedSongsPlaylist)
         }
     }

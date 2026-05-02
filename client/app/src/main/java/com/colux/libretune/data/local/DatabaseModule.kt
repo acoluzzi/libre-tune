@@ -1,7 +1,6 @@
 package com.colux.libretune.data.local
 
 import android.content.Context
-import androidx.room.Room
 import com.colux.libretune.data.local.dao.ArtistDao
 import com.colux.libretune.data.local.dao.HistoryDao
 import com.colux.libretune.data.local.dao.LibraryDao
@@ -26,14 +25,10 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
-        callback: DatabaseCallback
-    ): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "libretune_db"
-        ).addCallback(callback).build()
-    }
+        callback: DatabaseCallback,
+    ): AppDatabase = createAppDatabaseBuilder(context)
+        .addCallback(callback)
+        .build()
 
     @Provides
     @Singleton

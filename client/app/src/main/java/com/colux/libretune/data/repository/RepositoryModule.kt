@@ -6,6 +6,7 @@ import com.colux.libretune.data.remote.backend.BackendApi
 import com.colux.libretune.data.remote.backend.BackendTokenStore
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import com.colux.libretune.data.sync.AndroidSyncMetadataStore
+import com.colux.libretune.data.sync.LibrarySyncOrchestrator
 import com.colux.libretune.data.sync.SyncMetadataStore
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import dagger.Module
@@ -31,6 +32,13 @@ class RepositoryModule {
         tokenStore: BackendTokenStore,
         syncMetadata: SyncMetadataStore,
     ): BackendSyncRepository = BackendSyncRepository(api, tokenStore, syncMetadata)
+
+    @Provides
+    fun provideLibrarySyncOrchestrator(
+        backend: BackendSyncRepository,
+        db: AppDatabase,
+        syncMetadata: SyncMetadataStore,
+    ): LibrarySyncOrchestrator = LibrarySyncOrchestrator(backend, db, syncMetadata)
 
     @Provides
     fun provideArtistRepositoryImpl(

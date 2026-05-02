@@ -20,8 +20,6 @@ import com.colux.libretune.data.remote.backend.SavedAlbumsPayload
 import com.colux.libretune.data.remote.backend.SavedArtistsPayload
 import com.colux.libretune.data.remote.backend.SyncStateResponse
 import com.colux.libretune.data.repository.BackendSyncRepository
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.first
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -51,8 +49,7 @@ import java.util.logging.Logger
  * with a strictly higher timestamp wins because it represents a write
  * the user made on another device after this device's last edit.
  */
-@Singleton
-class LibrarySyncOrchestrator @Inject constructor(
+class LibrarySyncOrchestrator(
     private val backend: BackendSyncRepository,
     private val db: AppDatabase,
     private val metadata: SyncMetadataStore,

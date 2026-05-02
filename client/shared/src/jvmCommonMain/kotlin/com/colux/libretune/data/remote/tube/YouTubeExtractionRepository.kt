@@ -1,6 +1,5 @@
 package com.colux.libretune.data.remote.tube
 
-import android.util.Log
 import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.model.MoodGenreCategory
 import com.colux.libretune.data.model.MoodGenres
@@ -22,12 +21,10 @@ import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.localization.Localization
-import javax.inject.Inject
-import javax.inject.Singleton
 
+private const val TAG = "YouTubeExtractionRepository"
 
-@Singleton
-class YouTubeExtractionRepository @Inject constructor(
+class YouTubeExtractionRepository(
     val libreTuneExtractor: LibreTuneExtractor
 ) {
 
@@ -38,7 +35,7 @@ class YouTubeExtractionRepository @Inject constructor(
     //TODO remove dependency on newpipe extractor
     suspend fun getSongUrlById(id: String): String? {
         return withContext(Dispatchers.IO) {
-            Log.d("YouTubeExtractionRepository", "Fetching song with ID: $id")
+            println("[$TAG] Fetching song with ID: $id")
             try {
                 // 1. Get the stream extractor from the YouTube service
                 val service = NewPipe.getService(ServiceList.YouTube.serviceId)
@@ -54,7 +51,7 @@ class YouTubeExtractionRepository @Inject constructor(
                     .maxByOrNull { it.averageBitrate }
                     ?.url
 
-                Log.d("YouTubeExtractionRepository", "Best audio stream URL: $bestAudioStreamUrl")
+                println("[$TAG] Best audio stream URL: $bestAudioStreamUrl")
 
                 // If we can't get a playable URL, we can't proceed.
                 if (bestAudioStreamUrl == null) {
@@ -158,10 +155,7 @@ class YouTubeExtractionRepository @Inject constructor(
 
                 libreTuneExtractor.artist(id).let {
                     if (it != null) {
-                        Log.d(
-                            "YouTubeExtractionRepository",
-                            "Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}"
-                        )
+                        println("[$TAG] Scraped artist: ${it.name}, Top songs: ${it.topSongs.size}")
                         return@withContext it.toDataModel(id)
                     } else {
                         null
@@ -198,10 +192,7 @@ class YouTubeExtractionRepository @Inject constructor(
             try {
                 libreTuneExtractor.playlist(id).let {
                     if (it != null) {
-                        Log.d(
-                            "YouTubeExtractionRepository",
-                            "Scraped playlist: ${it.name}"
-                        )
+                        println("[$TAG] Scraped playlist: ${it.name}")
                         return@withContext it.toDataModel(id)
                     } else {
                         null

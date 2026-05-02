@@ -7,6 +7,7 @@ import com.colux.libretune.data.remote.backend.BackendTokenStore
 import com.colux.libretune.data.remote.tube.YouTubeExtractionRepository
 import com.colux.libretune.data.sync.AndroidSyncMetadataStore
 import com.colux.libretune.data.sync.SyncMetadataStore
+import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +19,11 @@ class RepositoryModule {
 
     @Provides
     fun provideSyncMetadataStore(impl: AndroidSyncMetadataStore): SyncMetadataStore = impl
+
+    @Provides
+    fun provideYouTubeExtractionRepository(
+        extractor: LibreTuneExtractor,
+    ): YouTubeExtractionRepository = YouTubeExtractionRepository(extractor)
 
     @Provides
     fun provideBackendSyncRepository(

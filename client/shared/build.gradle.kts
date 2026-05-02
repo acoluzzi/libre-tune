@@ -37,8 +37,19 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val androidMain by getting
-        val desktopMain by getting
+        val jvmCommonMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.github.teamnewpipe.newpipeextractor)
+                implementation(libs.okhttp)
+            }
+        }
+        val androidMain by getting {
+            dependsOn(jvmCommonMain)
+        }
+        val desktopMain by getting {
+            dependsOn(jvmCommonMain)
+        }
     }
 }
 

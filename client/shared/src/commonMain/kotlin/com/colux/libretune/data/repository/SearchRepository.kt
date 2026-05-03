@@ -11,11 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class SearchRepository @Inject constructor(
+class SearchRepository(
     private val remote: YouTubeExtractionRepository,
     private val searchQueryDao: SearchQueryDao,
 ) {

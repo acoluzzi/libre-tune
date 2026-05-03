@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
 
 data class ArtistWithRelatedArtists(
@@ -25,8 +23,7 @@ data class PlaylistWithRelatedPlaylists(
     val relatedPlaylists: List<PlaylistWithArtists>
 )
 
-@Singleton
-class HomeRepository @Inject constructor(
+class HomeRepository(
     private val db: AppDatabase,
 ) {
 

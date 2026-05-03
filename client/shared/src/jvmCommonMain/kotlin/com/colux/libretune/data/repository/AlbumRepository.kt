@@ -14,11 +14,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.util.logging.Logger
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class AlbumRepository @Inject constructor(
+class AlbumRepository(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
 ) {

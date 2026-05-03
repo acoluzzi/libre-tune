@@ -27,8 +27,6 @@ import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.inject.Inject
-import javax.inject.Singleton
 
 enum class PlaylistFlowItemType {
     PLAYLIST,
@@ -40,8 +38,7 @@ data class PlaylistFlowItem(
     val type: PlaylistFlowItemType
 )
 
-@Singleton
-class ArtistRepository @Inject constructor(
+class ArtistRepository(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
     private val syncMetadata: SyncMetadataStore,

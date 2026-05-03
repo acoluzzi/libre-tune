@@ -18,11 +18,8 @@ import com.colux.libretune.data.sync.SyncMetadataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class SongRepository @Inject constructor(
+class SongRepository(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
     private val syncMetadata: SyncMetadataStore,

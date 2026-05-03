@@ -1,6 +1,5 @@
 package com.colux.libretune.data.repository
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumType
@@ -35,12 +34,9 @@ import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
-import javax.inject.Inject
-import javax.inject.Singleton
 
 
-@Singleton
-class PlaylistRepository @Inject constructor(
+class PlaylistRepository(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
     private val syncMetadata: SyncMetadataStore,
@@ -293,23 +289,15 @@ class PlaylistRepository @Inject constructor(
                         remoteDetails.relatedPlaylists.map {
                             it.artists
                         }.flatten().map {
-                            Log.d(
-                                "PlaylistRepositoryDebug",
-                                "Adding Related playlist artist: $it"
-                            )
+                            logger.fine { "Adding Related playlist artist: $it" }
                             it.toEntity()
                         }
                     )
 
                     playlistRelatedLinks.addAll(
                         remoteDetails.relatedPlaylists.map { related ->
-                            Log.d(
-                                "PlaylistRepositoryDebug",
-                                "Linking album $playlistId to related playlist ${related.name} with ID ${related.id}"
-                            )
-                            Log.d(
-                                "PlaylistRepositoryDebug", "$related"
-                            )
+                            logger.fine { "Linking album $playlistId to related playlist ${related.name} with ID ${related.id}" }
+                            logger.fine { "$related" }
                             PlaylistRelatedCrossRef(
                                 parentPlaylistId = playlistId,
                                 relatedPlaylistId = related.id
@@ -362,10 +350,7 @@ class PlaylistRepository @Inject constructor(
 
                     playlistRelatedLinks.addAll(
                         remoteDetails.relatedPlaylists.map { related ->
-                            Log.d(
-                                "PlaylistRepositoryDebug",
-                                "Linking playlist $playlistId to related playlist ${related.name} with ID ${related.id}"
-                            )
+                            logger.fine { "Linking playlist $playlistId to related playlist ${related.name} with ID ${related.id}" }
                             PlaylistRelatedCrossRef(
                                 parentPlaylistId = playlistId,
                                 relatedPlaylistId = related.id
@@ -464,10 +449,6 @@ class PlaylistRepository @Inject constructor(
                 }
 
                 if (playlistRelatedLinks.isNotEmpty()) {
-                    Log.d(
-                        "PlaylistRepositoryDebug",
-                        "Inserting ${playlistRelatedLinks.size} playlist-related links for playlist ID: $playlistId"
-                    )
                     logger.info { "Inserting ${playlistRelatedLinks.size} playlist-related links for playlist ID: $playlistId" }
                     db.playlistDao().linkPlaylistsToRelatedPlaylists(playlistRelatedLinks)
                 }

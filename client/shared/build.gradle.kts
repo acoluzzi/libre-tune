@@ -33,6 +33,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 api(libs.androidx.room.runtime)
                 implementation(libs.androidx.sqlite.bundled)
+                api(libs.androidx.paging.common)
             }
         }
         val commonTest by getting {

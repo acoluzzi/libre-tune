@@ -5,9 +5,7 @@ import androidx.paging.PagingState
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.mapper.toDataModel
 import com.colux.libretune.data.model.HistoryItem
-import javax.inject.Singleton
 
-@Singleton
 class HistoryRepository(
     private val db: AppDatabase
 ) : PagingSource<Int, HistoryItem>() {

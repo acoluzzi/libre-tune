@@ -4,6 +4,13 @@ on:
   push:
     branches: ['main']
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -26,8 +33,6 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.client == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
@@ -53,19 +58,52 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: ./client/app/build/outputs/apk/release/app-release.apk
+          path: ./client/app/build/outputs/apk/release/*.apk
 
-      - name: Update Nightly Release
-        uses: softprops/action-gh-release@v2
+      - name: Prepare Pages bundle
+        run: |
+          mkdir -p pages
+          apk_path=$(find ./client/app/build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -n 1)
+          cp "$apk_path" ./pages/latest.apk
+          cat <<EOF > ./pages/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>LibreTune Latest APK</title>
+          </head>
+          <body>
+            <h1>LibreTune Latest APK</h1>
+            <p><a href="./latest.apk">Download latest.apk</a></p>
+            <p>Commit: ${{ github.sha }}</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          files: ./client/app/build/outputs/apk/release/app-release.apk
-          tag_name: latest-build
-          name: Latest Development Build
-          body: 'Automated build from commit `${{ github.sha }}`'
-          prerelease: true
-          make_latest: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: ./pages
+
+  deploy-client-pages:
+    name: Publish Client APK Page
+    needs:
+      - changes
+      - build-client-android
+    if: ${{ needs.changes.outputs.client == 'true' && needs.build-client-android.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   build-and-push-docker:
     needs: changes

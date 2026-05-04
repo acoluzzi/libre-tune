@@ -8,10 +8,14 @@
 
 [![Shield: Contributions Welcome](https://img.shields.io/badge/contributions-welcome-blue)](#Contributing)
 [![License: MIT](https://img.shields.io/badge/License-GPL_3-yellow.svg)](https://opensource.org/license/gpl-3-0)
+[![Latest release](https://img.shields.io/github/v/release/acoluzzi/libre-tune?sort=semver)](https://github.com/acoluzzi/libre-tune/releases/latest)
+[![GitHub issues](https://img.shields.io/github/issues/acoluzzi/libre-tune)](https://github.com/acoluzzi/libre-tune/issues)
 
 **LibreTune** is a free and open source Music Player app, made in Android.
 
-[<img src="assets/badge_github.png" alt="Get it on GitHub" height="40">](https://github.com/c01ux/libre-tune/releases/latest)⠀⠀
+[<img src="assets/badge_github.png" alt="Get it on GitHub" height="40">](https://github.com/acoluzzi/libre-tune/releases/latest)⠀⠀
+
+Download the latest Nightly build from [GitHub Releases](https://acoluzzi.github.io/libre-tune/).
 
 </div>
 
@@ -54,13 +58,13 @@ collection using a single timestamp on each side:
 
 For every collection the worker decides:
 
-| Condition | Action |
-| --- | --- |
-| `remote_ts == null` and local non-empty | push, server adopts `local_ts` |
-| `remote_ts == null` and local empty | no-op |
-| `remote_ts > local_ts` | pull, set `local_ts := remote_ts` |
-| `remote_ts < local_ts` | push, server adopts `local_ts` |
-| `remote_ts == local_ts` | no-op |
+| Condition                               | Action                            |
+| --------------------------------------- | --------------------------------- |
+| `remote_ts == null` and local non-empty | push, server adopts `local_ts`    |
+| `remote_ts == null` and local empty     | no-op                             |
+| `remote_ts > local_ts`                  | pull, set `local_ts := remote_ts` |
+| `remote_ts < local_ts`                  | push, server adopts `local_ts`    |
+| `remote_ts == local_ts`                 | no-op                             |
 
 A pull replaces the local snapshot for that collection (and only that
 collection) — songs / playlists / library links that came from the
@@ -97,7 +101,7 @@ We are actively working on adding more features to LibreTune. Here are some feat
 
 ## Help & Support
 
-For bug reports and/or feature requests, please create a [GitHub issue](https://github.com/c01ux/libre-tune/issues).
+For bug reports and/or feature requests, please create a [GitHub issue](https://github.com/acoluzzi/libre-tune/issues).
 
 ## Disclaimer
 

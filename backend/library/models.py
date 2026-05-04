@@ -96,7 +96,7 @@ class SavedArtist(models.Model):
 
 class CollectionMeta(models.Model):
     """Tracks the most recent client-supplied modification timestamp for
-    each (user, collection) pair so the mobile app can perform a
+    each (user, collection) pair so the client app can perform a
     last-writer-wins comparison on every sync run.
     """
 

@@ -1,7 +1,7 @@
 # LibreTune Backend
 
 Django + Django REST Framework service that powers account features for the
-LibreTune mobile app:
+LibreTune client app:
 
 - **Auth** — registration, login, logout via token authentication.
 - **Library sync** — liked songs, playlists, saved albums, saved artists.
@@ -32,19 +32,19 @@ python manage.py runserver
 
 All sync endpoints require `Authorization: Token <token>` headers.
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| `POST` | `/api/auth/register/` | Create an account, returns token |
-| `POST` | `/api/auth/login/` | Exchange credentials for a token |
-| `POST` | `/api/auth/logout/` | Revoke the current token |
-| `GET`  | `/api/auth/me/` | Current user info |
-| `GET`/`PUT` | `/api/sync/liked-songs/` | Read/replace liked songs |
-| `GET`/`PUT` | `/api/sync/playlists/` | Read/replace playlists with songs |
-| `GET`/`PUT` | `/api/sync/saved-albums/` | Read/replace saved albums |
-| `GET`/`PUT` | `/api/sync/saved-artists/` | Read/replace saved artists |
+| Method      | Path                       | Description                       |
+| ----------- | -------------------------- | --------------------------------- |
+| `POST`      | `/api/auth/register/`      | Create an account, returns token  |
+| `POST`      | `/api/auth/login/`         | Exchange credentials for a token  |
+| `POST`      | `/api/auth/logout/`        | Revoke the current token          |
+| `GET`       | `/api/auth/me/`            | Current user info                 |
+| `GET`/`PUT` | `/api/sync/liked-songs/`   | Read/replace liked songs          |
+| `GET`/`PUT` | `/api/sync/playlists/`     | Read/replace playlists with songs |
+| `GET`/`PUT` | `/api/sync/saved-albums/`  | Read/replace saved albums         |
+| `GET`/`PUT` | `/api/sync/saved-artists/` | Read/replace saved artists        |
 
 `PUT` accepts the full library snapshot for that resource — the server
-replaces server-side state for the authenticated user, allowing the mobile app
+replaces server-side state for the authenticated user, allowing the client app
 to push its local Room database state in a single call.
 
 ## Deployment

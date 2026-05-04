@@ -196,7 +196,7 @@ class SavedArtistsView(_SavedCollectionView):
 
 
 class SyncStateView(APIView):
-    """Cheap timestamp-only summary the mobile app polls before deciding
+    """Cheap timestamp-only summary the client app polls before deciding
     which collections to push or pull."""
 
     permission_classes = [IsAuthenticated]

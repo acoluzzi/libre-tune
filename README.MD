@@ -31,7 +31,7 @@ LibreTune is an alternative frontend for YouTube Music, with a focus on user pri
 This repository hosts both the Android app and the backend service that
 powers account features:
 
-- [`mobile/`](./mobile) — the LibreTune Android application (Kotlin / Jetpack
+- [`client/`](./client) — the LibreTune Android application (Kotlin / Jetpack
   Compose / Gradle).
 - [`backend/`](./backend) — the LibreTune backend, a Django + Django REST
   Framework service deployed at

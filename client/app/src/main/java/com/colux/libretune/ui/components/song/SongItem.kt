@@ -63,7 +63,7 @@ fun SongItem(
     val isSaved = savedSongIds.contains(song.id)
 
     val isDisplayingInOwnPlaylist =
-        song.album?.id != null && song.album.id == displayingInPlaylistId
+        song.album?.id != null && song.album?.id == displayingInPlaylistId
 
 
 
@@ -157,7 +157,7 @@ fun SongItem(
 
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = song.durationSec.let { dur ->
+                text = song.durationSec!!.let { dur ->
                     val minutes = dur / 60
                     val seconds = dur % 60
                     String.format("%d:%02d", minutes, seconds)

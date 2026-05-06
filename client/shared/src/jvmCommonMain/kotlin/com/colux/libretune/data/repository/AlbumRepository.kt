@@ -1,6 +1,6 @@
 package com.colux.libretune.data.repository
 
-import androidx.room.withTransaction
+import com.colux.libretune.data.local.dbWithTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.PlaylistEntity
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
@@ -75,7 +75,7 @@ class AlbumRepository(
             )
         }
 
-        db.withTransaction {
+        db.dbWithTransaction {
             db.playlistDao().upsertAll(albumEntities)
 
             db.playlistDao().linkAlbumToArtists(artistAlbumLinks)

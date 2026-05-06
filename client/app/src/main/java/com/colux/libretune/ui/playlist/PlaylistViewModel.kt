@@ -6,9 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.PlaylistDetails
 import com.colux.libretune.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,22 +30,28 @@ class PlaylistDetailViewModel @Inject constructor(
         initialValue = false
     )
 
+    // Set to true once the initial refresh attempt completes (success or failure).
+    private val _refreshDone = MutableStateFlow(false)
+
     val uiState: StateFlow<PlaylistUiState> =
-        repository.getPlaylistDetails(playlistId)
-            .map { details ->
-                logger.info { "Emitting new playlist details for $playlistId: $details" }
-                PlaylistUiState.Success(details)
+        combine(repository.getPlaylistDetails(playlistId), _refreshDone) { details, refreshDone ->
+            logger.info { "Emitting state: details=$details refreshDone=$refreshDone" }
+            when {
+                details != null -> PlaylistUiState.Success(details)
+                refreshDone -> PlaylistUiState.Error("Could not load album. Check your connection and try again.")
+                else -> PlaylistUiState.Loading
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = PlaylistUiState.Loading // This is the ONLY time we use Loading
-            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PlaylistUiState.Loading
+        )
 
     init {
-        // Trigger a refresh when the ViewModel is created
         viewModelScope.launch {
             repository.refreshPlaylistDetails(playlistId)
+            // Mark refresh as done so the UI can switch from Loading → Error if DB is still empty.
+            _refreshDone.value = true
         }
     }
 
@@ -68,6 +75,6 @@ class PlaylistDetailViewModel @Inject constructor(
 
 sealed interface PlaylistUiState {
     data object Loading : PlaylistUiState
-    data class Success(val details: PlaylistDetails?) : PlaylistUiState
+    data class Success(val details: PlaylistDetails) : PlaylistUiState
     data class Error(val message: String) : PlaylistUiState
 }

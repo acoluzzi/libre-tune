@@ -1,6 +1,6 @@
 package com.colux.libretune.data.repository
 
-import androidx.room.withTransaction
+import com.colux.libretune.data.local.dbWithTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.local.entity.PlaybackHistoryEntity
@@ -67,7 +67,7 @@ class SongRepository(
     suspend fun logSongPlayed(song: Song) {
         _saveSong(song)
 
-        db.withTransaction {
+        db.dbWithTransaction {
             logger.info { "insertHistory for song played: $song" }
             db.historyDao().insertHistory(
                 PlaybackHistoryEntity(
@@ -133,7 +133,7 @@ class SongRepository(
         } ?: emptyList()
 
 
-        db.withTransaction {
+        db.dbWithTransaction {
             logger.info { "Upserting artist entities: $artistsEntities" }
             db.artistDao().upsertAll(artistsEntities)
 

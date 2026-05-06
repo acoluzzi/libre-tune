@@ -16,7 +16,6 @@ import com.colux.libretune.data.remote.tube.mapper.toSong
 import com.coluzziandrea.libretune_extractor.LibreTuneExtractor
 import com.coluzziandrea.libretune_extractor.model.GenericMusicItem
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
@@ -93,9 +92,9 @@ class YouTubeExtractionRepository(
     }
 
     suspend fun searchContent(query: String): SearchResult? {
-        return coroutineScope {
+        return withContext(Dispatchers.IO) {
             try {
-                return@coroutineScope libreTuneExtractor.search(query)?.toDataModel()
+                libreTuneExtractor.search(query)?.toDataModel()
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

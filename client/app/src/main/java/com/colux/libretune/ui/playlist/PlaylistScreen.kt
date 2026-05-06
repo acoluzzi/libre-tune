@@ -99,8 +99,8 @@ fun PlaylistDetailScreen(
     when (val state = uiState) {
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
-            state.details?.let { playlistDetails ->
-                Scaffold(
+            val playlistDetails = state.details
+            Scaffold(
                     topBar = {
                         // The top bar is only visible when showTopBar is true
                         AnimatedVisibility(
@@ -239,7 +239,6 @@ fun PlaylistDetailScreen(
 
                     }
                 }
-            }
         }
 
         is PlaylistUiState.Error -> Text("Could not load playlist details.")

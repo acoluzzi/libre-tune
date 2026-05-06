@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
 
@@ -95,7 +95,7 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.material3)
     implementation(libs.androidx.animation)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
@@ -129,7 +129,7 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
-    kapt(libs.androidx.hilt.compiler)
+    ksp(libs.androidx.hilt.compiler)
 
 
     implementation(project(":libretune-extractor"))

@@ -1,6 +1,6 @@
 package com.colux.libretune.data.sync
 
-import androidx.room.withTransaction
+import com.colux.libretune.data.local.dbWithTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.DatabaseConstants
 import com.colux.libretune.data.local.entity.AlbumType
@@ -206,7 +206,7 @@ class LibrarySyncOrchestrator(
 
     private suspend fun applyLikedSongs(payload: LikedSongsPayload) {
         val now = System.currentTimeMillis()
-        db.withTransaction {
+        db.dbWithTransaction {
             db.playlistDao().clearLikedSongs()
             payload.items.forEach { item ->
                 db.songDao().insertSong(item.song.toEntityStub(now))
@@ -222,7 +222,7 @@ class LibrarySyncOrchestrator(
 
     private suspend fun applyPlaylists(payload: PlaylistsPayload) {
         val now = System.currentTimeMillis()
-        db.withTransaction {
+        db.dbWithTransaction {
             db.playlistDao().clearSyncedPlaylists()
             payload.items.forEach { remotePlaylist ->
                 val playlistId = remotePlaylist.remote_id.ifEmpty {
@@ -261,7 +261,7 @@ class LibrarySyncOrchestrator(
 
     private suspend fun applySavedAlbums(payload: SavedAlbumsPayload) {
         val now = System.currentTimeMillis()
-        db.withTransaction {
+        db.dbWithTransaction {
             db.libraryDao().clearSavedAlbumLinks()
             payload.items.forEach { album ->
                 db.playlistDao().insert(
@@ -288,7 +288,7 @@ class LibrarySyncOrchestrator(
 
     private suspend fun applySavedArtists(payload: SavedArtistsPayload) {
         val now = System.currentTimeMillis()
-        db.withTransaction {
+        db.dbWithTransaction {
             db.libraryDao().clearSavedArtistLinks()
             payload.items.forEach { artist ->
                 db.artistDao().upsert(

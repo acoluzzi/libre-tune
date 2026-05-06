@@ -1,6 +1,6 @@
 package com.colux.libretune.data.repository
 
-import androidx.room.withTransaction
+import com.colux.libretune.data.local.dbWithTransaction
 import com.colux.libretune.data.local.AppDatabase
 import com.colux.libretune.data.local.entity.AlbumType
 import com.colux.libretune.data.local.entity.ArtistEntity
@@ -412,7 +412,7 @@ class PlaylistRepository(
 
 
             // 4. Call the single transaction method in the DAO
-            db.withTransaction {
+            db.dbWithTransaction {
 
                 logger.info { "Start DB transaction" }
 

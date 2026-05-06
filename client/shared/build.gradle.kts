@@ -14,12 +14,13 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.addAll("-P", "plugin:org.jetbrains.kotlin.parcelize:additionalAnnotation=com.colux.libretune.shared.parcelable.Parcelize")
         }
     }
     jvm("desktop") {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 
@@ -32,7 +33,6 @@ kotlin {
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.kotlinx.serialization.json)
                 api(libs.androidx.room.runtime)
-                implementation(libs.androidx.sqlite.bundled)
                 api(libs.androidx.paging.common)
             }
         }
@@ -50,9 +50,18 @@ kotlin {
         }
         val androidMain by getting {
             dependsOn(jvmCommonMain)
+            dependencies {
+                // BundledSQLiteDriver works on Android; on desktop it crashes with a JNI/glibc conflict.
+                implementation(libs.androidx.sqlite.bundled)
+            }
         }
         val desktopMain by getting {
             dependsOn(jvmCommonMain)
+            dependencies {
+                // Custom JDBC-backed SQLite driver using org.xerial:sqlite-jdbc.
+                // BundledSQLiteDriver crashes on Linux JBR due to JNI/glibc C++ ABI conflict.
+                implementation(libs.xerial.sqlite.jdbc)
+            }
         }
     }
 }

@@ -27,7 +27,7 @@ To build and run the LibreTune Android app, follow these steps:
 4. Build the app using Gradle:
 
    ```bash
-   ./gradlew assembleDebug
+    ./gradlew :app:assembleDebug
    ```
 
 5. Install the app on your Android device or emulator:
@@ -35,3 +35,35 @@ To build and run the LibreTune Android app, follow these steps:
    ```bash
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
+
+   Or build and install in one step:
+
+   ```bash
+   ./gradlew :app:installDebug
+   ```
+
+### Desktop (Linux)
+
+To build and run the desktop JVM app:
+
+1. Ensure JDK 21 is installed and `JAVA_HOME` points to it.
+
+2. Navigate to the `client` directory:
+
+   ```bash
+   cd client
+   ```
+
+3. Run directly with Gradle:
+
+   ```bash
+   ./gradlew :desktop:run
+   ```
+
+4. To build a distributable package:
+
+   ```bash
+   ./gradlew :desktop:packageDistributionForCurrentOS
+   ```
+
+   The output is placed under `desktop/build/compose/binaries/`.

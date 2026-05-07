@@ -1,7 +1,6 @@
 package com.colux.libretune.data.sync
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -11,20 +10,20 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 
 /**
  * Periodic worker that asks [LibrarySyncOrchestrator] to reconcile the local
  * library with the LibreTune backend. The worker runs on a recurring schedule
- * and is also enqueued explicitly on app start (see [LibreTuneApplication]).
+ * and is also enqueued explicitly on app start.
+ *
+ * Constructed by Koin's WorkerFactory; the (Context, WorkerParameters) pair
+ * is provided by WorkManager and the orchestrator is resolved from Koin.
  */
-@HiltWorker
-class LibrarySyncWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
+class LibrarySyncWorker(
+    context: Context,
+    workerParams: WorkerParameters,
     private val orchestrator: LibrarySyncOrchestrator,
 ) : CoroutineWorker(context, workerParams) {
 

@@ -28,12 +28,15 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(project(":libretune-extractor"))
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.content.negotiation)
-                implementation(libs.ktor.serialization.kotlinx.json)
+                api(libs.ktor.client.core)
+                api(libs.ktor.client.content.negotiation)
+                api(libs.ktor.serialization.kotlinx.json)
+                api(libs.ktor.client.logging)
                 implementation(libs.kotlinx.serialization.json)
                 api(libs.androidx.room.runtime)
                 api(libs.androidx.paging.common)
+                api(libs.koin.core)
+                api(libs.koin.core.viewmodel)
             }
         }
         val commonTest by getting {
@@ -44,8 +47,9 @@ kotlin {
         val jvmCommonMain by creating {
             dependsOn(commonMain)
             dependencies {
-                implementation(libs.github.teamnewpipe.newpipeextractor)
+                api(libs.github.teamnewpipe.newpipeextractor)
                 implementation(libs.okhttp)
+                api(libs.ktor.client.cio)
             }
         }
         val androidMain by getting {
@@ -53,6 +57,7 @@ kotlin {
             dependencies {
                 // BundledSQLiteDriver works on Android; on desktop it crashes with a JNI/glibc conflict.
                 implementation(libs.androidx.sqlite.bundled)
+                api(libs.koin.android)
             }
         }
         val desktopMain by getting {

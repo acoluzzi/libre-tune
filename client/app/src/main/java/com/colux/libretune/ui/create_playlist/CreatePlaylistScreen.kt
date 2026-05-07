@@ -29,14 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePlaylistScreen(
     navController: NavController,
-    viewModel: CreateNewPlaylistViewModel = hiltViewModel()
+    viewModel: CreateNewPlaylistViewModel = koinViewModel()
 ) {
     var text by remember { mutableStateOf("") }
 

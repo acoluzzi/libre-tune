@@ -30,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -39,7 +39,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 @Composable
 fun AuthScreen(
     navController: NavHostController,
-    viewModel: AuthViewModel = hiltViewModel(),
+    viewModel: AuthViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     var mode by rememberSaveable { mutableStateOf(AuthMode.LOGIN) }

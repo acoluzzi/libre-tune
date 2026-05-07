@@ -6,16 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.ArtistDetails
 import com.colux.libretune.data.repository.ArtistRepository
 import com.colux.libretune.data.repository.SongRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class ArtistViewModel @Inject constructor(
+class ArtistViewModel constructor(
     private val repository: ArtistRepository,
     private val songRepository: SongRepository,
     savedStateHandle: SavedStateHandle // Hilt provides this to access navigation arguments

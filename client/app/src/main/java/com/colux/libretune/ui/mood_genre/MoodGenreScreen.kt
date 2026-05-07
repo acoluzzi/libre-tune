@@ -27,7 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import com.colux.libretune.data.model.Song
 import com.colux.libretune.ui.artist.ArtistCarouselSkeleton
@@ -44,7 +44,7 @@ fun MoodGenreScreen(
     moodGenreId: String,
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
-    viewModel: MoodGenreViewModel = hiltViewModel()
+    viewModel: MoodGenreViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberLazyListState()

@@ -37,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.R
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(navController: NavHostController) {
-    val viewModel: LibraryViewModel = hiltViewModel()
+    val viewModel: LibraryViewModel = koinViewModel()
     val playlists by viewModel.playlists.collectAsState()
     val artists by viewModel.artists.collectAsState()
 

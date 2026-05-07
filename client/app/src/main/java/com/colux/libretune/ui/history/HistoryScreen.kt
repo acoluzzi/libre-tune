@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -49,7 +49,7 @@ import java.time.temporal.ChronoUnit
 fun HistoryScreen(
     navController: NavHostController,
     playerViewModel: PlayerViewModel,
-    viewModel: HistoryViewModel = hiltViewModel()
+    viewModel: HistoryViewModel = koinViewModel()
 ) {
     // Collect the Flow of PagingData as LazyPagingItems
     val historyItems: LazyPagingItems<HistoryListItem> =

@@ -16,7 +16,6 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toGenreMoodCategory
 import com.coluzziandrea.libretune_extractor.parser.mapper.toGenresMoods
 import com.coluzziandrea.libretune_extractor.parser.toSearchSuggestions
 import io.ktor.client.HttpClient
-import io.ktor.http.encodeURLParameter
 
 class LibreTuneExtractor(
     httpClient: HttpClient
@@ -43,15 +42,19 @@ class LibreTuneExtractor(
         }
     }
 
+    // YouTube Music's /youtubei/v1/search expects the query verbatim inside the
+    // JSON body; the previous URLEncoder.encode / encodeURLParameter wrappers
+    // double-encoded multi-word queries (e.g. "Bohemian Rhapsody" became
+    // "Bohemian%20Rhapsody"), causing the server to return no results.
     suspend fun search(query: String): SearchResult? {
-        return client.search(query.encodeURLParameter()).let {
+        return client.search(query).let {
             SearchResultParser.from(it)
         }
     }
 
 
     suspend fun searchSuggestions(query: String): List<SearchSuggestion> {
-        return client.searchSuggestions(query.encodeURLParameter())
+        return client.searchSuggestions(query)
             .toSearchSuggestions()
     }
 

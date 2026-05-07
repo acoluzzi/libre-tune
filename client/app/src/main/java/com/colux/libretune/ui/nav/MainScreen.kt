@@ -26,7 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -37,7 +37,7 @@ import com.colux.libretune.ui.player.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(playerViewModel: PlayerViewModel = hiltViewModel()) {
+fun MainScreen(playerViewModel: PlayerViewModel = koinViewModel()) {
     val navController = rememberNavController()
 
     // State for the Modal Bottom Sheet (the full-screen player)

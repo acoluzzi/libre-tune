@@ -10,17 +10,14 @@ import androidx.paging.insertSeparators
 import androidx.paging.map
 import com.colux.libretune.data.model.HistoryItem
 import com.colux.libretune.data.repository.HistoryRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import javax.inject.Inject
 import kotlin.time.ExperimentalTime
 
-@HiltViewModel
-class HistoryViewModel @Inject constructor(historyRepository: HistoryRepository) : ViewModel() {
+class HistoryViewModel constructor(historyRepository: HistoryRepository) : ViewModel() {
     val historyItems: Flow<PagingData<HistoryListItem>> = Pager(
         config = PagingConfig(
             pageSize = 20, // How many items to load at once

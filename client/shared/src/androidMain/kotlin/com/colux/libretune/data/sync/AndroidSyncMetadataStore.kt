@@ -2,14 +2,10 @@ package com.colux.libretune.data.sync
 
 import android.content.Context
 import android.content.SharedPreferences
-import dagger.hilt.android.qualifiers.ApplicationContext
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 /** SharedPreferences-backed [SyncMetadataStore] for the Android app. */
-@Singleton
-class AndroidSyncMetadataStore @Inject constructor(
-    @ApplicationContext context: Context,
+class AndroidSyncMetadataStore(
+    context: Context,
 ) : SyncMetadataStore {
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

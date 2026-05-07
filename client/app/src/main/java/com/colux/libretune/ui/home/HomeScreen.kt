@@ -26,7 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavController
 import com.colux.libretune.data.model.HomeFeedItem
 import com.colux.libretune.ui.nav.AppDrawerMenu
@@ -39,7 +39,7 @@ import java.util.Calendar
 fun HomeScreen(
     playerViewModel: PlayerViewModel,
     navController: NavController,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel = koinViewModel(),
 ) {
 
     val greeting = remember { getGreeting() }

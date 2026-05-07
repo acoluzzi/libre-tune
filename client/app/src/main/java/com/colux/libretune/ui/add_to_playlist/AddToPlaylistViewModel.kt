@@ -7,7 +7,6 @@ import com.colux.libretune.data.model.Song
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
 import com.colux.libretune.data.repository.PlaylistRepository
 import com.colux.libretune.data.repository.SongRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +14,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class AddToPlaylistViewModel @Inject constructor(
+class AddToPlaylistViewModel constructor(
     private val playlistRepository: PlaylistRepository,
     private val songRepository: SongRepository,
     savedStateHandle: SavedStateHandle

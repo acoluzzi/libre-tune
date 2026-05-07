@@ -35,7 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavController
 import com.colux.libretune.ui.library.PlaylistImageCollage
 import com.colux.libretune.ui.nav.Screen
@@ -47,7 +47,7 @@ fun AddToPlaylistScreen(
     songId: String,
     navController: NavController,
     playerViewModel: PlayerViewModel,
-    viewModel: AddToPlaylistViewModel = hiltViewModel()
+    viewModel: AddToPlaylistViewModel = koinViewModel()
 ) {
     val playlists by viewModel.playlists.collectAsState()
     val song by viewModel.song.collectAsState(initial = null)

@@ -6,14 +6,11 @@ import com.colux.libretune.data.model.Artist
 import com.colux.libretune.data.model.wrapper.PlaylistWithSongs
 import com.colux.libretune.data.repository.ArtistRepository
 import com.colux.libretune.data.repository.PlaylistRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
-@HiltViewModel
-class LibraryViewModel @Inject constructor(
+class LibraryViewModel constructor(
     playlistRepository: PlaylistRepository,
     artistRepository: ArtistRepository
 ) :

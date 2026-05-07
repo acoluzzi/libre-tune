@@ -49,7 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.R
@@ -70,7 +70,7 @@ fun PlaylistDetailScreen(
     playlistId: String,
     playerViewModel: PlayerViewModel,
     navController: NavHostController,
-    viewModel: PlaylistDetailViewModel = hiltViewModel()
+    viewModel: PlaylistDetailViewModel = koinViewModel()
 ) {
 
 

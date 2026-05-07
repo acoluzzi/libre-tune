@@ -6,14 +6,12 @@ import com.colux.libretune.data.model.SearchResult
 import com.colux.libretune.data.model.SearchSuggestion
 import com.colux.libretune.data.repository.SearchRepository
 import com.colux.libretune.ui.util.smartThrottle
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import kotlin.time.Duration.Companion.minutes
 
 sealed interface SearchUiState {
@@ -25,8 +23,7 @@ sealed interface SearchUiState {
 }
 
 
-@HiltViewModel
-class SearchViewModel @Inject constructor(
+class SearchViewModel constructor(
     private val repository: SearchRepository,
 ) : ViewModel() {
 

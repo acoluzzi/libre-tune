@@ -2,17 +2,13 @@ package com.colux.libretune.data.remote.backend
 
 import android.content.Context
 import android.content.SharedPreferences
-import dagger.hilt.android.qualifiers.ApplicationContext
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 /**
  * Android implementation of [BackendTokenStore] backed by SharedPreferences,
  * so the mobile app can call backend sync endpoints across restarts.
  */
-@Singleton
-class AndroidBackendTokenStore @Inject constructor(
-    @ApplicationContext context: Context,
+class AndroidBackendTokenStore(
+    context: Context,
 ) : BackendTokenStore {
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

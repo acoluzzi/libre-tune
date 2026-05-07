@@ -6,9 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.colux.libretune.data.repository.BackendSyncRepository
 import com.colux.libretune.data.sync.LibrarySyncWorker
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,10 +22,9 @@ data class AuthUiState(
 
 enum class AuthMode { LOGIN, REGISTER }
 
-@HiltViewModel
-class AuthViewModel @Inject constructor(
+class AuthViewModel constructor(
     private val backend: BackendSyncRepository,
-    @ApplicationContext private val appContext: Context,
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthUiState(isAuthenticated = backend.isAuthenticated()))

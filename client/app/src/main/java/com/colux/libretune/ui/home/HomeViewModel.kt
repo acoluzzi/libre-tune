@@ -5,17 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.HomeFeedItem
 import com.colux.libretune.data.repository.HomeRepository
 import com.colux.libretune.ui.util.smartThrottle
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 import kotlin.time.Duration.Companion.minutes
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+class HomeViewModel constructor(
     private val homeRepository: HomeRepository
 ) :
     ViewModel() {

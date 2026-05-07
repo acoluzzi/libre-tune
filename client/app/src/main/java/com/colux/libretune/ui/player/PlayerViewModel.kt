@@ -20,8 +20,6 @@ import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.service.PlaybackService
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,11 +32,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.logging.Logger
-import javax.inject.Inject
 
-@HiltViewModel
-class PlayerViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+class PlayerViewModel constructor(
+    private val context: Context,
     private val songRepository: SongRepository,
 ) : ViewModel() {
 

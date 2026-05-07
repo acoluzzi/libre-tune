@@ -18,14 +18,12 @@ import com.colux.libretune.data.repository.SongRepository
 import com.colux.libretune.ui.MainActivity
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
-@AndroidEntryPoint
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaSessionService() {
 
@@ -36,11 +34,8 @@ class PlaybackService : MediaSessionService() {
             SessionCommand("PLAY_PLAYLIST_WITH_FETCH", Bundle.EMPTY)
     }
 
-    @Inject
-    lateinit var songRepository: SongRepository
-
-    @Inject
-    lateinit var exoPlayer: ExoPlayer
+    private val songRepository: SongRepository by inject()
+    private val exoPlayer: ExoPlayer by inject()
 
     private var mediaSession: MediaSession? = null
     private var backgroundFetchJob: Job? = null

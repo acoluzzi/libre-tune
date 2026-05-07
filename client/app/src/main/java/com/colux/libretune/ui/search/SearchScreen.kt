@@ -59,7 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Artist
@@ -81,9 +81,9 @@ fun SearchScreen(
     playerViewModel: PlayerViewModel,
     navController: NavHostController,
     onShowPlayerFullScreen: () -> Unit,
-    searchViewModel: SearchViewModel = hiltViewModel()
+    searchViewModel: SearchViewModel = koinViewModel()
 ) {
-    val searchViewModel: SearchViewModel = hiltViewModel()
+    val searchViewModel: SearchViewModel = koinViewModel()
     val uiState by searchViewModel.uiState.collectAsState()
     var query by remember { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(false) }

@@ -34,7 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import org.koin.androidx.compose.koinViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.colux.libretune.data.model.Playlist
@@ -47,7 +47,7 @@ import com.colux.libretune.ui.nav.Screen
 fun DiscographyScreen(
     artistId: String,
     navController: NavHostController,
-    viewModel: DiscographyViewModel = hiltViewModel()
+    viewModel: DiscographyViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

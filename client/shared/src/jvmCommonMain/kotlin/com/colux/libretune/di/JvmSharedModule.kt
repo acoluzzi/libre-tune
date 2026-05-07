@@ -15,6 +15,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -24,8 +25,9 @@ import org.koin.dsl.module
  */
 val jvmSharedModule: Module = module {
     single<HttpClient> {
+        val jsonInstance = get<Json>()
         HttpClient(CIO) {
-            install(ContentNegotiation) { json(get()) }
+            install(ContentNegotiation) { json(jsonInstance) }
             install(Logging) { level = LogLevel.INFO }
             install(HttpTimeout) {
                 requestTimeoutMillis = 30_000

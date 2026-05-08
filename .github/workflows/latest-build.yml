@@ -1,19 +1,19 @@
-name: Latest Build
+name: CI/CD Build and Publish
 
 on:
   push:
-    branches:
-      - main
-      - master
-  workflow_dispatch:
+    branches: ['main']
+
+permissions:
+  contents: read
 
 concurrency:
-  group: latest-build
+  group: deploy-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build APK
+  build-client-android:
+    name: Build Client Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -32,28 +32,55 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+      - name: Build release APK
+        working-directory: .
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
-      - name: Collect APK
-        id: collect
-        run: |
-          mkdir -p artifacts
-          apk=$(find app/build/outputs/apk -name "*.apk" -print -quit)
-          if [ -z "$apk" ]; then
-            echo "No APK was produced." >&2
-            exit 1
-          fi
-          short_sha="${GITHUB_SHA::7}"
-          dest="artifacts/LibreTune-latest-${short_sha}.apk"
-          cp "$apk" "$dest"
-          echo "apk_path=$dest" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
-
-      - name: Upload APK artifact
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LibreTune-latest-${{ steps.collect.outputs.short_sha }}
-          path: ${{ steps.collect.outputs.apk_path }}
-          if-no-files-found: error
-          retention-days: 90
+          name: release-apk
+          path: ./app/build/outputs/apk/release/*.apk
+
+      - name: Prepare Pages bundle
+        run: |
+          mkdir -p pages
+          apk_path=$(find ./app/build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -n 1)
+          cp "$apk_path" ./pages/latest.apk
+          cat <<EOF > ./pages/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>LibreTune Latest APK</title>
+          </head>
+          <body>
+            <h1>LibreTune Latest APK</h1>
+            <p><a href="./latest.apk">Download latest.apk</a></p>
+            <p>Commit: ${{ github.sha }}</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./pages
+
+  deploy-client-pages:
+    name: Publish Client APK Page
+    needs:
+      - build-client-android
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

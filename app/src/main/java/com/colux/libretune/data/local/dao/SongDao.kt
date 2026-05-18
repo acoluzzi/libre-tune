@@ -66,6 +66,9 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE songId = :id")
     fun getSongById(id: String): Flow<SongEntity?>
 
+    @Query("SELECT * FROM songs WHERE songId = :id")
+    suspend fun getSongByIdOnce(id: String): SongEntity?
+
 
     @Query(
         """

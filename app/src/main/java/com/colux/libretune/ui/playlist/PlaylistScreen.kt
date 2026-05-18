@@ -21,12 +21,18 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -96,6 +102,8 @@ fun PlaylistDetailScreen(
         initial = false
     )
 
+    val isSignedInToYouTubeMusic by viewModel.isSignedInToYouTubeMusic.collectAsState()
+
     when (val state = uiState) {
         is PlaylistUiState.Loading -> PlaylistDetailSkeleton()
         is PlaylistUiState.Success -> {
@@ -155,6 +163,14 @@ fun PlaylistDetailScreen(
                                     },
                                     onDislike = {
                                         viewModel.dislikePlaylist()
+                                    },
+                                    isSignedInToYouTubeMusic = isSignedInToYouTubeMusic,
+                                    onEnableSync = { viewModel.enableYouTubeMusicSync() },
+                                    onDisableSync = { deleteRemote ->
+                                        viewModel.disableYouTubeMusicSync(deleteRemote)
+                                    },
+                                    onRefreshFromRemote = {
+                                        viewModel.refreshFromYouTubeMusic()
                                     }
                                 )
                             }
@@ -276,8 +292,13 @@ fun PlaylistHeader(
     onPlayPauseClick: () -> Unit,
     onShuffleClick: () -> Unit,
     onLike: () -> Unit,
-    onDislike: () -> Unit
+    onDislike: () -> Unit,
+    isSignedInToYouTubeMusic: Boolean = false,
+    onEnableSync: () -> Unit = {},
+    onDisableSync: (deleteRemote: Boolean) -> Unit = {},
+    onRefreshFromRemote: () -> Unit = {},
 ) {
+    var menuOpen by remember { mutableStateOf(false) }
 
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -321,12 +342,25 @@ fun PlaylistHeader(
 
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-                Text(
-                    details.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.basicMarquee(),
-                    maxLines = 2
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        details.name,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .basicMarquee(),
+                        maxLines = 2
+                    )
+                    if (details.syncEnabled) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            Icons.Default.CloudDone,
+                            contentDescription = "Synced with YouTube Music",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
 
                 if (details.artists.isNotEmpty()) {
                     Text(
@@ -374,8 +408,61 @@ fun PlaylistHeader(
                 }
             }
 
-            IconButton(onClick = { /* TODO: Show menu */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            Box {
+                IconButton(onClick = { menuOpen = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                }
+                DropdownMenu(
+                    expanded = menuOpen,
+                    onDismissRequest = { menuOpen = false }
+                ) {
+                    if (isLocal) {
+                        if (details.syncEnabled) {
+                            DropdownMenuItem(
+                                text = { Text("Refresh from YouTube Music") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Refresh, contentDescription = null)
+                                },
+                                onClick = {
+                                    onRefreshFromRemote()
+                                    menuOpen = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Stop syncing (keep on YouTube Music)") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.CloudOff, contentDescription = null)
+                                },
+                                onClick = {
+                                    onDisableSync(false)
+                                    menuOpen = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Stop syncing & delete on YouTube Music") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.CloudOff, contentDescription = null)
+                                },
+                                onClick = {
+                                    onDisableSync(true)
+                                    menuOpen = false
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text("Sync with YouTube Music") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.CloudSync, contentDescription = null)
+                                },
+                                enabled = isSignedInToYouTubeMusic,
+                                onClick = {
+                                    onEnableSync()
+                                    menuOpen = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))

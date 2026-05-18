@@ -13,5 +13,11 @@ data class PlaylistEntity(
     val type: AlbumType,
     val isLocal: Boolean? = false,
     val releaseYear: Int? = null,
-    val updateTimestamp: Long? = null
+    val updateTimestamp: Long? = null,
+    /**
+     * YouTube Music playlist ID this local playlist mirrors. Null for plain
+     * local playlists and for non-synced browsed playlists.
+     */
+    val remotePlaylistId: String? = null,
+    val syncEnabled: Boolean = false
 )

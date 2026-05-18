@@ -23,6 +23,7 @@ import javax.inject.Singleton
 class SongRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
+    private val sync: YouTubeMusicSyncRepository,
 ) {
 
     private val logger = java.util.logging.Logger.getLogger(SongRepository::class.java.name)
@@ -165,15 +166,36 @@ class SongRepository @Inject constructor(
     }
 
     suspend fun removeSongFromAllPlaylists(songId: String) {
+        // Mirror removal for every synced playlist this song lives in.
+        // mirrorRemoveSong leaves the local cross-ref in place as
+        // PENDING_REMOVE if YT Music rejected the call, so the wipe at the
+        // end only drops cross-refs whose remote side actually succeeded.
+        val syncedHostingPlaylists = db.playlistDao()
+            .getSyncedPlaylists()
+            .firstOrNull()
+            .orEmpty()
+            .filter { it.isLocal == true }
+        for (p in syncedHostingPlaylists) {
+            val ref = db.playlistDao().getCrossRef(p.playlistId, songId) ?: continue
+            val canDeleteLocally = sync.mirrorRemoveSong(p.playlistId, songId)
+            if (canDeleteLocally) {
+                db.playlistDao().removeSongFromPlaylist(ref)
+            }
+        }
+        // Non-synced local playlists are always free to drop the row.
         db.playlistDao().removeSongFromAllLocalPlaylists(songId)
     }
 
     suspend fun removeSongFromPlaylist(playlistId: String, songId: String) {
-        db.playlistDao().removeSongFromPlaylist(PlaylistSongCrossRef(playlistId, songId))
+        val canDeleteLocally = sync.mirrorRemoveSong(playlistId, songId)
+        if (canDeleteLocally) {
+            db.playlistDao().removeSongFromPlaylist(PlaylistSongCrossRef(playlistId, songId))
+        }
     }
 
     suspend fun addSongToPlaylist(playlistId: String, song: Song) {
         _addSongToPlaylist(playlistId, song)
+        sync.mirrorAddSong(playlistId, song.id)
     }
 
 

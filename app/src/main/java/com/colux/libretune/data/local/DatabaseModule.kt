@@ -32,7 +32,10 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "libretune_db"
-        ).addCallback(callback).build()
+        )
+            .addCallback(callback)
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
     }
 
     @Provides

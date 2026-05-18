@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.colux.libretune.data.model.PlaylistDetails
+import com.colux.libretune.data.remote.auth.YtMusicAuthRepository
 import com.colux.libretune.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaylistDetailViewModel @Inject constructor(
     private val repository: PlaylistRepository,
+    authRepository: YtMusicAuthRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -29,6 +31,14 @@ class PlaylistDetailViewModel @Inject constructor(
         initialValue = false
     )
 
+    val isSignedInToYouTubeMusic: StateFlow<Boolean> = authRepository.state
+        .map { it != null }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            authRepository.current() != null
+        )
+
     val uiState: StateFlow<PlaylistUiState> =
         repository.getPlaylistDetails(playlistId)
             .map { details ->
@@ -38,11 +48,10 @@ class PlaylistDetailViewModel @Inject constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = PlaylistUiState.Loading // This is the ONLY time we use Loading
+                initialValue = PlaylistUiState.Loading
             )
 
     init {
-        // Trigger a refresh when the ViewModel is created
         viewModelScope.launch {
             repository.refreshPlaylistDetails(playlistId)
         }
@@ -63,7 +72,23 @@ class PlaylistDetailViewModel @Inject constructor(
         }
     }
 
+    fun enableYouTubeMusicSync() {
+        viewModelScope.launch {
+            repository.enableSyncForPlaylist(playlistId)
+        }
+    }
 
+    fun disableYouTubeMusicSync(alsoDeleteRemote: Boolean) {
+        viewModelScope.launch {
+            repository.disableSyncForPlaylist(playlistId, alsoDeleteRemote)
+        }
+    }
+
+    fun refreshFromYouTubeMusic() {
+        viewModelScope.launch {
+            repository.pullPlaylistFromYouTubeMusic(playlistId)
+        }
+    }
 }
 
 sealed interface PlaylistUiState {

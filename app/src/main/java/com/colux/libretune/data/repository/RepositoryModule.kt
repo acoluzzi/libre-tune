@@ -31,9 +31,10 @@ class RepositoryModule {
     @Provides
     fun providePlaylistRepositoryImpl(
         remote: YouTubeExtractionRepository,
-        db: AppDatabase
+        db: AppDatabase,
+        sync: YouTubeMusicSyncRepository,
     ): PlaylistRepository {
-        return PlaylistRepository(remote, db)
+        return PlaylistRepository(remote, db, sync)
     }
 
     @Provides
@@ -62,9 +63,10 @@ class RepositoryModule {
     @Provides
     fun provideSongRepositoryImpl(
         remote: YouTubeExtractionRepository,
-        db: AppDatabase
+        db: AppDatabase,
+        sync: YouTubeMusicSyncRepository,
     ): SongRepository {
-        return SongRepository(remote, db)
+        return SongRepository(remote, db, sync)
     }
 
 }

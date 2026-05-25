@@ -41,6 +41,7 @@ import javax.inject.Singleton
 class PlaylistRepository @Inject constructor(
     private val remote: YouTubeExtractionRepository,
     private val db: AppDatabase,
+    private val sync: YouTubeMusicSyncRepository,
 ) {
     companion object {
         private const val MAX_RELATED_FOR_PLAYLIST = 10
@@ -101,9 +102,10 @@ class PlaylistRepository @Inject constructor(
         }
     }
 
-    suspend fun createNewPlaylist(name: String) {
+    suspend fun createNewPlaylist(name: String, syncWithYouTubeMusic: Boolean = false): String {
+        val localId = "local-${System.currentTimeMillis()}"
         val newPlaylist = PlaylistEntity(
-            playlistId = "local-${System.currentTimeMillis()}",
+            playlistId = localId,
             name = name,
             images = emptyList(),
             isLocal = true,
@@ -111,6 +113,23 @@ class PlaylistRepository @Inject constructor(
             updateTimestamp = System.currentTimeMillis()
         )
         db.playlistDao().insert(newPlaylist)
+
+        if (syncWithYouTubeMusic && sync.isSignedIn) {
+            sync.enableSyncForPlaylist(localId)
+                .onFailure { logger.log(Level.WARNING, "Failed to enable sync for $localId", it) }
+        }
+        return localId
+    }
+
+    suspend fun enableSyncForPlaylist(localId: String): Result<String> =
+        sync.enableSyncForPlaylist(localId)
+
+    suspend fun disableSyncForPlaylist(localId: String, alsoDeleteRemote: Boolean) {
+        sync.disableSyncForPlaylist(localId, alsoDeleteRemote)
+    }
+
+    suspend fun pullPlaylistFromYouTubeMusic(localId: String) {
+        sync.pullFromYouTubeMusic(localId)
     }
 
 
@@ -170,7 +189,9 @@ class PlaylistRepository @Inject constructor(
                     songs = songs.map { it.toDataModel() }.sortedBy { it.trackNumber },
                     relatedPlaylists = related.map { it.toDataModel() },
                     isLocal = playlistWithArtists.playlist.isLocal ?: false,
-                    releaseYear = playlistWithArtists.playlist.releaseYear ?: 0
+                    releaseYear = playlistWithArtists.playlist.releaseYear ?: 0,
+                    syncEnabled = playlistWithArtists.playlist.syncEnabled,
+                    remotePlaylistId = playlistWithArtists.playlist.remotePlaylistId
                 )
             }
         }
@@ -227,6 +248,15 @@ class PlaylistRepository @Inject constructor(
     suspend fun refreshPlaylistDetails(id: String) {
 
         logger.info { "Starting refreshPlaylistDetails for $id" }
+
+        // For synced local playlists, pulling from YT Music is the right
+        // "refresh" — we ignore the standard remote-fetch path entirely.
+        val cached = db.playlistDao().getPlaylistById(id)
+        if (cached?.syncEnabled == true) {
+            sync.pullFromYouTubeMusic(id)
+            return
+        }
+
         if (shouldFetch(id)) {
             logger.info { "Fetching data from remote" }
             updatePlaylistDetailsFromRemote(id)

@@ -9,7 +9,9 @@ data class PlaylistDetails(
     val artists: List<Artist>,
     val songs: List<Song>,
     val relatedPlaylists: List<Playlist>,
-    val releaseYear: Int
+    val releaseYear: Int,
+    val syncEnabled: Boolean = false,
+    val remotePlaylistId: String? = null,
 ) {
     val totalDurationSeconds: Long
         get() = songs.sumOf { it.durationSec ?: 0L }

@@ -18,10 +18,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,8 @@ fun CreatePlaylistScreen(
     viewModel: CreateNewPlaylistViewModel = hiltViewModel()
 ) {
     var text by remember { mutableStateOf("") }
+    var syncWithYouTubeMusic by remember { mutableStateOf(false) }
+    val isSignedIn by viewModel.isSignedInToYouTubeMusic.collectAsState()
 
     Scaffold(
         topBar = {
@@ -73,6 +77,34 @@ fun CreatePlaylistScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Sync with YouTube Music",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        if (isSignedIn) {
+                            "Songs you add here will mirror to your YT Music account."
+                        } else {
+                            "Sign in via the drawer's YouTube Music entry first."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                Switch(
+                    checked = syncWithYouTubeMusic && isSignedIn,
+                    onCheckedChange = { syncWithYouTubeMusic = it },
+                    enabled = isSignedIn
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(
@@ -87,7 +119,10 @@ fun CreatePlaylistScreen(
                 Button(
                     onClick = {
                         if (text.isNotBlank()) {
-                            viewModel.createPlaylist(text)
+                            viewModel.createPlaylist(
+                                name = text,
+                                syncWithYouTubeMusic = syncWithYouTubeMusic && isSignedIn
+                            )
                             navController.popBackStack()
                         }
                     },

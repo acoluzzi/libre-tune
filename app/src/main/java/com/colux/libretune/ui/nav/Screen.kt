@@ -3,6 +3,7 @@ package com.colux.libretune.ui.nav
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -74,6 +75,16 @@ sealed class Screen(
     data object MoodGenre :
         Screen("mood_genre/{moodGenreId}", "Mood Genre", Icons.Default.Album, Icons.Default.Album) {
         fun createRoute(moodGenreId: String) = "mood_genre/$moodGenreId"
+    }
+
+    data object YouTubeMusicSignIn :
+        Screen(
+            "youtube_music_sign_in",
+            "YouTube Music",
+            Icons.Default.CloudSync,
+            Icons.Default.CloudSync
+        ) {
+        fun createRoute() = "youtube_music_sign_in"
     }
 
 }

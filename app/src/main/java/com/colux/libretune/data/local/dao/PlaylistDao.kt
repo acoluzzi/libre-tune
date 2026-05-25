@@ -12,6 +12,7 @@ import com.colux.libretune.data.local.join.ArtistPlaylistCrossRef
 import com.colux.libretune.data.local.join.PlaylistArtistCrossRef
 import com.colux.libretune.data.local.join.PlaylistRelatedCrossRef
 import com.colux.libretune.data.local.join.PlaylistSongCrossRef
+import com.colux.libretune.data.local.join.PlaylistSongSyncState
 import com.colux.libretune.data.local.wrapper.PlaylistWithArtists
 import com.colux.libretune.data.local.wrapper.PlaylistWithSongsEntity
 import kotlinx.coroutines.flow.Flow
@@ -209,9 +210,12 @@ interface PlaylistDao {
 
     @Query(
         """
-       DELETE FROM playlist_song_cross_ref 
-          WHERE songId = :songId 
-            AND playlistId IN (SELECT playlistId FROM playlists WHERE isLocal = 1)
+       DELETE FROM playlist_song_cross_ref
+          WHERE songId = :songId
+            AND playlistId IN (
+                SELECT playlistId FROM playlists
+                WHERE isLocal = 1 AND syncEnabled = 0
+            )
     """
     )
     suspend fun removeSongFromAllLocalPlaylists(songId: String)
@@ -224,4 +228,62 @@ interface PlaylistDao {
     suspend fun removeSongFromPlaylist(join: PlaylistSongCrossRef)
 
 
+    // --- YouTube Music sync helpers ---
+
+    @Query(
+        """
+        UPDATE playlists
+        SET remotePlaylistId = :remotePlaylistId, syncEnabled = 1
+        WHERE playlistId = :playlistId
+    """
+    )
+    suspend fun markPlaylistSynced(playlistId: String, remotePlaylistId: String)
+
+    @Query(
+        """
+        UPDATE playlists
+        SET remotePlaylistId = NULL, syncEnabled = 0
+        WHERE playlistId = :playlistId
+    """
+    )
+    suspend fun markPlaylistUnsynced(playlistId: String)
+
+    @Query("SELECT * FROM playlists WHERE syncEnabled = 1")
+    fun getSyncedPlaylists(): Flow<List<PlaylistEntity>>
+
+    @Query("SELECT playlistId FROM playlists WHERE remotePlaylistId = :remotePlaylistId LIMIT 1")
+    suspend fun getLocalIdByRemoteId(remotePlaylistId: String): String?
+
+    @Query("SELECT * FROM playlist_song_cross_ref WHERE playlistId = :playlistId AND songId = :songId LIMIT 1")
+    suspend fun getCrossRef(playlistId: String, songId: String): PlaylistSongCrossRef?
+
+    @Query(
+        """
+        SELECT * FROM playlist_song_cross_ref
+        WHERE playlistId = :playlistId AND syncState != 'SYNCED'
+    """
+    )
+    suspend fun getPendingSyncEntries(playlistId: String): List<PlaylistSongCrossRef>
+
+    @Query(
+        """
+        UPDATE playlist_song_cross_ref
+        SET setVideoId = :setVideoId, syncState = :state
+        WHERE playlistId = :playlistId AND songId = :songId
+    """
+    )
+    suspend fun updateCrossRefSyncState(
+        playlistId: String,
+        songId: String,
+        setVideoId: String?,
+        state: PlaylistSongSyncState
+    )
+
+    @Query(
+        """
+        SELECT songId FROM playlist_song_cross_ref
+        WHERE playlistId = :playlistId
+    """
+    )
+    suspend fun getSongIdsInPlaylist(playlistId: String): List<String>
 }

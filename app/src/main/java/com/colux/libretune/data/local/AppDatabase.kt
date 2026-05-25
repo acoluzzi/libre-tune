@@ -3,6 +3,8 @@ package com.colux.libretune.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.colux.libretune.data.local.dao.ArtistDao
 import com.colux.libretune.data.local.dao.HistoryDao
 import com.colux.libretune.data.local.dao.LibraryDao
@@ -38,7 +40,7 @@ import com.colux.libretune.data.local.join.SongArtistCrossRef
         PlaybackHistoryEntity::class,
         LibraryEntity::class,
         HistoryArtistCrossRef::class,
-        PlaylistSongCrossRef::class], version = 1
+        PlaylistSongCrossRef::class], version = 2
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -53,4 +55,17 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun libraryDao(): LibraryDao
     abstract fun historyDao(): HistoryDao
+
+    companion object {
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE playlists ADD COLUMN remotePlaylistId TEXT")
+                db.execSQL("ALTER TABLE playlists ADD COLUMN syncEnabled INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE playlist_song_cross_ref ADD COLUMN setVideoId TEXT")
+                db.execSQL(
+                    "ALTER TABLE playlist_song_cross_ref ADD COLUMN syncState TEXT NOT NULL DEFAULT 'SYNCED'"
+                )
+            }
+        }
+    }
 }

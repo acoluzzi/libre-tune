@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -56,6 +57,20 @@ fun AppDrawerMenu(navController: NavController, closeDrawer: () -> Unit) {
                 icon = { Icon(Icons.Default.History, contentDescription = "History") },
                 selected = false,
                 onClick = { navController.navigate("history"); closeDrawer() }
+            )
+            NavigationDrawerItem(
+                label = { Text("YouTube Music") },
+                icon = {
+                    Icon(
+                        Icons.Default.CloudSync,
+                        contentDescription = "YouTube Music sync"
+                    )
+                },
+                selected = false,
+                onClick = {
+                    navController.navigate(Screen.YouTubeMusicSignIn.createRoute())
+                    closeDrawer()
+                }
             )
             // TODO add statistics and settings pages
 //            NavigationDrawerItem(

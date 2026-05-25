@@ -1,5 +1,6 @@
 package com.coluzziandrea.libretune_extractor
 
+import com.coluzziandrea.libretune_extractor.auth.AuthProvider
 import com.coluzziandrea.libretune_extractor.client.LibreClient
 import com.coluzziandrea.libretune_extractor.model.ArtistDetails
 import com.coluzziandrea.libretune_extractor.model.Discography
@@ -15,6 +16,7 @@ import com.coluzziandrea.libretune_extractor.parser.mapper.toDiscography
 import com.coluzziandrea.libretune_extractor.parser.mapper.toGenreMoodCategory
 import com.coluzziandrea.libretune_extractor.parser.mapper.toGenresMoods
 import com.coluzziandrea.libretune_extractor.parser.toSearchSuggestions
+import com.coluzziandrea.libretune_extractor.sync.YouTubeMusicSyncClient
 import io.ktor.client.HttpClient
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -24,7 +26,8 @@ import javax.inject.Singleton
 
 @Singleton
 class LibreTuneExtractor @Inject constructor(
-    httpClient: HttpClient
+    httpClient: HttpClient,
+    authProvider: AuthProvider = AuthProvider.Anonymous
 ) {
 
     companion object {
@@ -32,7 +35,9 @@ class LibreTuneExtractor @Inject constructor(
         const val GENRE_MOOD_CATEGORY_BROWSE_ID = "FEmusic_moods_and_genres_category"
     }
 
-    private val client = LibreClient(httpClient)
+    private val client = LibreClient(httpClient, authProvider)
+
+    val sync: YouTubeMusicSyncClient = YouTubeMusicSyncClient(client)
 
 
     suspend fun playlist(playlistId: String): PlaylistDetails? {

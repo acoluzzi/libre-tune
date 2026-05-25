@@ -18,6 +18,7 @@ import com.colux.libretune.ui.mood_genre.MoodGenreScreen
 import com.colux.libretune.ui.player.PlayerViewModel
 import com.colux.libretune.ui.playlist.PlaylistDetailScreen
 import com.colux.libretune.ui.search.SearchScreen
+import com.colux.libretune.ui.sign_in.YouTubeMusicSignInScreen
 
 @Composable
 fun Navigation(
@@ -234,6 +235,10 @@ fun Navigation(
 
             composable(Screen.History.route) {
                 HistoryScreen(navController = navController, playerViewModel = playerViewModel)
+            }
+
+            composable(Screen.YouTubeMusicSignIn.route) {
+                YouTubeMusicSignInScreen(navController = navController)
             }
         }
 

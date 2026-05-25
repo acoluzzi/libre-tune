@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.DefaultMediaNotificationProvider
@@ -34,6 +36,15 @@ class PlaybackService : MediaSessionService() {
         const val CHANNEL_ID = "music_channel_01"
         val COMMAND_PLAY_PLAYLIST_WITH_FETCH =
             SessionCommand("PLAY_PLAYLIST_WITH_FETCH", Bundle.EMPTY)
+
+        // Stream URLs from YouTube are signed and expire after a few hours, so we
+        // refresh anything older than this rather than handing a dead URL to the player.
+        private const val URL_CACHE_TTL_MS = 5L * 60 * 60 * 1000
+
+        // How many times we re-fetch a fresh URL for the same song before giving up
+        // and skipping ahead. Prevents an infinite recovery loop on a permanently
+        // broken track.
+        private const val MAX_RECOVERY_ATTEMPTS = 2
     }
 
     @Inject
@@ -44,28 +55,101 @@ class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
     private var backgroundFetchJob: Job? = null
+    private var recoveryJob: Job? = null
 
     val logger = java.util.logging.Logger.getLogger("PlaybackService")
 
-    private val urlCache = mutableMapOf<String, String>()
+    private data class CachedUrl(val url: String, val timestampMs: Long)
+
+    private val urlCache = mutableMapOf<String, CachedUrl>()
+
+    // Tracks consecutive failed recovery attempts per song id, reset once the song
+    // reaches a playable state.
+    private val recoveryAttempts = mutableMapOf<String, Int>()
 
     /**
      * A helper function that first checks the cache for a URL.
-     * If not found, it fetches from the repository and adds it to the cache.
+     * If not found (or expired), it fetches from the repository and caches it.
      */
     private suspend fun getOrFetchUrl(song: Song): String? {
-        // Return the cached URL if it exists
-        if (urlCache.containsKey(song.id)) {
-            return urlCache[song.id]
+        val cached = urlCache[song.id]
+        if (cached != null &&
+            System.currentTimeMillis() - cached.timestampMs < URL_CACHE_TTL_MS
+        ) {
+            return cached.url
         }
+        return refreshUrl(song.id)
+    }
 
-        // Otherwise, fetch it from the remote source
-        val fetchedUrl = songRepository.getSongUrlById(song.id)
+    /**
+     * Always fetches a fresh URL from the remote source and updates the cache,
+     * bypassing any (possibly stale) cached entry.
+     */
+    private suspend fun refreshUrl(songId: String): String? {
+        val fetchedUrl = songRepository.getSongUrlById(songId)
         if (fetchedUrl != null) {
-            // Store the new URL in the cache for next time
-            urlCache[song.id] = fetchedUrl
+            urlCache[songId] = CachedUrl(fetchedUrl, System.currentTimeMillis())
         }
         return fetchedUrl
+    }
+
+    private val playerListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            recoverFromPlaybackError(error)
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            // A song that successfully became playable should get a clean slate of
+            // recovery attempts if it later fails again (e.g. its URL expires).
+            if (playbackState == Player.STATE_READY) {
+                exoPlayer.currentMediaItem?.mediaId?.let { recoveryAttempts.remove(it) }
+            }
+        }
+    }
+
+    /**
+     * Recovers from a playback error (most commonly an expired stream URL) by
+     * re-fetching a fresh URL for the current song and resuming from the same
+     * position. Skips ahead if the song can't be recovered.
+     */
+    private fun recoverFromPlaybackError(error: PlaybackException) {
+        val mediaItem = exoPlayer.currentMediaItem ?: return
+        val itemIndex = exoPlayer.currentMediaItemIndex
+        val songId = mediaItem.mediaId
+        val resumePosition = exoPlayer.currentPosition.coerceAtLeast(0L)
+
+        val attempts = recoveryAttempts.getOrDefault(songId, 0)
+        if (attempts >= MAX_RECOVERY_ATTEMPTS) {
+            logger.warning {
+                "Giving up on $songId after $attempts recovery attempts (${error.errorCodeName}); skipping."
+            }
+            skipToNextOrStop()
+            return
+        }
+        recoveryAttempts[songId] = attempts + 1
+
+        recoveryJob?.cancel()
+        recoveryJob = CoroutineScope(Dispatchers.Main).launch {
+            logger.info { "Playback error (${error.errorCodeName}); refreshing URL for $songId" }
+            val freshUrl = refreshUrl(songId)
+            if (freshUrl != null) {
+                val refreshedItem = mediaItem.buildUpon().setUri(freshUrl).build()
+                exoPlayer.replaceMediaItem(itemIndex, refreshedItem)
+                exoPlayer.prepare()
+                exoPlayer.seekTo(itemIndex, resumePosition)
+                exoPlayer.play()
+            } else {
+                skipToNextOrStop()
+            }
+        }
+    }
+
+    private fun skipToNextOrStop() {
+        if (exoPlayer.hasNextMediaItem()) {
+            exoPlayer.seekToNextMediaItem()
+            exoPlayer.prepare()
+            exoPlayer.play()
+        }
     }
 
     private val mediaSessionCallback = object : MediaSession.Callback {
@@ -151,6 +235,8 @@ class PlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
 
+        exoPlayer.addListener(playerListener)
+
         // 1. Create the PendingIntent that opens your MainActivity.
         val pendingIntent =
             packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
@@ -188,11 +274,13 @@ class PlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         mediaSession?.run {
+            exoPlayer.removeListener(playerListener)
             exoPlayer.release()
             release()
             mediaSession = null
         }
         backgroundFetchJob?.cancel()
+        recoveryJob?.cancel()
         super.onDestroy()
     }
 }

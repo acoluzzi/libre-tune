@@ -50,6 +50,7 @@ material = "1.12.0"
 foundation = "1.9.0"
 material3 = "1.3.2"
 animation = "1.9.0"
+webkit = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -114,6 +115,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

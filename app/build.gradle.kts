@@ -124,6 +124,10 @@ dependencies {
 
     implementation(libs.androidx.media3.session)
 
+    // Needed to strip the X-Requested-With header so Google's login page
+    // doesn't reject the embedded WebView as an "insecure browser".
+    implementation(libs.androidx.webkit)
+
 
     implementation(project(":libretune-extractor"))
 

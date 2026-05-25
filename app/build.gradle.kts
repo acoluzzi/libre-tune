@@ -25,6 +25,10 @@ android {
 
     buildTypes {
         release {
+            // Sign with the auto-generated debug key so the release APK built by CI
+            // is installable. This key is regenerated per machine, so updating over a
+            // build signed elsewhere requires uninstalling the app first.
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
